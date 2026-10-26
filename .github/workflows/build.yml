@@ -6,39 +6,34 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+      
+      - name: Set up Java 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           
-      - name: Install Cordova and Icon Generator
+      - name: Install Cordova and Tools
         run: npm install -g cordova cordova-res
         
       - name: Create Cordova Project
         run: |
           cordova create app com.boubolche.app "Bou Bolche"
           cd app
-          # লাইভ লিংক লোড করার জন্য config.xml তৈরি করা হচ্ছে (সিঙ্ক ঠিক করার জন্য)
-          cat <<EOF > config.xml
-          <?xml version='1.0' encoding='utf-8'?>
-          <widget id="com.boubolche.app" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-              <name>Bou Bolche</name>
-              <description>Family Bazar Tracker</description>
-              <content src="https://hamontoshakil.github.io/Bou-Bolche/" />
-              <allow-navigation href="*" />
-              <allow-intent href="*" />
-              <access origin="*" />
-          </widget>
-          EOF
+          cp ../config.xml config.xml
           cordova platform add android
           
-      - name: Set App Icons
+      - name: Generate Icons
         run: |
           cd app
           mkdir -p resources
           cp ../icon-512.png resources/icon.png
-          cordova-res android --skip-config --copy
+          cordova-res android --skip-config --copy || echo "Icon generation skipped"
           
       - name: Build APK
         run: |
