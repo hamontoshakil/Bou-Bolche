@@ -1,110 +1,395 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en" translate="no" class="notranslate">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="google" content="notranslate">
+    <meta name="theme-color" content="#16a34a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Bou Bolche - Family Bazar Tracker</title>
-    <!-- Web App Manifest Link -->
-    <link rel="manifest" href="manifest.json">
-    <!-- Tailwind CSS CDN -->
+    <link rel="manifest" href="/Bou-Bolche/manifest.json">
+    <link rel="icon" type="image/png" href="/Bou-Bolche/icon-192.png">
+    <link rel="apple-touch-icon" href="/Bou-Bolche/icon-192.png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React & ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- Babel -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script>
-      tailwind.config = {
-        darkMode: 'class',
-      }
+      tailwind.config = { darkMode: 'class' }
     </script>
+    <style>
+      body { -webkit-tap-highlight-color: transparent; user-select: none; }
+      .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+    </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-    <div id="root"></div>
+<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-white font-sans transition-colors duration-200">
 
-    <script type="text/babel">
-        function App() {
-          const [lang, setLang] = React.useState('bn');
-          const [darkMode, setDarkMode] = React.useState(false);
-          const [activeTab, setActiveTab] = React.useState('today');
-          
-          const [bazarList, setBazarList] = React.useState([
-            { id: 1, name: 'Apple', qty: '1 kg', category: 'Fruits', bought: true, price: 400, addedBy: 'Meem', time: '12:30 PM', urgent: false, size: '', note: 'Fresh ones' },
-            { id: 2, name: 'Fish & Meat', qty: '1 kg', category: 'Fish & Meat', bought: false, price: 0, addedBy: 'Shakil', time: '01:15 PM', urgent: true, size: 'L', note: 'Rui fish' },
-          ]);
+  <div id="app" class="min-h-screen pb-24"></div>
 
-          const [quickAddItems, setQuickAddItems] = React.useState([
-            { name: 'ডিম (Eggs)', qty: '1 Dozen', category: 'Grocery', size: 'M' },
-            { name: 'দুধ (Milk)', qty: '1 Litre', category: 'Grocery', size: '1L' },
-            { name: 'আলু (Potato)', qty: '2 kg', category: 'Vegetables', size: 'M' },
-            { name: 'পেঁয়াজ (Onion)', qty: '1 kg', category: 'Vegetables', size: 'M' },
-          ]);
+  <script>
+    // Default & Saved State (LocalStorage)
+    const savedState = JSON.parse(localStorage.getItem('bouBolcheProState')) || {};
+    
+    let state = {
+      lang: savedState.lang || 'bn',
+      darkMode: savedState.darkMode || false,
+      activeTab: 'today',
+      soundEnabled: savedState.soundEnabled !== undefined ? savedState.soundEnabled : true,
+      monthlyBudget: savedState.monthlyBudget || 15000,
+      bazarList: savedState.bazarList || [
+        { id: 1, name: 'আপেল (Apple)', qty: '1 kg', category: 'Fruits', bought: true, price: 320, urgent: false, size: 'M', note: 'তাজা দেখে আনবে' },
+        { id: 2, name: 'রুই মাছ (Rui Fish)', qty: '1.5 kg', category: 'Fish & Meat', bought: false, price: 0, urgent: true, size: 'L', note: 'তাজা নদীর মাছ' },
+        { id: 3, name: 'ডিম (Eggs)', qty: '1 Dozen', category: 'Grocery', bought: false, price: 165, urgent: false, size: '', note: 'লাল ডিম' }
+      ],
+      bills: savedState.bills || [
+        { id: 1, name: 'WiFi Bill', amount: 1000, status: 'Paid', date: '05 Oct 2026' },
+        { id: 2, name: 'Electricity Bill', amount: 1850, status: 'Due', date: '15 Oct 2026' }
+      ],
+      loans: savedState.loans || [
+        { id: 1, name: 'করিম ভাই', type: 'given', amount: 1500, note: 'বাজারের ধার', status: 'Pending' },
+        { id: 2, name: 'রহিম স্টোর', type: 'taken', amount: 500, note: 'খুচরা বাকি', status: 'Pending' }
+      ],
+      showAddModal: false,
+      showLoanModal: false,
+      showBillModal: false
+    };
 
-          const [showAddModal, setShowAddModal] = React.useState(false);
-          const [newItemName, setNewItemName] = React.useState('');
-          const [newItemQty, setNewItemQty] = React.useState('1');
-          const [newItemCat, setNewItemCat] = React.useState('Grocery');
-          const [newItemUrgent, setNewItemUrgent] = React.useState(false);
-          const [newItemSize, setNewItemSize] = React.useState('M');
-          const [newItemNote, setNewItemNote] = React.useState('');
+    const quickAddItems = [
+      { name: 'ডিম (Eggs)', qty: '1 Dozen', category: 'Grocery', size: '' },
+      { name: 'দুধ (Milk)', qty: '1 Litre', category: 'Grocery', size: '' },
+      { name: 'আলু (Potato)', qty: '2 kg', category: 'Vegetables', size: 'M' },
+      { name: 'পেঁয়াজ (Onion)', qty: '1 kg', category: 'Vegetables', size: 'M' },
+      { name: 'তেল (Soybean Oil)', qty: '2 Litre', category: 'Grocery', size: '' },
+      { name: 'মুরগি (Chicken)', qty: '1.5 kg', category: 'Fish & Meat', size: 'L' }
+    ];
 
-          const [monthlyBudget, setMonthlyBudget] = React.useState(15000);
-          const [soundEnabled, setSoundEnabled] = React.useState(true);
+    function saveState() {
+      localStorage.setItem('bouBolcheProState', JSON.stringify({
+        lang: state.lang,
+        darkMode: state.darkMode,
+        soundEnabled: state.soundEnabled,
+        monthlyBudget: state.monthlyBudget,
+        bazarList: state.bazarList,
+        bills: state.bills,
+        loans: state.loans
+      }));
+    }
 
-          const [bills, setBills] = React.useState([
-            { id: 1, name: 'WiFi Bill', amount: 1200, status: 'Paid', date: '05 Oct 2026' },
-            { id: 2, name: 'Electricity Bill', amount: 2100, status: 'Due', date: '15 Oct 2026' },
-          ]);
+    function playSound() {
+      if (!state.soundEnabled) return;
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 600;
+        gain.gain.value = 0.08;
+        osc.start();
+        setTimeout(() => osc.stop(), 100);
+      } catch(e) {}
+    }
 
-          const [loans, setLoans] = React.useState([
-            { id: 1, name: 'Karim Bhai', type: 'given', amount: 1500, note: 'Bazar loan', status: 'Pending' },
-            { id: 2, name: 'Rahim', type: 'taken', amount: 2000, note: 'Emergency', status: 'Settled' },
-          ]);
-          const [showLoanModal, setShowLoanModal] = React.useState(false);
-          const [loanName, setLoanName] = React.useState('');
-          const [loanAmount, setLoanAmount] = React.useState('');
-          const [loanType, setLoanType] = React.useState('given');
-          const [loanNote, setLoanNote] = React.useState('');
+    // Actions
+    window.toggleDark = () => { state.darkMode = !state.darkMode; saveState(); render(); };
+    window.toggleLang = () => { state.lang = state.lang === 'bn' ? 'en' : 'bn'; saveState(); render(); };
+    window.toggleSound = () => { state.soundEnabled = !state.soundEnabled; saveState(); render(); };
+    window.setTab = (tab) => { state.activeTab = tab; render(); };
 
-          const totalSpent = bazarList.filter(item => item.bought).reduce((acc, item) => acc + (Number(item.price) || 0), 0);
-          const totalBills = bills.filter(b => b.status === 'Paid').reduce((acc, b) => acc + Number(b.amount), 0);
+    window.toggleBought = (id) => {
+      state.bazarList = state.bazarList.map(i => i.id === id ? { ...i, bought: !i.bought } : i);
+      playSound(); saveState(); render();
+    };
 
-          const handleAddItem = (name = newItemName, qty = newItemQty, cat = newItemCat, urgent = newItemUrgent, size = newItemSize, note = newItemNote) => {
-            if (!name.trim()) return;
-            const newItem = {
-              id: Date.now(),
-              name,
-              qty,
-              category: cat,
-              bought: false,
-              price: 0,
-              addedBy: 'Shakil',
-              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              urgent,
-              size,
-              note
-            };
-            setBazarList([newItem, ...bazarList]);
-            setNewItemName('');
-            setNewItemQty('1');
-            setNewItemNote('');
-            setShowAddModal(false);
-            if (soundEnabled) playSound();
-          };
+    window.updatePrice = (id, val) => {
+      state.bazarList = state.bazarList.map(i => i.id === id ? { ...i, price: Number(val) || 0 } : i);
+      saveState(); render();
+    };
 
-          const playSound = () => {
-            try {
-              const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-              audio.play().catch(e => console.log(e));
-            } catch(err) {}
-          };
+    window.deleteItem = (id) => {
+      state.bazarList = state.bazarList.filter(i => i.id !== id);
+      saveState(); render();
+    };
 
-          const toggleBought = (id) => {
-            setBazarList(bazarList.map(item => item.id === id ? { ...item, bought: !item.bought } : item));
-          };
+    window.openAddModal = (open) => { state.showAddModal = open; render(); };
+    window.openLoanModal = (open) => { state.showLoanModal = open; render(); };
+    window.openBillModal = (open) => { state.showBillModal = open; render(); };
 
-          const updatePrice = (id, price) => {
-            setBazarList(bazarList.map(item => item.id === id ? { ...item, price: Number(price) } : item));
-          };
+    window.quickAdd = (idx) => {
+      const q = quickAddItems[idx];
+      state.bazarList.unshift({
+        id: Date.now(),
+        name: q.name,
+        qty: q.qty,
+        category: q.category,
+        bought: false,
+        price: 0,
+        urgent: false,
+        size: q.size,
+        note: ''
+      });
+      state.showAddModal = false;
+      playSound(); saveState(); render();
+    };
 
-          const deleteItem
+    window.submitNewItem = () => {
+      const name = document.getElementById('itemName').value.trim();
+      if (!name) return;
+      const qty = document.getElementById('itemQty').value.trim() || '1';
+      const size = document.getElementById('itemSize').value;
+      const category = document.getElementById('itemCat').value;
+      const note = document.getElementById('itemNote').value.trim();
+      const urgent = document.getElementById('itemUrgent').checked;
+
+      state.bazarList.unshift({
+        id: Date.now(), name, qty, category, bought: false, price: 0, urgent, size, note
+      });
+      state.showAddModal = false;
+      playSound(); saveState(); render();
+    };
+
+    window.submitNewBill = () => {
+      const name = document.getElementById('billName').value.trim();
+      const amount = Number(document.getElementById('billAmount').value);
+      const date = document.getElementById('billDate').value.trim() || 'This Month';
+      if (!name || !amount) return;
+      state.bills.unshift({ id: Date.now(), name, amount, status: 'Due', date });
+      state.showBillModal = false;
+      saveState(); render();
+    };
+
+    window.toggleBillStatus = (id) => {
+      state.bills = state.bills.map(b => b.id === id ? { ...b, status: b.status === 'Paid' ? 'Due' : 'Paid' } : b);
+      playSound(); saveState(); render();
+    };
+
+    window.deleteBill = (id) => {
+      state.bills = state.bills.filter(b => b.id !== id);
+      saveState(); render();
+    };
+
+    window.submitNewLoan = () => {
+      const name = document.getElementById('loanName').value.trim();
+      const amount = Number(document.getElementById('loanAmount').value);
+      const type = document.getElementById('loanType').value;
+      const note = document.getElementById('loanNote').value.trim();
+      if (!name || !amount) return;
+      state.loans.unshift({ id: Date.now(), name, type, amount, note, status: 'Pending' });
+      state.showLoanModal = false;
+      saveState(); render();
+    };
+
+    window.toggleLoanStatus = (id) => {
+      state.loans = state.loans.map(l => l.id === id ? { ...l, status: l.status === 'Pending' ? 'Settled' : 'Pending' } : l);
+      playSound(); saveState(); render();
+    };
+
+    window.deleteLoan = (id) => {
+      state.loans = state.loans.filter(l => l.id !== id);
+      saveState(); render();
+    };
+
+    window.updateBudget = () => {
+      const val = Number(document.getElementById('budgetInput').value);
+      if (val > 0) {
+        state.monthlyBudget = val;
+        saveState(); render();
+        alert(state.lang === 'bn' ? 'বাজেট আপডেট হয়েছে!' : 'Budget Updated!');
+      }
+    };
+
+    window.shareWhatsApp = () => {
+      const totalSpent = state.bazarList.filter(i => i.bought).reduce((a, b) => a + (Number(b.price) || 0), 0);
+      const text = `🛒 *Bou Bolche - বাজারের তালিকা*\n\n` +
+        state.bazarList.map(i => `${i.bought ? '✅' : '⬜'} ${i.name} (${i.qty}) ${i.urgent ? '[জরুরি]' : ''} ${i.price ? '- ৳'+i.price : ''}`).join('\n') +
+        `\n\n💰 *মোট খরচ: ৳${totalSpent}*`; window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+    };
+
+    function render() {
+      if (state.darkMode) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+
+      const totalSpent = state.bazarList.filter(i => i.bought).reduce((a, b) => a + (Number(b.price) || 0), 0);
+      const totalBills = state.bills.filter(b => b.status === 'Paid').reduce((a, b) => a + Number(b.amount), 0);
+      const boughtCount = state.bazarList.filter(i => i.bought).length;
+      const pct = Math.min((totalSpent / state.monthlyBudget) * 100, 100);
+
+      const app = document.getElementById('app');
+      app.innerHTML = `
+        <!-- Top Header -->
+        <header class="sticky top-0 z-30 px-4 py-3.5 shadow-sm flex justify-between items-center ${state.darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-green-600 text-white'}">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-xl shadow-inner">🛒</div>
+            <div>
+              <h1 class="font-extrabold text-base leading-tight tracking-tight">Bou Bolche</h1>
+              <p class="text-[11px] ${state.darkMode ? 'text-green-400' : 'text-green-100'} font-medium">● Family Bazar Tracker</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="toggleSound()" class="p-2 rounded-xl text-xs ${state.darkMode ? 'bg-gray-700' : 'bg-white/20 text-white'}">
+              ${state.soundEnabled ? '🔔' : '🔕'}
+            </button>
+            <button onclick="toggleLang()" class="px-2.5 py-1.5 text-xs font-bold rounded-xl ${state.darkMode ? 'bg-gray-700 text-white' : 'bg-white/20 text-white'}">
+              ${state.lang === 'bn' ? 'EN' : 'বাং'}
+            </button>
+            <button onclick="toggleDark()" class="p-2 rounded-xl text-xs ${state.darkMode ? 'bg-gray-700 text-yellow-400' : 'bg-white/20 text-white'}">
+              ${state.darkMode ? '☀️' : '🌙'}
+            </button>
+          </div>
+        </header>
+
+        <!-- Main Body -->
+        <main class="max-w-md mx-auto p-4">
+          ${state.activeTab === 'today' ? `
+            <!-- Budget Card -->
+            <div class="p-4 rounded-2xl shadow-sm mb-4 border ${state.darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}">
+              <div class="flex justify-between items-center mb-1.5">
+                <span class="text-xs font-medium text-gray-400">${state.lang === 'bn' ? 'চলতি মাসের বাজার খরচ' : 'This Month Bazar Spent'}</span>
+                <button onclick="shareWhatsApp()" class="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 rounded-lg font-bold shadow-sm flex items-center space-x-1">
+                  <span>📱</span><span>${state.lang === 'bn' ? 'শেয়ার' : 'Share'}</span>
+                </button>
+              </div>
+              <div class="flex justify-between items-baseline mb-2.5">
+                <h2 class="text-3xl font-black text-green-500">৳${totalSpent}</h2>
+                <span class="text-xs font-semibold text-gray-400">${state.lang === 'bn' ? 'বাজেট: ৳' + state.monthlyBudget : 'Budget: ৳' + state.monthlyBudget}</span>
+              </div>
+              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
+                <div class="h-full rounded-full transition-all duration-300 ${totalSpent > state.monthlyBudget ? 'bg-red-500' : 'bg-green-500'}" style="width: ${pct}%"></div>
+              </div>
+            </div>
+
+            <!-- List Header -->
+            <div class="flex justify-between items-center mb-3 px-1">
+              <h3 class="font-bold text-sm">${state.lang === 'bn' ? 'আজকের বাজারের তালিকা' : "Today's Bazar List"}</h3>
+              <span class="text-xs bg-green-100 dark:bg-green-900/60 text-green-700 dark:text-green-300 px-2.5 py-0.5 rounded-full font-bold">
+                ${boughtCount} / ${state.bazarList.length} ${state.lang === 'bn' ? 'সম্পন্ন' : 'Done'}
+              </span>
+            </div>
+
+            <!-- Items -->
+            <div class="space-y-2.5 mb-20">
+              ${state.bazarList.length === 0 ? `
+                <div class="text-center py-10 text-gray-400 text-sm">তালিকায় কোনো আইটেম নেই! নিচের বাটনে ক্লিক করে যোগ করুন।</div>
+              ` : state.bazarList.map(item => `
+                <div class="p-3.5 rounded-2xl shadow-sm border transition-all ${item.urgent && !item.bought ? 'border-red-400 bg-red-50/60 dark:bg-red-950/30' : state.darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}">
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-start space-x-3 flex-1" onclick="toggleBought(${item.id})">
+                      <input type="checkbox" ${item.bought ? 'checked' : ''} class="mt-1 w-5 h-5 accent-green-600 rounded cursor-pointer" />
+                      <div class="cursor-pointer">
+                        <div class="flex flex-wrap items-center gap-1.5">
+                          <h4 class="font-bold text-sm ${item.bought ? 'line-through text-gray-400' : ''}">${item.name}</h4>${item.urgent ? `<span class="text-[9px] bg-red-600 text-white px-1.5 py-0.5 rounded font-extrabold">জরুরি</span>` : ''}
+                          ${item.size ? `<span class="text-[9px] bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 px-1.5 py-0.5 rounded font-bold">${item.size}</span>` : ''}
+                        </div>
+                        <p class="text-xs text-gray-400 mt-0.5">${item.qty} • <span class="text-green-600 dark:text-green-400 font-medium">${item.category}</span>${item.note ? `• "${item.note}"` : ''}</p>
+                      </div>
+                    </div>
+                    <div class="flex items-center space-x-1.5">
+                      <input type="number" placeholder="৳ দাম" value="${item.price \vert{}\vert{} ''}" onchange="updatePrice(${item.id}, this.value)" class="w-16 text-right px-2 py-1.5 text-xs font-bold rounded-xl border ${state.darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-200'}" />
+                      <button onclick="deleteItem(${item.id})" class="p-1.5 text-gray-400 hover:text-red-500 text-sm">🗑️</button>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+
+            <!-- Floating Add Button -->
+            <div class="fixed bottom-16 left-0 right-0 px-4 max-w-md mx-auto z-20">
+              <button onclick="openAddModal(true)" class="w-full bg-green-600 active:scale-95 transition-transform text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg flex items-center justify-center space-x-2">
+                <span class="text-xl leading-none">+</span>
+                <span class="text-sm">${state.lang === 'bn' ? 'নতুন বাজার যোগ করুন' : 'Add New Bazar Item'}</span>
+              </button>
+            </div>
+          ` : ''}
+
+          ${state.activeTab === 'bills' ? `
+            <div class="space-y-4 mb-20">
+              <div class="flex justify-between items-center">
+                <h2 class="font-bold text-base">${state.lang === 'bn' ? 'মাসিক বিল ও ইউটিলিটি' : 'Bills & Utilities'}</h2>
+                <button onclick="openBillModal(true)" class="bg-green-600 text-white text-xs px-3 py-1.5 rounded-xl font-bold">+ নতুন বিল</button>
+              </div>
+              <div class="p-4 rounded-2xl shadow-sm border ${state.darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}">
+                <p class="text-xs text-gray-400">${state.lang === 'bn' ? 'মোট পরিশোধিত বিল (Paid)' : 'Total Paid Bills'}</p>
+                <h3 class="text-2xl font-black text-blue-500 mt-0.5">৳${totalBills}</h3>
+              </div>
+              <div class="space-y-2.5">
+                ${state.bills.map(bill => `
+                  <div class="p-3.5 rounded-2xl shadow-sm border flex justify-between items-center ${state.darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}">
+                    <div>
+                      <h4 class="font-bold text-sm">${bill.name}</h4>
+                      <p class="text-xs text-gray-400">তারিখ: ${bill.date}</p>
+                    </div>
+                    <div class="flex items-center space-x-2.5">
+                      <span class="font-extrabold text-sm">৳${bill.amount}</span>
+                      <button onclick="toggleBillStatus(${bill.id})" class="text-[11px] px-2.5 py-1 rounded-xl font-bold ${bill.status === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}">
+                        ${bill.status === 'Paid' ? 'Paid ✅' : 'Due ⏳'}
+                      </button>
+                      <button onclick="deleteBill(${bill.id})" class="text-xs text-gray-400">🗑️</button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          ${state.activeTab === 'loan' ? `
+            <div class="space-y-4 mb-20">
+              <div class="flex justify-between items-center">
+                <h2 class="font-bold text-base">${state.lang === 'bn' ? 'ধার ও পাওনা খাতা' : 'Loan Ledger'}</h2>
+                <button onclick="openLoanModal(true)" class="bg-green-600 text-white text-xs px-3 py-1.5 rounded-xl font-bold">+ নতুন হিসাব</button>
+              </div>
+              <div class="space-y-2.5">
+                ${state.loans.map(loan => `
+                  <div class="p-3.5 rounded-2xl shadow-sm border flex justify-between items-center ${state.darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}">
+                    <div>
+                      <div class="flex items-center space-x-2">
+                        <h4 class="font-bold text-sm ${loan.status === 'Settled' ? 'line-through text-gray-400' : ''}">${loan.name}</h4>
+                        <span class="text-[10px] px-2 py-0.5 rounded-lg font-bold ${loan.type === 'given' ? 'bg-purple-100 text-purple-700' : 'bg-yellow-100 text-yellow-800'}">
+                          ${loan.type === 'given' ? 'পাবো (Given)' : 'দেবো (Taken)'}
+                        </span>
+                      </div>
+                      <p class="text-xs text-gray-400 mt-0.5">${loan.note || 'সাধারণ হিসাব'}</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                      <div class="text-right">
+                        <p class="font-extrabold text-sm">৳${loan.amount}</p>
+                        <button onclick="toggleLoanStatus(${loan.id})" class="text-[10px] font-bold ${loan.status === 'Settled' ? 'text-green-500' : 'text-orange-500'}">
+                          ${loan.status === 'Settled' ? 'পরিশোধিত ✅' : 'বাকি ⏳'}
+                        </button>
+                      </div>
+                      <button onclick="deleteLoan(${loan.id})" class="text-xs text-gray-400 pl-1">🗑️</button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          ${state.activeTab === 'settings' ? `
+            <div class="space-y-4 mb-20">
+              <h2 class="font-bold text-base">${state.lang === 'bn' ? 'সেটিংস ও বাজেট' : 'Settings & Budget'}</h2>
+              <div class="p-4 rounded-2xl shadow-sm border ${state.darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}">
+                <label class="text-xs font-bold block mb-2">${state.lang === 'bn' ? 'মাসিক বাজারের বাজেট পরিবর্তন করুন (৳)' : 'Set Monthly Budget (৳)'}</label>
+                <div class="flex space-x-2">
+                  <input id="budgetInput" type="number" value="${state.monthlyBudget}" class="flex-1 px-3 py-2 rounded-xl border text-sm font-bold ${state.darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-200'}" />
+                  <button onclick="updateBudget()" class="bg-green-600 text-white text-xs px-4 py-2 rounded-xl font-bold">সেভ করুন</button>
+                </div>
+              </div>
+              <div class="p-4 rounded-2xl shadow-sm border ${state.darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}">
+                <h3 class="text-xs font-bold mb-1">Bou Bolche - Pro Edition</h3>
+                <p class="text-xs text-gray-400">আপনার সকল বাজারের তথ্য ফোনের মেমোরিতে সুরক্ষিত আছে।</p>
+              </div>
+            </div>
+          ` : ''}
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="fixed bottom-0 left-0 right-0 border-t flex justify-around py-2.5 z-30 safe-bottom ${state.darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}">
+          <button onclick="setTab('today')" class="flex flex-col items-center text-[11px] ${state.activeTab === 'today' ? 'text-green-600 font-extrabold' : 'text-gray-400'}">
+            <span class="text-lg">🛒</span><span>${state.lang === 'bn' ? 'বাজার' : 'Bazar'}</span>
+          </button>
+          <button onclick="setTab('bills')" class="flex flex-col items-center text-[11px] ${state.activeTab === 'bills' ? 'text-green-600 font-extrabold' : 'text-gray-400'}">
+            <span class="text-lg">🧾</span><span>${state.lang === 'bn' ? 'বিল' : 'Bills'}</span>
+          </button>
+          <button onclick="setTab('loan')" class="flex flex-col items-center text-[11px] ${state.activeTab === 'loan' ? 'text-green-600 font-extrabold' : 'text-gray-400'}">
+            <span class="text-
