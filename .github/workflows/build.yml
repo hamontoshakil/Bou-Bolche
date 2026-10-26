@@ -18,22 +18,34 @@ jobs:
         with:
           node-version: '18'
           
-      - name: Install Cordova and Tools
-        run: npm install -g cordova cordova-res
+      - name: Install Cordova
+        run: npm install -g cordova
         
       - name: Create Cordova Project
         run: |
           cordova create app com.boubolche.app "Bou Bolche"
           cd app
-          cp ../config.xml config.xml
+          cp ../index.html www/index.html
+          # config.xml তৈরি করা হচ্ছে যাতে লাইভ লিংক লোড হয়
+          echo '<?xml version="1.0" encoding="utf-8"?>' > config.xml
+          echo '<widget id="com.boubolche.app" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">' >> config.xml
+          echo '<name>Bou Bolche</name>' >> config.xml
+          echo '<content src="https://hamontoshakil.github.io/Bou-Bolche/" />' >> config.xml
+          echo '<allow-navigation href="*" />' >> config.xml
+          echo '<allow-intent href="*" />' >> config.xml
+          echo '<access origin="*" />' >> config.xml
+          echo '</widget>' >> config.xml
           cordova platform add android
           
-      - name: Generate Icons
+      - name: Generate Custom Icons
         run: |
-          cd app
-          mkdir -p resources
-          cp ../icon-512.png resources/icon.png
-          cordova-res android --skip-config --copy || echo "Icon generation skipped"
+          cd app/platforms/android/app/src/main/res
+          # ImageMagick দিয়ে আপনার লোগো থেকে অ্যান্ড্রয়েডের সব সাইজের আইকন বানানো হচ্ছে
+          convert ${{ github.workspace }}/icon-512.png -resize 48x48 mipmap-mdpi/ic_launcher.png
+          convert ${{ github.workspace }}/icon-512.png -resize 72x72 mipmap-hdpi/ic_launcher.png
+          convert ${{ github.workspace }}/icon-512.png -resize 96x96 mipmap-xhdpi/ic_launcher.png
+          convert ${{ github.workspace }}/icon-512.png -resize 144x144 mipmap-xxhdpi/ic_launcher.png
+          convert ${{ github.workspace }}/icon-512.png -resize 192x192 mipmap-xxxhdpi/ic_launcher.png
           
       - name: Build APK
         run: |
