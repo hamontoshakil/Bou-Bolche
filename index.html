@@ -1,420 +1,1151 @@
 <!DOCTYPE html>
-<html lang="bn" translate="no" class="notranslate">
+<html lang="bn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="google" content="notranslate">
-    <meta name="theme-color" content="#16a34a">
-    <title>Bou Bolche - Family Bazar Tracker</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" href="icon-192.png">
-    <style>
-      * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
-      body { background-color: #f3f4f6; color: #1f2937; padding-bottom: 90px; }
-      body.dark { background-color: #111827; color: #f9fafb; }
-      header { position: sticky; top: 0; z-index: 30; background: #16a34a; color: white; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
-      body.dark header { background: #1f2937; border-bottom: 1px solid #374151; }
-      .brand { display: flex; align-items: center; gap: 10px; }
-      .logo { width: 38px; height: 38px; background: rgba(255,255,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-      .brand h1 { font-size: 16px; font-weight: 800; }
-      .brand p { font-size: 11px; color: #dcfce7; }
-      .top-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 7px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; }
-      main { max-width: 480px; margin: 0 auto; padding: 16px; }
-      .card { background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #e5e7eb; }
-      body.dark .card { background: #1f2937; border-color: #374151; }
-      .urgent-card { border-left: 5px solid #ef4444; background: #fef2f2; }
-      body.dark .urgent-card { background: #3f1d1d; }
-      .bar-bg { width: 100%; background: #e5e7eb; height: 10px; border-radius: 99px; overflow: hidden; margin-top: 10px; }
-      body.dark .bar-bg { background: #374151; }
-      .bar-fill { height: 100%; background: #16a34a; width: 10%; transition: 0.3s; }
-      .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-      .left-col { display: flex; align-items: flex-start; gap: 10px; flex: 1; cursor: pointer; }
-      .chk { width: 20px; height: 20px; accent-color: #16a34a; margin-top: 2px; }
-      .title { font-size: 14px; font-weight: bold; }
-      .done { text-decoration: line-through; color: #9ca3af; }
-      .sub { font-size: 12px; color: #6b7280; margin-top: 3px; }
-      body.dark .sub { color: #9ca3af; }
-      .badge { font-size: 10px; padding: 2px 6px; border-radius: 5px; font-weight: bold; background: #dcfce7; color: #15803d; }
-      .badge-red { background: #ef4444; color: white; }
-      .price-box { width: 70px; padding: 6px; text-align: right; border-radius: 8px; border: 1px solid #d1d5db; font-size: 13px; font-weight: bold; background: #f9fafb; color: inherit; }
-      body.dark .price-box { background: #374151; border-color: #4b5563; }
-      .del { background: none; border: none; font-size: 16px; cursor: pointer; padding: 4px; }
-      .fab { position: fixed; bottom: 70px; left: 0; right: 0; max-width: 480px; margin: 0 auto; padding: 0 16px; z-index: 20; }
-      .btn-main { width: 100%; background: #16a34a; color: white; border: none; padding: 14px; border-radius: 14px; font-size: 14px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(22,163,74,0.3); }
-      .btn-sm { background: #16a34a; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; }
-      nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-around; padding: 10px 0; z-index: 30; }
-      body.dark nav { background: #1f2937; border-color: #374151; }
-      .nav-item { background: none; border: none; display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #9ca3af; font-weight: bold; cursor: pointer; gap: 2px; }
-      .nav-item.active { color: #16a34a; }
-      .sec { display: none; }
-      .sec.active { display: block; }
-      .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 50; display: none; align-items: center; justify-content: center; padding: 16px; }
-      .modal.open { display: flex; }
-      .modal-card { background: white; width: 100%; max-width: 360px; border-radius: 18px; padding: 18px; }
-      body.dark .modal-card { background: #1f2937; color: white; }
-      .inp { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #d1d5db; margin-bottom: 10px; font-size: 13px; background: #f9fafb; color: inherit; }
-      body.dark .inp { background: #374151; border-color: #4b5563; }
-      .chip { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; margin: 2px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>বউ বলছে - Live</title>
+<!-- React & Tailwind -->
+<script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<style>body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#ECEEE9}</style>
 </head>
 <body>
+<div id="root">
+  <div style="padding:24px;text-align:center;font-family:system-ui;">
+    <div style="font-size:40px">🧺</div>
+    <div style="margin-top:12px;font-weight:bold;color:#159947">কানেক্ট হচ্ছে...</div>
+  </div>
+</div>
+<div id="error-log" style="display:none;position:fixed;top:0;left:0;right:0;background:red;color:white;padding:10px;z-index:9999;font-size:12px;font-family:monospace;white-space:pre-wrap;"></div>
 
-  <!-- Header (সরাসরি HTML-এ দেওয়া, তাই কখনো সাদা হবে না) -->
-  <header>
-    <div class="brand">
-      <div class="logo">🛒</div>
-      <div>
-        <h1>Bou Bolche</h1>
-        <p>● Family Bazar Tracker</p>
-      </div>
-    </div>
-    <div>
-      <button class="top-btn" onclick="toggleTheme()" id="themeBtn">🌙 ডার্ক</button>
-    </div>
-  </header>
+<script>
+window.onerror = function(message, source, lineno, colno, error) {
+  var errDiv = document.getElementById('error-log');
+  errDiv.style.display = 'block';
+  errDiv.innerHTML += `<b>Error:</b> ${message} <br> <b>Line:</b> ${lineno} <br> <b>Check if you saved as UTF-8</b><br><hr>`;
+  return false;
+};
+</script>
 
-  <main>
-    <!-- TAB 1: BAZAR -->
-    <div id="sec-bazar" class="sec active">
-      <div class="card">
-        <div class="row" style="margin-bottom:6px;">
-          <span style="font-size:12px;color:#9ca3af;font-weight:bold;">চলতি মাসের বাজার খরচ</span>
-          <button class="btn-sm" onclick="shareWA()">📱 শেয়ার</button>
+<script type="text/babel">
+const {useState,useEffect,useMemo,useRef}=React;
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB27N6VoJ49J40XixYmru-kAb-cXHY97o",
+  authDomain: "bou-bolche-app.firebaseapp.com",
+  projectId: "bou-bolche-app",
+  storageBucket: "bou-bolche-app.firebasestorage.app",
+  messagingSenderId: "26514627621",
+  appId: "1:26514627621:web:cdd32a21e5471f5df573cc",
+  measurementId: "G-HDMXYD9GZ"
+};
+
+let app, db, auth;
+try {
+  app = firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+  auth = firebase.auth();
+} catch(e) { console.error("Firebase init error:", e); }
+
+const CATS=[
+  {id:'baby',name:'Baby & Kids',bnName:'বাচ্চার দরকারি',icon:'🍼',bg:'bg-purple-50'},
+  {id:'fruits',name:'Fruits',bnName:'ফলমূল',icon:'🍎',bg:'bg-red-50'},
+  {id:'fish_meat',name:'Fish & Meat',bnName:'মাছ ও মাংস',icon:'🐟',bg:'bg-blue-50'},
+  {id:'vegetables',name:'Vegetables',bnName:'শাক-সবজি',icon:'🥦',bg:'bg-green-50'},
+  {id:'grocery',name:'Grocery',bnName:'মুদি ও রান্না',icon:'🛒',bg:'bg-amber-50'},
+  {id:'medicine',name:'Medicine',bnName:'ঔষধ',icon:'💊',bg:'bg-teal-50'},
+  {id:'shopping',name:'Shopping',bnName:'শপিং',icon:'🛍️',bg:'bg-pink-50'},
+  {id:'other',name:'Others',bnName:'অন্যান্য',icon:'📦',bg:'bg-gray-100'}
+];
+const SIZES=['S','M','L','XL'];
+const MONTHS=[
+  {key:'2026-05',label:'May 2026'},{key:'2026-06',label:'Jun 2026'},
+  {key:'2026-07',label:'Jul 2026'},{key:'2026-08',label:'Aug 2026'},
+  {key:'2026-09',label:'Sep 2026'},{key:'2026-10',label:'Oct 2026'}
+];
+// 🔴 ADDED bg PROPERTY FOR REPORT STYLING 🔴
+const BILL_TYPES=[
+  {id:'electricity',name:'Electricity',bnName:'বিদ্যুৎ',icon:'⚡', bg:'bg-amber-50'},
+  {id:'water',name:'Water',bnName:'পানি',icon:'💧', bg:'bg-blue-50'},
+  {id:'gas',name:'Gas',bnName:'গ্যাস',icon:'🔥', bg:'bg-orange-50'},
+  {id:'internet',name:'Internet',bnName:'ইন্টারনেট',icon:'🌐', bg:'bg-cyan-50'},
+  {id:'mobile',name:'Mobile',bnName:'মোবাইল',icon:'📱', bg:'bg-purple-50'},
+  {id:'rent',name:'Rent',bnName:'বাসা ভাড়া',icon:'🏠', bg:'bg-rose-50'},
+  {id:'other',name:'Other',bnName:'অন্যান্য',icon:'📦', bg:'bg-gray-100'}
+];
+const QC={electricity:'bg-amber-100 text-amber-600',water:'bg-blue-100 text-blue-600',gas:'bg-orange-100 text-orange-600',internet:'bg-cyan-100 text-cyan-600',mobile:'bg-purple-100 text-purple-600',rent:'bg-rose-100 text-rose-600',other:'bg-slate-100 text-slate-600'};
+
+const DEFAULT_QUICK=[
+  {id:'q1',name:'ডিম (Eggs)',qty:'1 ডজন',category:'grocery',size:''},
+  {id:'q2',name:'দুধ (Milk)',qty:'1 Ltr',category:'grocery',size:''},
+  {id:'q3',name:'আলু (Potato)',qty:'2 kg',category:'vegetables',size:''},
+  {id:'q5',name:'ডায়াপার (Diaper)',qty:'1 pack',category:'baby',size:'M'}
+];
+
+const DEMO={
+  familyCode:'', senderTag:'From Meem', categoryTag:'Shopping', monthlyBudget:15000, lastMonthSpent:12450,
+  priceHistory:{'আপেল':380,'apple':380,'রুই মাছ':450,'ডায়াপার':950,'ডিম':165,'দুধ':100,'আলু':55,'পেঁয়াজ':115,'তেল':340,'মুরগি':310,'নাপা':30},
+  quickAddItems:DEFAULT_QUICK,
+  bills:[],
+  loans:[],
+  members:[
+    {id:'m1',name:'Meem',role:'Sender',avatar:'👩'},
+    {id:'m2',name:'Shakil',role:'Shopper',avatar:'👨'}
+  ],
+  notification:{active:false,sender:'',dateStr:'',itemCount:0},
+  todayItems:[],
+  history:[]
+};
+
+const playSound=()=>{try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=new C();const o1=c.createOscillator(),g1=c.createGain();o1.type='sine';o1.frequency.setValueAtTime(659.25,c.currentTime);g1.gain.setValueAtTime(0.18,c.currentTime);g1.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.25);o1.connect(g1);g1.connect(c.destination);o1.start();o1.stop(c.currentTime+0.25);const o2=c.createOscillator(),g2=c.createGain();o2.type='sine';o2.frequency.setValueAtTime(880,c.currentTime+0.14);g2.gain.setValueAtTime(0.22,c.currentTime+0.14);g2.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.55);o2.connect(g2);g2.connect(c.destination);o2.start(c.currentTime+0.14);o2.stop(c.currentTime+0.55);}catch(e){}};
+const prevMonthKey=(k)=>{const[y,m]=k.split('-').map(Number);const d=new Date(y,m-2,1);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;};
+
+function App(){
+  const [user, setUser] = useState(null);
+  const [isSynced, setIsSynced] = useState(false);
+  
+  const [data,setData]=useState(DEMO);
+  const [familyCode,setFamilyCode]=useState(localStorage.getItem('bb_family_code') || '');
+  const [joinCodeInput,setJoinCodeInput]=useState('');
+  
+  const [tab,setTab]=useState('today');
+  const [myId,setMyId]=useState('m1');
+  const [dark,setDark]=useState(false);
+  const [lang,setLang]=useState('bn');
+  const [sound,setSound]=useState(true);
+  const [toast,setToast]=useState('');
+  
+  const [showAdd,setShowAdd]=useState(false);
+  const [priceItem,setPriceItem]=useState(null);
+  const [tempPrice,setTempPrice]=useState('');
+  const [menuOpen,setMenuOpen]=useState(null);
+  const [histFilter,setHistFilter]=useState('all');
+  const [selectedHist,setSelectedHist]=useState(null);
+  const [reportIdx,setReportIdx]=useState(5);
+  const [showBudget,setShowBudget]=useState(false);
+  const [tempBudget,setTempBudget]=useState('15000');
+  const [showShare,setShowShare]=useState(false);
+  const [loanFilter,setLoanFilter]=useState('all');
+  const [showAddLoan,setShowAddLoan]=useState(false);
+  const [loanPerson,setLoanPerson]=useState('');
+  const [loanType,setLoanType]=useState('lent');
+  const [loanAmount,setLoanAmount]=useState('');
+  const [loanDate,setLoanDate]=useState(new Date().toISOString().split('T')[0]);
+  const [loanDue,setLoanDue]=useState('');
+  const [loanNote,setLoanNote]=useState('');
+  const [showEditName,setShowEditName]=useState(false);
+  const [editNameId,setEditNameId]=useState(null);
+  const [tempName,setTempName]=useState('');
+  
+  // Add Item States
+  const [iName,setIName]=useState('');
+  const [iQty,setIQty]=useState('1 kg');
+  const [iSize,setISize]=useState('');
+  const [iCat,setICat]=useState('fruits');
+  const [iPrice,setIPrice]=useState('');
+  const [iNote,setINote]=useState('');
+  const [iUrgent,setIUrgent]=useState(false);
+  const [listening,setListening]=useState(false);
+  const [showSuggestions,setShowSuggestions]=useState(false);
+
+  // Quick Add States
+  const [showQaMgr,setShowQaMgr]=useState(false);
+  const [qaName,setQaName]=useState('');
+  const [qaQty,setQaQty]=useState('1 kg');
+  const [qaCat,setQaCat]=useState('grocery');
+  const [qaSize,setQaSize]=useState('');
+  
+  // Bill States
+  const [showAddBill,setShowAddBill]=useState(false);
+  const [billName,setBillName]=useState('');
+  const [billType,setBillType]=useState('electricity');
+  const [billAmount,setBillAmount]=useState('');
+  const [billDue,setBillDue]=useState('');
+  const [billNote,setBillNote]=useState('');
+  const [billRecurring,setBillRecurring]=useState(false);
+
+  const t=(bn,en)=>lang==='bn'?bn:en;
+  const toastFn=(m)=>{setToast(m);setTimeout(()=>setToast(''),3200);};
+  const nowStr=()=>new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const myUser=(data.members||[]).find(m=>m.id===myId)||data.members?.[0]||{name:'Meem',avatar:'👩'};
+  const myName=myUser.name;
+  const getPrevPrice=(n)=>{if(!n)return null;const dict=data.priceHistory||{};const l=n.toLowerCase().trim();for(const[k,v]of Object.entries(dict))if(l.includes(k.toLowerCase()))return v;return null;};
+
+  useEffect(() => {
+    if(!auth) return;
+    auth.signInAnonymously().catch(console.error);
+    const unsub = auth.onAuthStateChanged(u => setUser(u));
+    return () => unsub();
+  }, []);
+
+  const suggestions = useMemo(() => {
+    if (!iName.trim() || iName.length < 1) return [];
+    const keys = Object.keys(data.priceHistory || {});
+    return keys.filter(k => k.includes(iName.toLowerCase()) || iName.includes(k)).slice(0, 4);
+  }, [iName, data.priceHistory]);
+
+  const estimatedCost = useMemo(() => {
+    const unbought = (data.todayItems || []).filter(i => !i.bought);
+    return unbought.reduce((sum, item) => {
+      const itemPrice = item.price > 0 ? item.price : (item.lastPrice || getPrevPrice(item.name) || 0);
+      return sum + itemPrice;
+    }, 0);
+  }, [data.todayItems, data.priceHistory]);
+
+  useEffect(() => {
+    if (!user || !familyCode) return;
+    const docRef = db.collection('artifacts').doc('bou-bolche-app').collection('public').doc('data').collection('families').doc(familyCode.toUpperCase());
+
+    const unsubscribe = docRef.onSnapshot((docSnap) => {
+      if (docSnap.exists) {
+        const cloudData = docSnap.data();
+        setData(prev => ({ ...prev, ...cloudData }));
+        setIsSynced(true);
+      } else {
+        const newData = { ...DEMO, familyCode: familyCode.toUpperCase(), updatedAt: Date.now() };
+        docRef.set(newData);
+      }
+    });
+    return () => unsubscribe();
+  }, [user, familyCode]);
+
+  // RECURRING BILLS LOGIC
+  useEffect(() => {
+    if (!isSynced || !data.bills || data.bills.length === 0) return;
+    let changed = false;
+    const today = new Date().toISOString().split('T')[0];
+    
+    const updatedBills = data.bills.map(b => {
+      if (b.recurring && !b.paid && b.dueDate && b.dueDate < today) {
+        const nextDate = new Date(b.dueDate);
+        nextDate.setMonth(nextDate.getMonth() + 1);
+        changed = true;
+        return { ...b, dueDate: nextDate.toISOString().split('T')[0] };
+      }
+      return b;
+    });
+
+    if (changed) {
+      const updatedData = { ...data, bills: updatedBills };
+      setData(updatedData);
+      if(user) {
+          const docRef = db.collection('artifacts').doc('bou-bolche-app').collection('public').doc('data').collection('families').doc(familyCode.toUpperCase());
+          docRef.set({ ...updatedData, updatedAt: Date.now() }).catch(console.error);
+      }
+    }
+  }, [isSynced, data.bills, user, familyCode]);
+
+  const save=(newData)=>{
+    setData(newData);
+    if (!user || !familyCode) return;
+    const docRef = db.collection('artifacts').doc('bou-bolche-app').collection('public').doc('data').collection('families').doc(familyCode.toUpperCase());
+    docRef.set({ ...newData, updatedAt: Date.now() }).catch(console.error);
+  };
+
+  const onJoinFamily = (e) => {
+    e.preventDefault();
+    if(joinCodeInput.trim().length < 4) return toastFn('কোড দিন');
+    const code = joinCodeInput.trim().toUpperCase();
+    localStorage.setItem('bb_family_code', code);
+    setFamilyCode(code);
+    toastFn('কানেক্ট হচ্ছে...');
+  };
+
+  const onGenerateCode = () => {
+    const cs='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let c='';for(let i=0;i<6;i++)c+=cs.charAt(Math.floor(Math.random()*cs.length));
+    localStorage.setItem('bb_family_code', c);
+    setFamilyCode(c);
+    toastFn(`নতুন কোড: ${c}`);
+  };
+
+  const stats=useMemo(()=>{
+    const items=data.todayItems||[];
+    const bought=items.filter(i=>i.bought);
+    const bazarSpent=bought.reduce((s,i)=>s+(Number(i.price)||0),0);
+    
+    const todayStr = new Date().toISOString().split('T')[0];
+    const paidBills = (data.bills||[]).filter(b=>b.paid);
+    const billsPaidToday = paidBills.filter(b=>b.paidDate === todayStr).reduce((s,b)=>s+Number(b.amount),0);
+    const allPaidBillsTotal = paidBills.reduce((s,b)=>s+Number(b.amount),0);
+
+    const spent = bazarSpent + billsPaidToday;
+    
+    const pastOct=(data.history||[]).filter(h=>h.monthKey==='2026-10'&&!h.isNew).reduce((s,h)=>s+(Number(h.totalSpent)||0),0);
+    const monthTotal = pastOct + bazarSpent + allPaidBillsTotal;
+    const budget=Number(data.monthlyBudget)||15000;
+    
+    return {
+      total:items.length,
+      bought:bought.length,
+      left:items.length-bought.length,
+      spent,
+      bazarSpent,
+      billsPaidToday,
+      progress:items.length>0?Math.round((bought.length/items.length)*100):0,
+      monthTotal,
+      budget,
+      budgetPct:Math.round((monthTotal/budget)*100)
+    };
+  },[data]);
+
+  const loansStats=useMemo(()=>{
+    const l=(data.loans||[]).filter(x=>!x.settled);
+    const lent=l.filter(x=>x.type==='lent').reduce((s,x)=>s+Number(x.amount),0);
+    const borrowed=l.filter(x=>x.type==='borrowed').reduce((s,x)=>s+Number(x.amount),0);
+    return {lentTotal:lent,borrowedTotal:borrowed,net:lent-borrowed};
+  },[data.loans]);
+
+  const grouped=useMemo(()=>{
+    const items=[...(data.todayItems||[])].sort((a,b)=>(a.urgent&&!b.urgent?-1:!a.urgent&&b.urgent?1:0));
+    const g={};CATS.forEach(c=>{const ci=items.filter(i=>i.category===c.id);if(ci.length>0)g[c.id]={cat:c,items:ci,bought:ci.filter(i=>i.bought).length};});
+    return Object.values(g);
+  },[data.todayItems]);
+
+  // 🔴 UPDATED REPORT DATA: Separated Bills into categories 🔴
+  const reportMonth=MONTHS[reportIdx]||MONTHS[5];
+  const reportData=useMemo(()=>{
+    const fromToday=(data.todayItems||[]).filter(i=>i.bought);
+    const isOct=reportMonth.key==='2026-10';
+    const hM=(data.history||[]).filter(h=>h.monthKey===reportMonth.key&&!h.isNew);
+    const hB=hM.flatMap(h=>(h.items||[]).filter(i=>i.bought));
+    const its=isOct?[...fromToday,...hB]:hB;
+    
+    const monthBills = (data.bills||[]).filter(b => b.paid && b.paidDate && b.paidDate.startsWith(reportMonth.key));
+    
+    const bazarTotal=its.reduce((s,i)=>s+(Number(i.price)||0),0);
+    const billsTotal = monthBills.reduce((s,b)=>s+Number(b.amount),0);
+    const total = bazarTotal + billsTotal;
+    
+    const days=isOct?(fromToday.length>0?1:0)+hM.length:hM.length||(total>0?1:0);
+    
+    const catT={};
+    its.forEach(it=>{const c=it.category||'other';catT[c]=(catT[c]||0)+(Number(it.price)||0);});
+    
+    // Loop through each bill type and add to catT
+    monthBills.forEach(b => {
+        const c = b.type || 'other';
+        catT[c] = (catT[c] || 0) + Number(b.amount);
+    });
+
+    const breakdown=Object.entries(catT).map(([c,a])=>{
+        // Check CATS first, then BILL_TYPES
+        const obj=CATS.find(x=>x.id===c) || BILL_TYPES.find(x=>x.id===c) || CATS[0];
+        return{...obj,amount:a,pct:total>0?Math.round((a/total)*100):0};
+    }).sort((a,b)=>b.amount-a.amount);
+    
+    return {total,days,items:its.length,avg:days>0?Math.round(total/days):0,breakdown};
+  },[data,reportMonth]);
+
+  // 🔴 UPDATED COMPARISON: Separated Bills 🔴
+  const comparison=useMemo(()=>{
+    const cur=reportMonth.key,prv=prevMonthKey(cur);
+    const getTot=(mk)=>{
+        const tot={};
+        (data.history||[]).filter(h=>h.monthKey===mk&&!h.isNew).forEach(h=>{(h.items||[]).filter(i=>i.bought).forEach(it=>{const c=it.category||'other';tot[c]=(tot[c]||0)+(Number(it.price)||0);});});
+        if(mk==='2026-10'){(data.todayItems||[]).filter(i=>i.bought).forEach(it=>{const c=it.category||'other';tot[c]=(tot[c]||0)+(Number(it.price)||0);});}
+        
+        // Add specific bill types
+        const monthBills = (data.bills||[]).filter(b => b.paid && b.paidDate && b.paidDate.startsWith(mk));
+        monthBills.forEach(b => {
+            const c = b.type || 'other';
+            tot[c] = (tot[c] || 0) + Number(b.amount);
+        });
+        
+        return tot;
+    };
+    const ct=getTot(cur),pt=getTot(prv);
+    const all=new Set([...Object.keys(ct),...Object.keys(pt)]);
+    const rows=Array.from(all).map(id=>{
+        // Check CATS first, then BILL_TYPES
+        const obj=CATS.find(c=>c.id===id) || BILL_TYPES.find(x=>x.id===id) || CATS[0];
+        const c=ct[id]||0,p=pt[id]||0,ch=p>0?Math.round(((c-p)/p)*100):c>0?100:0;
+        return{id,...obj,current:c,previous:p,change:ch};
+    }).filter(r=>r.current>0||r.previous>0).sort((a,b)=>b.current-a.current);
+    const tc=Object.values(ct).reduce((s,v)=>s+v,0),tp=Object.values(pt).reduce((s,v)=>s+v,0);
+    return {rows,prevKey:prv,totalCur:tc,totalChange:tp>0?Math.round(((tc-tp)/tp)*100):0};
+  },[data,reportMonth]);
+
+  const perPerson=useMemo(()=>{
+    const map={};const mk=reportMonth.key;
+    (data.history||[]).filter(h=>h.monthKey===mk&&!h.isNew).forEach(h=>{(h.items||[]).filter(i=>i.bought).forEach(it=>{const n=it.addedBy||h.sender||'Unknown';if(!map[n])map[n]={name:n,total:0,count:0};map[n].total+=Number(it.price)||0;map[n].count++;});});
+    if(mk==='2026-10'){(data.todayItems||[]).filter(i=>i.bought).forEach(it=>{const n=it.addedBy||'Unknown';if(!map[n])map[n]={name:n,total:0,count:0};map[n].total+=Number(it.price)||0;map[n].count++;});}
+    return Object.values(map).sort((a,b)=>b.total-a.total);
+  },[data,reportMonth]);
+
+  const prevPrice=useMemo(()=>getPrevPrice(iName),[iName,data.priceHistory]);
+  const filteredLoans=(data.loans||[]).filter(l=>{if(loanFilter==='lent')return l.type==='lent';if(loanFilter==='borrowed')return l.type==='borrowed';if(loanFilter==='settled')return l.settled;if(loanFilter==='active')return !l.settled;return true;});
+
+  const syncHist=(items)=>{
+    const bought=items.filter(i=>i.bought);
+    const total=bought.reduce((s,i)=>s+(Number(i.price)||0),0);
+    const ex=[...(data.history||[])];
+    const idx=ex.findIndex(h=>h.id==='h1'||h.isNew);
+    const entry={id:'h1',dateStr:'Mon, 26 Oct 2026 • Today',monthKey:'2026-10',isNew:true,boughtCount:bought.length,totalCount:items.length,totalSpent:total,sender:myName,tag:'Shopping',type:'received',items:items.map(i=>({name:i.name,quantity:i.quantity,size:i.size||'',category:i.category,price:i.price,bought:i.bought,addedBy:i.addedBy}))};
+    if(idx>=0)ex[idx]=entry;else ex.unshift(entry);
+    return ex;
+  };
+
+  const onToggleItem=(item)=>{
+    if(!item.bought){setPriceItem(item);setTempPrice(item.price>0?String(item.price):item.lastPrice?String(item.lastPrice):'');}
+    else{const u=data.todayItems.map(i=>i.id===item.id?{...i,bought:false}:i);save({...data,todayItems:u,history:syncHist(u)});}
+  };
+
+  const onConfirmPrice=(e)=>{
+    e.preventDefault();if(!priceItem)return;
+    const p=Math.max(0,Number(tempPrice)||0);
+    const uPH={...(data.priceHistory||{}),[priceItem.name.toLowerCase()]:p};
+    const uItems=data.todayItems.map(i=>i.id===priceItem.id?{...i,bought:true,price:p,lastPrice:i.lastPrice||p}:i);
+    save({...data,priceHistory:uPH,todayItems:uItems,history:syncHist(uItems)});
+    if(sound)playSound();
+    setPriceItem(null);setTempPrice('');
+    toastFn(`"${priceItem.name}" ✔`);
+  };
+
+  const onAddItem=(e)=>{
+    e.preventDefault();if(!iName.trim())return;
+    const prev=getPrevPrice(iName);
+    const newItem={
+        id:'i'+Date.now(),
+        name:iName.trim(),
+        quantity:iQty.trim()||'1 kg',
+        size:iSize,
+        category:iCat,
+        addedBy:myName,
+        addedAt:nowStr(),
+        bought: false,
+        price:Number(iPrice)||0,
+        lastPrice:prev||Number(iPrice)||0,
+        urgent:iUrgent,
+        note:iNote.trim()
+    };
+    const u=[...(data.todayItems||[]),newItem];
+    save({...data,todayItems:u,history:syncHist(u),notification:{active:true,sender:myName,dateStr:'Mon, 26 Oct 2026',itemCount:u.length}});
+    if(sound)playSound();
+    setIName('');setIQty('1 kg');setISize('');setIPrice('');setINote('');setIUrgent(false);setShowAdd(false);setShowSuggestions(false);
+    toastFn(`"${newItem.name}" ✔`);
+  };
+
+  const onDeleteItem=(id)=>{
+    const u=data.todayItems.filter(i=>i.id!==id);
+    save({...data,todayItems:u,history:syncHist(u)});setMenuOpen(null);toastFn(t('মুছে','Deleted'));
+  };
+
+  const onComplete=()=>{
+    const bought=(data.todayItems||[]).filter(i=>i.bought);
+    if(bought.length===0){toastFn(t('অন্তত ১টি কিনুন!','Buy 1!'));return;}
+    const total=bought.reduce((s,i)=>s+(Number(i.price)||0),0);
+    const sess={id:'h'+Date.now(),dateStr:`Mon, 26 Oct 2026 (${nowStr()})`,monthKey:'2026-10',isNew:false,boughtCount:bought.length,totalCount:data.todayItems.length,totalSpent:total,sender:myName,tag:'Completed',type:'received',items:[...data.todayItems]};
+    const rem=data.todayItems.filter(i=>!i.bought);
+    save({...data,todayItems:rem,history:[sess,...(data.history||[]).filter(h=>!h.isNew)]});
+    if(sound)playSound();toastFn(t('🎉 সেভ!','🎉 Saved!'));setTab('history');
+  };
+
+  const onSaveBudget=(e)=>{e.preventDefault();save({...data,monthlyBudget:Math.max(500,Number(tempBudget)||15000)});setShowBudget(false);toastFn(t('আপডেট ✔','Updated ✔'));};
+  const onDismissNotif=()=>save({...data,notification:{...data.notification,active:false}});
+
+  const handleBillTypeSelect = (typeId) => {
+    setBillType(typeId);
+    const typeObj = BILL_TYPES.find(t => t.id === typeId);
+    if (typeObj && typeId !== 'other') {
+      setBillName(lang === 'bn' ? typeObj.bnName : typeObj.name);
+    } else {
+      setBillName('');
+    }
+  };
+  
+  const onAddBill=(e)=>{
+      e.preventDefault();if(!billName.trim()||!billAmount)return;
+      const b={id:'b'+Date.now(),name:billName.trim(),type:billType,amount:Number(billAmount)||0,dueDate:billDue||'',paid:false,paidDate:null,note:billNote.trim(), recurring: billRecurring};
+      save({...data,bills:[...(data.bills||[]),b]});
+      setBillName('');setBillAmount('');setBillDue('');setBillNote('');setBillType('electricity');setBillRecurring(false);setShowAddBill(false);
+      toastFn(t('বিল ✔','Bill ✔'));
+  };
+  
+  const onToggleBill=(b)=>{
+    const newPaid = !b.paid;
+    const newPaidDate = newPaid ? new Date().toISOString().split('T')[0] : null;
+    save({...data,bills:(data.bills||[]).map(x=>x.id===b.id?{...x,paid:newPaid, paidDate: newPaidDate}:x)});
+    toastFn(b.paid?t('বাকি','Due'):t('পরিশোধিত ✔','Paid ✔'));
+  };
+  
+  const onDelBill=(id)=>{save({...data,bills:(data.bills||[]).filter(b=>b.id!==id)});toastFn(t('মুছে','Deleted'));};
+
+  const onAddLoan=(e)=>{e.preventDefault();if(!loanPerson.trim()||!loanAmount)return;const l={id:'l'+Date.now(),person:loanPerson.trim(),type:loanType,amount:Number(loanAmount)||0,date:loanDate||new Date().toISOString().split('T')[0],dueDate:loanDue||null,note:loanNote.trim(),settled:false};save({...data,loans:[...(data.loans||[]),l]});setLoanPerson('');setLoanAmount('');setLoanDue('');setLoanNote('');setLoanType('lent');setLoanDate(new Date().toISOString().split('T')[0]);setShowAddLoan(false);toastFn(loanType==='lent'?t('💚 পাওনা','💚 Lent'):t('💔 দেনা','💔 Borrowed'));};
+  const onToggleLoan=(l)=>{save({...data,loans:(data.loans||[]).map(x=>x.id===l.id?{...x,settled:!x.settled}:x)});toastFn(l.settled?t('চলমান','Active'):t('পরিশোধিত ✔','Settled ✔'));};
+  const onDelLoan=(id)=>{save({...data,loans:(data.loans||[]).filter(l=>l.id!==id)});toastFn(t('মুছে','Deleted'));};
+
+  const onSaveName=(e)=>{e.preventDefault();const n=tempName.trim();if(!n)return;const u=(data.members||[]).map(m=>m.id===editNameId?{...m,name:n}:m);save({...data,members:u});setShowEditName(false);toastFn(t('নাম আপডেট ✔','Name updated ✔'));};
+
+  const onQuickSel=(p)=>{setIName(p.name);setIQty(p.qty);setICat(p.category);setISize(p.size||'');};
+  const onAddQuick=(e)=>{e.preventDefault();if(!qaName.trim())return;const n={id:'q'+Date.now(),name:qaName.trim(),qty:qaQty||'1 pc',category:qaCat,size:qaSize};save({...data,quickAddItems:[...(data.quickAddItems||[]),n]});setQaName('');setQaQty('1 kg');setQaCat('grocery');setQaSize('');toastFn(t('⚡ যোগ','⚡ Added'));};
+  const onDelQuick=(id)=>{save({...data,quickAddItems:(data.quickAddItems||[]).filter(q=>q.id!==id)});toastFn(t('মুছে','Removed'));};
+
+  const onVoice=()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){toastFn(t('ভয়েস নেই','No voice'));return;}const r=new SR();r.lang=lang==='bn'?'bn-BD':'en-US';r.interimResults=false;setListening(true);toastFn(t('🎤 বলুন...','🎤 Speak...'));r.onresult=(e)=>{const txt=e.results[0][0].transcript.trim();const m=txt.match(/(\d+(?:\.\d+)?\s*(?:কেজি|গ্রাম|পিস|প্যাকেট|লিটার|ডজন|kg|gm|pc|pcs|pack|ltr))/i);if(m){setIQty(m[1]);setIName(txt.replace(m[1],'').trim()||txt);}else setIName(txt);setListening(false);};r.onerror=()=>{setListening(false);toastFn(t('আবার','Retry'));};r.onend=()=>setListening(false);r.start();};
+
+  const genShareText=()=>{const items=data.todayItems||[];const unb=items.filter(i=>!i.bought);let s=`🛒 *${t('বাজার লিস্ট','Bazar List')}*\n📅 ${data.notification?.dateStr||'Today'} • 👤 ${myName}\n━━━━━━━━━━━━━━\n`;if(items.length===0)s+=t('(খালি)','(empty)')+'\n';else items.forEach((it,idx)=>{s+=`${it.bought?'✅':'⬜'} ${idx+1}. ${it.name}${it.size?` [${it.size}]`:''} — ${it.quantity}`;if(it.note)s+=` _(${it.note})_`;s+='\n';});s+=`━━━━━━━━━━━━━━\n📦 ${t('মোট','Total')}: ${items.length} • ${t('বাকি','Left')}: ${unb.length}\n🔑 ${t('কোড','Code')}: ${data.familyCode}\n— ${t('বউ বলছে','Bou Bolche')}`;return s;};
+  const shareWA=()=>{window.open(`https://wa.me/?text=${encodeURIComponent(genShareText())}`,'_blank');setShowShare(false);toastFn('WhatsApp 💬');};
+  const shareMSG=async()=>{const s=genShareText();try{await navigator.clipboard.writeText(s);}catch{}if(navigator.share){try{await navigator.share({title:'Bazar',text:s});setShowShare(false);return;}catch{}}setShowShare(false);toastFn(t('কপি! paste করুন','Copied!'));};
+  const copyText=async()=>{try{await navigator.clipboard.writeText(genShareText());toastFn(t('কপি!','Copied!'));}catch{}};
+
+  const cardCls=`${dark?'bg-slate-800 border-slate-700':'bg-white border-gray-100'} rounded-[22px] border shadow-2xs`;
+  const inputCls=`${dark?'bg-slate-900 border-slate-700 text-white':'bg-[#F6F7F3] border-gray-200'} border rounded-xl px-3 py-2 text-sm w-full focus:outline-none`;
+  const modalBg=`${dark?'bg-slate-800 text-white':'bg-white text-[#181D19]'}`;
+
+  if (!familyCode) {
+    return (
+      <div className={`${dark?'dark bg-slate-950':'bg-[#ECEEE9]'} min-h-screen flex items-center justify-center p-4`}>
+        <div className={`${cardCls} w-full max-w-sm p-6 space-y-5`}>
+          <div className="text-center">
+            <img src="logo.png" alt="Logo" className="w-24 h-24 mx-auto mb-3 rounded-2xl shadow-md border-2 border-white" onError={(e)=>{e.target.style.display='none'; document.getElementById('fallback-logo').style.display='flex';}} />
+            <div id="fallback-logo" className="w-24 h-24 bg-[#159947] rounded-2xl hidden items-center justify-center text-4xl mx-auto mb-3 shadow-md">🧺</div>
+            
+            <h1 className="text-xl font-extrabold">{t('বউ বলছে-এ স্বাগতম','Welcome to Bou Bolche')}</h1>
+            <p className="text-xs text-gray-400 mt-1">{t('রিয়েল-টাইম কানেক্ট করতে ফ্যামিলি কোড দিন','Enter family code to connect real-time')}</p>
+          </div>
+          
+          <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-3 text-xs text-amber-800 dark:text-amber-300">
+            ⚠️ {t('এক ফোনে নতুন কোড তৈরি করুন, অন্য ফোনে সেই কোডটি লিখুন।','Generate a code on one phone, enter it on the other.')}
+          </div>
+
+          <form onSubmit={onJoinFamily} className="space-y-3">
+            <input type="text" placeholder="যেমন: W4ZZXF" value={joinCodeInput} onChange={e=>setJoinCodeInput(e.target.value.toUpperCase())} className={`${inputCls} text-center text-lg font-mono uppercase tracking-widest font-bold`} maxLength={6} />
+            <button type="submit" className="w-full bg-[#159947] text-white font-bold py-3 rounded-xl shadow-md text-sm">🔗 {t('কানেক্ট করুন','Connect')}</button>
+          </form>
+          
+          <div className="relative flex py-2 items-center">
+            <div className="flex-grow border-t border-gray-200 dark:border-slate-700"></div>
+            <span className="flex-shrink-0 mx-4 text-gray-400 text-xs">অথবা</span>
+            <div className="flex-grow border-t border-gray-200 dark:border-slate-700"></div>
+          </div>
+
+          <button onClick={onGenerateCode} className={`w-full border-2 border-[#159947] text-[#159947] dark:text-green-400 font-bold py-3 rounded-xl text-sm`}>✨ {t('নতুন ফ্যামিলি কোড তৈরি করুন','Create New Code')}</button>
         </div>
-        <div class="row">
-          <h2 style="font-size:28px;font-weight:900;color:#16a34a;" id="totalSpentTxt">৳320</h2>
-          <span style="font-size:12px;color:#9ca3af;font-weight:bold;" id="budgetTxt">বাজেট: ৳15000</span>
-        </div>
-        <div class="bar-bg"><div class="bar-fill" id="budgetBar"></div></div>
       </div>
+    );
+  }
 
-      <div class="row" style="margin: 14px 4px 10px;">
-        <h3 style="font-size:14px;font-weight:bold;">আজকের বাজারের তালিকা</h3>
-        <span class="badge" id="countBadge">1 / 3 সম্পন্ন</span>
-      </div>
+  return (
+    <div className={`${dark?'dark bg-slate-950':'bg-[#ECEEE9]'} min-h-screen flex justify-center items-start sm:py-6 font-sans select-none`}>
+      <div className={`w-full max-w-[435px] min-h-screen sm:min-h-[860px] sm:max-h-[920px] ${dark?'bg-slate-900 text-slate-100 sm:border-slate-800':'bg-[#F6F7F2] text-[#181D19] sm:border-white'} sm:rounded-[38px] sm:shadow-2xl sm:border-[6px] flex flex-col relative overflow-hidden`}>
 
-      <!-- ডিফল্ট বাজার তালিকা (জাভাস্ক্রিপ্ট লোড হওয়ার আগেই দেখা যাবে) -->
-      <div id="bazarContainer">
-        <div class="card">
-          <div class="row">
-            <div class="left-col">
-              <input type="checkbox" class="chk" checked>
-              <div>
-                <div class="title done">আপেল (Apple)</div>
-                <div class="sub">1 kg • <b style="color:#16a34a;">ফলমূল</b></div>
+        {toast && <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-[#14281D] text-white px-5 py-3 rounded-full shadow-xl text-xs font-semibold flex items-center gap-2 border border-green-500/30"><span className="text-green-400">✓</span><span>{toast}</span></div>}
+
+        <div className={`px-5 pt-4 pb-3 border-b ${dark?'bg-slate-900/90 border-slate-800':'bg-white/80 border-gray-200/70'} backdrop-blur-md flex items-center justify-between z-20`}>
+          <div className="flex items-center gap-2">
+            <img src="logo.png" alt="Logo" className="w-8 h-8 rounded-xl shadow-xs object-cover" onError={(e)=>{e.target.style.display='none'; document.getElementById('fallback-logo-mini').style.display='flex';}} />
+            <div id="fallback-logo-mini" className="w-8 h-8 rounded-xl bg-[#159947] hidden items-center justify-center text-white font-black text-base shadow-xs">🧺</div>
+            
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-extrabold text-[16px] tracking-tight">{t('বউ বলছে','Bou Bolche')}</span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 ${isSynced?(dark?'bg-slate-800 text-green-400':'bg-green-50 text-[#159947]'):'bg-amber-100 text-amber-600'}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${isSynced?'bg-[#179C49] animate-pulse':'bg-amber-500'}`}/>{isSynced?'Synced':'...'}
+                </span>
               </div>
+              <p className="text-[10px] text-gray-400 font-medium">{t('ফ্যামিলি বাজার','Family Bazar')} • {familyCode}</p>
             </div>
-            <input type="number" class="price-box" value="320">
+          </div>
+          <div className="flex items-center gap-1.5">
+            <button onClick={()=>{setDark(!dark);toastFn(!dark?'🌙':'☀️');}} className={`p-2 rounded-full border ${dark?'bg-slate-800 border-slate-700 text-amber-400':'bg-white border-gray-200 text-slate-700'}`}>{dark?'☀️':'🌙'}</button>
+            <button onClick={()=>setLang(lang==='bn'?'en':'bn')} className={`px-2.5 py-1.5 rounded-full border text-xs font-extrabold ${dark?'bg-slate-800 border-slate-700 text-green-400':'bg-white border-gray-200 text-[#159947]'}`}>🌐 {lang==='bn'?'EN':'বাং'}</button>
+            <button onClick={()=>{const n=!sound;setSound(n);if(n)playSound();toastFn(n?'🔔':'🔕');}} className={`p-2 rounded-full border ${sound?(dark?'bg-slate-800 border-slate-700 text-green-400':'bg-white border-gray-200 text-[#159947]'):'bg-gray-100 border-gray-200 text-gray-400'}`}>{sound?'🔔':'🔕'}</button>
           </div>
         </div>
-      </div>
 
-      <div class="fab">
-        <button class="btn-main" onclick="openModal('modalAdd')">➕ নতুন বাজার যোগ করুন</button>
-      </div>
-    </div>
+        <div className="flex-1 overflow-y-auto pb-32 px-4 pt-4">
+          {tab==='today' && (
+            <div className="space-y-4">
+               <div className="flex items-center justify-between">
+                <div><span className="text-xs font-semibold text-gray-400">Mon, 26 Oct 2026</span><h1 className="text-[26px] font-extrabold leading-tight">{t('আজকের বাজার','Today’s bazar')}</h1></div>
+                <button onClick={()=>setShowShare(true)} className="bg-[#E8F3EB] dark:bg-green-950/80 border border-[#CBE4D2] dark:border-green-800 px-3.5 py-2 rounded-full flex items-center gap-1.5 shadow-xs"><span className="text-[#147D3B] dark:text-green-400 font-bold text-xs">📤 {t('লিস্ট পাঠান','Send list')}</span></button>
+              </div>
 
-    <!-- TAB 2: BILLS -->
-    <div id="sec-bills" class="sec">
-      <div class="row" style="margin-bottom:12px;">
-        <h2 style="font-size:16px;font-weight:bold;">মাসিক বিল ও ইউটিলিটি</h2>
-        <button class="btn-sm" onclick="openModal('modalBill')">+ নতুন বিল</button>
-      </div>
-      <div class="card">
-        <p style="font-size:12px;color:#9ca3af;">মোট পরিশোধিত বিল (Paid)</p>
-        <h3 style="font-size:24px;font-weight:900;color:#3b82f6;margin-top:4px;" id="billTotalTxt">৳1000</h3>
-      </div>
-      <div id="billContainer"></div>
-    </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="bg-[#EAF2EC] dark:bg-slate-800 border border-[#CBE2D0] dark:border-slate-700 px-3 py-1 rounded-full flex items-center gap-1.5 text-xs font-semibold text-[#3C5A46] dark:text-green-400"><span>📥</span><span>{data.senderTag||`From ${myName}`}</span></div>
+                <div className="bg-[#F9F3DF] dark:bg-amber-950/60 px-3 py-1 rounded-full text-xs font-semibold text-[#856422] dark:text-amber-300">{data.categoryTag||'Shopping'}</div>
+              </div>
 
-    <!-- TAB 3: LOANS -->
-    <div id="sec-loans" class="sec">
-      <div class="row" style="margin-bottom:12px;">
-        <h2 style="font-size:16px;font-weight:bold;">ধার ও পাওনা খাতা</h2>
-        <button class="btn-sm" onclick="openModal('modalLoan')">+ নতুন হিসাব</button>
-      </div>
-      <div id="loanContainer"></div>
-    </div>
+              {data.notification?.active && (
+                <div className={`${cardCls} p-3.5 border-l-[6px] border-l-[#179C49] flex items-center justify-between`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-[#EEF7F0] dark:bg-green-950 flex items-center justify-center text-lg">📥</div>
+                    <div><h3 className="font-bold text-sm">{data.notification.sender} {t('একটি লিস্ট পাঠিয়েছেন','sent a list')}</h3><p className="text-[11px] text-gray-400 mt-0.5">{data.notification.dateStr} • {data.todayItems?.length||0} {t('টি আইটেম','items')}</p></div>
+                  </div>
+                  <button onClick={onDismissNotif} className="text-[#179C49] font-extrabold text-xs px-3 py-1.5 rounded-lg hover:bg-green-50 dark:hover:bg-slate-700">OK</button>
+                </div>
+              )}
 
-    <!-- TAB 4: SETTINGS -->
-    <div id="sec-settings" class="sec">
-      <h2 style="font-size:16px;font-weight:bold;margin-bottom:12px;">সেটিংস ও বাজেট</h2>
-      <div class="card">
-        <label style="font-size:12px;font-weight:bold;display:block;margin-bottom:8px;">মাসিক বাজারের বাজেট পরিবর্তন করুন (৳)</label>
-        <div class="row">
-          <input type="number" id="budgetInput" class="inp" style="margin:0;" value="15000">
-          <button class="btn-sm" style="padding:10px 16px;" onclick="saveBudget()">সেভ</button>
+              {stats.budgetPct >= 80 && (
+                <div className={`${stats.budgetPct >= 100 ? 'bg-red-50 border-red-200 text-red-700 dark:bg-red-950/40 dark:border-red-800 dark:text-red-400' : 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-400'} border p-3 rounded-xl flex items-center gap-3 shadow-xs animate-pulse`}>
+                   <span className="text-xl">{stats.budgetPct >= 100 ? '🚨' : '⚠️'}</span>
+                   <div>
+                     <p className="text-xs font-bold">{stats.budgetPct >= 100 ? t('বাজেট শেষ!','Budget Exceeded!') : t('সতর্কতা!','Warning!')}</p>
+                     <p className="text-[11px] font-medium">{t(`আপনার বাজেটের ${stats.budgetPct}% শেষ হয়ে গেছে।`, `You have used ${stats.budgetPct}% of your budget.`)}</p>
+                   </div>
+                </div>
+              )}
+
+              <div className={`${cardCls} p-4 space-y-3.5`}>
+                <div className="flex items-end justify-between">
+                  <div><p className="text-xs font-medium text-gray-400 mb-0.5">{t('আজকের খরচ (Spent)','Spent Today')}</p><div className="text-[30px] font-extrabold leading-none tracking-tight">৳{stats.spent.toLocaleString()}</div></div>
+                  <div className="text-right"><p className="text-xs font-medium text-gray-400 mb-0.5">{t('কেনা হয়েছে (Bought)','Bought')}</p><div className="text-[24px] font-extrabold leading-none">{stats.bought}<span className="text-gray-400 text-lg">/{stats.total}</span></div></div>
+                </div>
+                <div className="w-full h-2.5 bg-[#E7F0EA] dark:bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-[#179C49] rounded-full transition-all duration-500" style={{width:`${stats.progress}%`}}/></div>
+                <div className="flex items-center justify-between text-xs text-gray-400 font-medium"><span>{stats.left} {t('টি কেনা বাকি','left to buy')}</span><span>{t('কেনা হলে টিক (✔) দিন','Tap item to enter price')}</span></div>
+                
+                {estimatedCost > 0 && (
+                  <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900 rounded-xl p-2.5 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">💡 {t('আনুমানিক খরচ (বাকি আইটেম)','Estimated Cost (Unbought)')}</span>
+                    <span className="text-sm font-extrabold text-blue-800 dark:text-blue-200">৳{estimatedCost.toLocaleString()}</span>
+                  </div>
+                )}
+
+                <div className={`pt-3 border-t ${dark?'border-slate-700':'border-gray-100'} space-y-2.5`}>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-gray-400">{t('মাসিক বাজেট:','Monthly Budget:')} <strong className={dark?'text-white':'text-gray-800'}>৳{stats.budget.toLocaleString()}</strong></span>
+                    <button onClick={()=>{setTempBudget(String(data.monthlyBudget||15000));setShowBudget(true);}} className="text-[#159947] font-bold flex items-center gap-1 hover:underline">✏️ {t('এডিট','Edit')}</button>
+                  </div>
+                  <div className="w-full h-1.5 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden"><div className={`h-full rounded-full ${stats.budgetPct>=100?'bg-red-500':stats.budgetPct>=80?'bg-amber-500':'bg-emerald-500'}`} style={{width:`${Math.min(100,stats.budgetPct)}%`}}/></div>
+                  
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <div className={`p-2.5 rounded-xl ${dark?'bg-slate-900/70':'bg-[#F6F7F3]'}`}><p className="text-[10px] text-gray-400">{t('এই মাসে (বিলসহ)','This Month')}</p><p className="font-extrabold text-sm text-[#159947]">৳{stats.monthTotal.toLocaleString()}</p></div>
+                    <div className={`p-2.5 rounded-xl ${dark?'bg-slate-900/70':'bg-[#F6F7F3]'}`}><p className="text-[10px] text-gray-400">{t('গত মাসে','Last Month')}</p><p className="font-extrabold text-sm">৳{Number(data.lastMonthSpent||12450).toLocaleString()}</p></div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-1">
+                {grouped.length===0 ? (
+                  <div className={`${cardCls} p-8 text-center border-dashed`}><div className="text-4xl mb-2">🧺</div><p className="font-bold">{t('লিস্ট খালি!','Empty!')}</p><p className="text-xs text-gray-400 mt-1">নিচের + বাটনে চাপ দিন</p></div>
+                ) : grouped.map(({cat,items,bought})=>(
+                  <div key={cat.id} className="space-y-2">
+                    <div className="flex items-center justify-between px-1">
+                      <div className="flex items-center gap-2"><span className={`w-7 h-7 rounded-full ${cat.bg} flex items-center justify-center text-sm`}>{cat.icon}</span><span className="font-bold text-[15px]">{lang==='bn'?`${cat.bnName} (${cat.name})`:cat.name}</span></div>
+                      <span className="text-xs font-semibold text-gray-400">{bought}/{items.length}</span>
+                    </div>
+                    <div className="space-y-2">
+                      {items.map(item=>(
+                        <div key={item.id} className={`${cardCls} ${item.urgent&&!item.bought?'border-l-4 border-l-red-500':''} p-3.5 flex items-center justify-between relative`}>
+                          <div onClick={()=>onToggleItem(item)} className="flex items-start gap-3 flex-1 cursor-pointer pr-2">
+                            <button type="button" className={`mt-0.5 w-6 h-6 rounded-lg flex items-center justify-center shrink-0 text-sm font-bold ${item.bought?'bg-[#179C49] text-white':'border-2 border-gray-300 dark:border-slate-600 text-transparent'}`}>{item.bought?'✓':'·'}</button>
+                            <div className="space-y-1 flex-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className={`text-[15px] font-bold leading-snug ${item.bought?'line-through text-gray-400':''}`}>{item.name}</p>
+                                {item.urgent&&!item.bought && <span className="bg-red-100 dark:bg-red-950 text-red-600 text-[10px] font-extrabold px-2 py-0.5 rounded-full">🚨 {t('জরুরি','Urgent')}</span>}
+                              </div>
+                              {item.note && <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">📝 {item.note}</p>}
+                              <div className="flex items-center gap-2 flex-wrap text-[11px] text-gray-400 font-medium">
+                                <span className={dark?'text-slate-300 font-semibold':'text-gray-600 font-semibold'}>{item.quantity}</span>
+                                {item.size && <span className="bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 text-[10px] font-extrabold px-1.5 py-0.5 rounded">{item.size}</span>}
+                                <span>•</span><span className="inline-flex items-center gap-0.5">👤 {item.addedBy}</span>
+                                {item.addedAt && <span className="inline-flex items-center gap-0.5">🕐 {item.addedAt}</span>}
+                              </div>
+                              {(item.lastPrice>0||getPrevPrice(item.name)) && <div className="inline-block bg-blue-50 dark:bg-blue-950/70 text-blue-600 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-md">{t('গতবার:','Last:')} ৳{item.lastPrice||getPrevPrice(item.name)}</div>}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button onClick={()=>{setPriceItem(item);setTempPrice(item.price>0?String(item.price):item.lastPrice?String(item.lastPrice):'');}} className={`font-extrabold text-sm px-2.5 py-1.5 rounded-xl ${item.price>0?'text-[#179C49] bg-green-50 dark:bg-green-950/80 dark:text-green-400':'text-gray-400 bg-gray-100 dark:bg-slate-700/60 text-xs'}`}>{item.price>0?`৳${Number(item.price).toLocaleString()}`:t('+ দাম','+ Price')}</button>
+                            <button onClick={()=>setMenuOpen(menuOpen===item.id?null:item.id)} className="p-1.5 text-gray-400 rounded-full font-bold">⋮</button>
+                          </div>
+                          {menuOpen===item.id && (
+                            <div className={`absolute right-4 top-12 ${dark?'bg-slate-800 border-slate-700':'bg-white border-gray-100'} rounded-xl shadow-lg border py-1.5 px-2 z-20 flex gap-2`}>
+                              <button onClick={()=>{setPriceItem(item);setTempPrice(item.price>0?String(item.price):'');setMenuOpen(null);}} className="text-xs font-semibold px-2.5 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700">✏️ {t('এডিট','Edit')}</button>
+                              <button onClick={()=>onDeleteItem(item.id)} className="text-xs font-semibold text-red-500 px-2.5 py-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/50">🗑️ {t('মুছুন','Delete')}</button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                
+                {stats.bought>0 && (
+                  <button onClick={onComplete} className={`w-full py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 border ${dark?'bg-slate-800 border-green-700 text-green-400':'bg-[#E8F3EB] border-[#159947]/30 text-[#147D3B]'}`}>✓ {t('আজকের বাজার শেষ (সেভ)','Complete & Save')}</button>
+                )}
+              </div>
+
+              <div className="space-y-2 pt-2 border-t dark:border-slate-800">
+                <div className="flex items-center justify-between px-1 pt-2">
+                  <div className="flex items-center gap-2"><span className="text-lg">🧾</span><span className="font-bold text-[15px]">{t('বিল ও ইউটিলিটি','Bills & Utilities')}</span></div>
+                  <button onClick={()=>{setShowAddBill(true); setBillName(''); setBillType('electricity');}} className="text-xs font-bold text-[#159947] bg-[#E8F3EB] dark:bg-green-950 px-2.5 py-1 rounded-lg">+ {t('যোগ','Add')}</button>
+                </div>
+                {(data.bills||[]).length === 0 ? <div className={`${cardCls} p-4 text-center border-dashed text-xs text-gray-400`}>কোনো বিল নেই</div> : (data.bills||[]).map(bill=>{
+                    const tp=BILL_TYPES.find(b=>b.id===bill.type)||BILL_TYPES[0];
+                    const over=bill.dueDate&&!bill.paid&&bill.dueDate<new Date().toISOString().split('T')[0];
+                    return (
+                      <div key={bill.id} className={`${cardCls} p-3.5 relative ${over?'border-l-4 border-l-red-500':''}`}>
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 ${QC[bill.type]||QC.other}`}>{tp.icon}</div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                                <p className={`font-bold text-sm truncate ${bill.paid?'line-through text-gray-400':''}`}>{bill.name}</p>
+                                {bill.recurring && <span className="text-[9px] bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded font-bold">🔄 {t('মাসিক','Monthly')}</span>}
+                            </div>
+                            <div className="flex items-center gap-1.5 flex-wrap mt-0.5 text-[11px] text-gray-400"><span>📅 {bill.dueDate||'—'}</span>{over && <span className="text-red-500 font-bold">• Overdue</span>}</div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="font-extrabold text-sm">৳{Number(bill.amount).toLocaleString()}</p>
+                            <button onClick={()=>onToggleBill(bill)} className={`mt-1 text-[10px] font-bold px-2 py-1 rounded-lg ${bill.paid?'bg-green-50 dark:bg-green-950 text-green-600':'bg-amber-50 dark:bg-amber-950 text-amber-600'}`}>{bill.paid?`✅ Paid`:`⏳ Mark Paid`}</button>
+                          </div>
+                        </div>
+                        <button onClick={()=>onDelBill(bill.id)} className="absolute top-2 right-2 p-1 text-gray-300 hover:text-red-500 text-xs">🗑️</button>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+
+          {tab==='loans' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between"><div><h1 className="text-[24px] font-extrabold">{t('ধার-দেনা','Loans')}</h1></div><button onClick={()=>setShowAddLoan(true)} className="bg-[#159947] text-white px-3.5 py-2 rounded-full text-xs font-bold">+ {t('যোগ','Add')}</button></div>
+              <div className="bg-gradient-to-br from-indigo-600 to-blue-700 text-white rounded-[24px] p-5 space-y-3 shadow-md">
+                <div className="grid grid-cols-2 gap-3">
+                  <div><p className="text-[11px] text-green-200 font-medium">💚 {t('পাওনা','Lent')}</p><div className="text-[22px] font-extrabold">৳{loansStats.lentTotal.toLocaleString()}</div></div>
+                  <div className="text-right"><p className="text-[11px] text-red-200 font-medium">💔 {t('দেনা','Borrowed')}</p><div className="text-[22px] font-extrabold">৳{loansStats.borrowedTotal.toLocaleString()}</div></div>
+                </div>
+                <div className="pt-2 border-t border-white/20 flex items-center justify-between text-xs"><span className="text-blue-100">{loansStats.net>=0?t('💚 মোট পাওনা বেশি','Owed more'):t('💔 মোট দেনা বেশি','Owe more')}</span><span className="font-extrabold text-base">৳{Math.abs(loansStats.net).toLocaleString()}</span></div>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                {[{id:'all',bn:'সব'},{id:'active',bn:'🔵 চলমান'},{id:'lent',bn:'💚 পাওনা'},{id:'borrowed',bn:'💔 দেনা'},{id:'settled',bn:'✅ পরিশোধিত'}].map(f=>(
+                  <button key={f.id} onClick={()=>setLoanFilter(f.id)} className={`px-3 py-1.5 rounded-full text-[11px] font-bold ${loanFilter===f.id?'bg-[#E6F4EA] dark:bg-green-950 text-[#159947] dark:text-green-400 border border-[#159947]':dark?'bg-slate-800 text-slate-300 border border-slate-700':'bg-white text-[#5A6058] border border-gray-200'}`}>{f.bn}</button>
+                ))}
+              </div>
+              <div className="space-y-2.5">
+                {filteredLoans.length===0 ? <div className={`${cardCls} p-8 text-center border-dashed`}><div className="text-3xl mb-2">💰</div><p className="font-bold text-sm">{t('কিছু নেই','None')}</p></div> : filteredLoans.map(loan=>{
+                  const isL=loan.type==='lent';
+                  return (
+                    <div key={loan.id} className={`${cardCls} p-4 relative ${loan.settled?'opacity-60':''}`}>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-11 h-11 rounded-full flex items-center justify-center text-lg shrink-0 ${isL?'bg-green-100 dark:bg-green-950':'bg-red-100 dark:bg-red-950'}`}>{isL?'💚':'💔'}</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className={`font-bold text-sm truncate ${loan.settled?'line-through text-gray-400':''}`}>{loan.person}</p>
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${isL?'bg-green-50 dark:bg-green-950/60 text-green-700 dark:text-green-400':'bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-400'}`}>{isL?t('পাওনা','LENT'):t('দেনা','BORROWED')}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[11px] text-gray-400 mt-0.5 flex-wrap"><span>📅 {loan.date}</span>{loan.dueDate && <span>• ⏰ {loan.dueDate}</span>}</div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className={`font-extrabold text-sm ${isL?'text-green-600 dark:text-green-400':'text-red-500'}`}>{isL?'+':'-'}৳{Number(loan.amount).toLocaleString()}</p>
+                          <div className="flex items-center gap-1 mt-1 justify-end">
+                            <button onClick={()=>onToggleLoan(loan)} className={`text-[10px] font-bold px-2 py-0.5 rounded-lg ${loan.settled?'bg-gray-100 dark:bg-slate-700 text-gray-500':'bg-green-50 dark:bg-green-950 text-green-600 dark:text-green-400'}`}>{loan.settled?`↩️`:`✅`}</button>
+                            <button onClick={()=>onDelLoan(loan.id)} className="p-1 text-gray-300 hover:text-red-500 text-xs">🗑️</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {tab==='history' && (
+            <div className="space-y-4">
+              <h1 className="text-[24px] font-extrabold">{t('বাজারের হিস্ট্রি (History)','History')}</h1>
+              <div className="bg-[#159947] text-white rounded-[24px] p-5 shadow-md space-y-1.5">
+                <p className="text-xs font-medium text-green-100">{t('এই মাসে মোট বাজার খরচ','This month total')}</p>
+                <div className="text-[34px] font-extrabold leading-none">৳{stats.monthTotal.toLocaleString()}</div>
+                <div className="flex items-center justify-between pt-2 text-xs font-semibold"><span>🧺 {(data.history||[]).length} {t('দিন বাজার','bazar days')}</span><span>{t('গত মাস:','Last Month:')} ৳{Number(data.lastMonthSpent||12450).toLocaleString()}</span></div>
+              </div>
+              <div className="flex items-center gap-2">
+                {['all','received','sent'].map(f=>(
+                  <button key={f} onClick={()=>setHistFilter(f)} className={`px-4 py-2 rounded-full text-xs font-bold ${histFilter===f?'bg-[#E6F4EA] dark:bg-green-950 text-[#159947] dark:text-green-400 border border-[#159947]':dark?'bg-slate-800 text-slate-300 border border-slate-700':'bg-white text-[#5A6058] border border-gray-200'}`}>{f==='all'?t('সব (All)','All'):f==='received'?`📥`:`📤`}</button>
+                ))}
+              </div>
+              <div className="space-y-3">
+                {(data.history||[]).filter(h=>histFilter==='all'||h.type===histFilter).map(h=>(
+                  <div key={h.id} onClick={()=>setSelectedHist(h)} className={`${cardCls} p-4 flex items-center justify-between cursor-pointer hover:border-green-400`}>
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-10 h-10 rounded-full bg-[#E6F4EA] dark:bg-green-950 flex items-center justify-center"><span className="w-2.5 h-2.5 rounded-full bg-[#159947]"/></div>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1.5"><span className="font-extrabold text-sm">{h.dateStr}</span>{h.isNew && <span className="text-[10px] font-extrabold text-red-500 bg-red-50 dark:bg-red-950 px-2 py-0.5 rounded-full">NEW</span>}</div>
+                        <div className="text-xs text-gray-400">{h.boughtCount}/{h.totalCount} {t('টি','items')}</div>
+                        <div className="flex items-center gap-2 pt-0.5"><span className="bg-[#EEF5F0] dark:bg-slate-700 text-[#3B5944] dark:text-green-300 text-[11px] font-semibold px-2.5 py-0.5 rounded-full">📥 {h.sender}</span><span className="bg-[#FAF3DF] dark:bg-amber-950 text-[#856422] dark:text-amber-300 text-[11px] font-semibold px-2.5 py-0.5 rounded-full">{h.tag}</span></div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 font-extrabold text-sm"><span>৳{Number(h.totalSpent).toLocaleString()}</span><span className="text-gray-400">›</span></div>
+                  </div>
+                ))}
+              </div>
+              {selectedHist && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={()=>setSelectedHist(null)}>
+                  <div className={`${modalBg} rounded-3xl max-w-sm w-full p-5 space-y-4`} onClick={e=>e.stopPropagation()}>
+                    <div className="flex items-center justify-between border-b dark:border-slate-700 pb-3">
+                      <div><h3 className="font-bold">{selectedHist.dateStr}</h3><p className="text-xs text-gray-400">{t('মোট:','Total:')} ৳{Number(selectedHist.totalSpent).toLocaleString()}</p></div>
+                      <button onClick={()=>setSelectedHist(null)} className="p-1.5 rounded-full bg-gray-100 dark:bg-slate-700">×</button>
+                    </div>
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {(selectedHist.items||[]).map((it,idx)=>(
+                        <div key={idx} className="flex items-center justify-between text-sm py-1.5 border-b border-gray-50 dark:border-slate-700/50">
+                          <div className="flex items-center gap-2"><span className={it.bought?'text-green-500':'text-gray-400'}>{it.bought?'✔':'○'}</span><span className="font-medium">{it.name}</span>{it.size && <span className="text-[10px] bg-purple-100 dark:bg-purple-950 text-purple-700 px-1.5 py-0.5 rounded font-bold">{it.size}</span>}<span className="text-xs text-gray-400">({it.quantity})</span></div>
+                          <span className="font-bold">৳{Number(it.price||0).toLocaleString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {tab==='reports' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <button onClick={()=>setReportIdx(i=>Math.max(0,i-1))} className={`w-9 h-9 rounded-full ${dark?'bg-slate-800 border-slate-700':'bg-white border-gray-100'} border flex items-center justify-center font-bold`}>‹</button>
+                <h2 className="text-[18px] font-extrabold">{reportMonth.label}</h2>
+                <button onClick={()=>setReportIdx(i=>Math.min(MONTHS.length-1,i+1))} className={`w-9 h-9 rounded-full ${dark?'bg-slate-800 border-slate-700':'bg-white border-gray-100'} border flex items-center justify-center font-bold`}>›</button>
+              </div>
+              <div className={`${cardCls} p-5 space-y-4`}>
+                <div className="flex items-center justify-between">
+                  <div><p className="text-xs font-medium text-gray-400 mb-1">{t('এই মাসে মোট খরচ','Total Spent')}</p><div className="text-[34px] font-extrabold leading-none">৳{reportData.total.toLocaleString()}</div></div>
+                  <div className="text-right"><span className="text-[11px] text-gray-400 block">{t('বাজেট','Budget')}</span><span className="font-extrabold text-sm text-[#159947]">৳{stats.budget.toLocaleString()}</span></div>
+                </div>
+                <div className="grid grid-cols-3 gap-2.5">
+                  <div className={`${dark?'bg-slate-900':'bg-[#F6F7F4]'} rounded-2xl p-3`}><div className="font-extrabold text-sm">৳{reportData.avg.toLocaleString()}</div><p className="text-[11px] text-gray-400 truncate mt-0.5">{t('গড়','Avg')}</p></div>
+                  <div className={`${dark?'bg-slate-900':'bg-[#F6F7F4]'} rounded-2xl p-3`}><div className="font-extrabold text-sm">{reportData.days}</div><p className="text-[11px] text-gray-400 truncate mt-0.5">{t('দিন','days')}</p></div>
+                  <div className={`${dark?'bg-slate-900':'bg-[#F6F7F4]'} rounded-2xl p-3`}><div className="font-extrabold text-sm">{reportData.items}</div><p className="text-[11px] text-gray-400 truncate mt-0.5">{t('আইটেম','items')}</p></div>
+                </div>
+              </div>
+
+              <div className={`${cardCls} p-4 space-y-2.5`}>
+                <div className="flex items-center justify-between"><h3 className="text-xs font-semibold text-gray-400">📊 {t('গত মাসের সাথে তুলনা','vs Last Month')}</h3><span className="text-[10px] text-gray-400 font-mono">{MONTHS.find(m=>m.key===comparison.prevKey)?.label||comparison.prevKey}</span></div>
+                {comparison.rows.length===0 ? <p className="text-xs text-gray-400 text-center py-2">{t('তুলনা নেই','No data')}</p> : comparison.rows.map(c=>(
+                  <div key={c.id} className="flex items-center gap-2">
+                    <span className="text-base">{c.icon}</span>
+                    <span className="text-xs flex-1 font-semibold truncate">{lang==='bn'?c.bnName:c.name}</span>
+                    <span className="text-xs font-bold">৳{c.current.toLocaleString()}</span>
+                    {c.current>0&&c.previous>0 ? (
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${c.change>0?'bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400':c.change<0?'bg-green-100 dark:bg-green-950 text-green-600 dark:text-green-400':'bg-gray-100 dark:bg-slate-700 text-gray-500'}`}>{c.change>0?'↑':c.change<0?'↓':'='} {Math.abs(c.change)}%</span>
+                    ) : c.current>0 ? <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400">NEW</span> : <span className="text-[10px] text-gray-400">—</span>}
+                  </div>
+                ))}
+                {comparison.rows.length>0 && (
+                  <div className="pt-2 border-t dark:border-slate-700 flex items-center justify-between text-xs font-bold">
+                    <span>{t('মোট','Total')}</span>
+                    <div className="flex items-center gap-2"><span>৳{comparison.totalCur.toLocaleString()}</span><span className={`text-[10px] px-1.5 py-0.5 rounded ${comparison.totalChange>0?'bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400':comparison.totalChange<0?'bg-green-100 dark:bg-green-950 text-green-600 dark:text-green-400':'bg-gray-100 dark:bg-slate-700 text-gray-500'}`}>{comparison.totalChange>0?'↑':comparison.totalChange<0?'↓':'='} {Math.abs(comparison.totalChange)}%</span></div>
+                  </div>
+                )}
+              </div>
+
+              <div className={`${cardCls} p-4 space-y-2.5`}>
+                <h3 className="text-xs font-semibold text-gray-400">👥 {t('কে কত খরচ করেছে','Spending per person')}</h3>
+                {perPerson.length===0 ? <p className="text-xs text-gray-400 text-center py-2">{t('ডেটা নেই','No data')}</p> : (
+                  <div className={`grid ${perPerson.length===1?'grid-cols-1':'grid-cols-2'} gap-2`}>
+                    {perPerson.map(p=>{const ic=p.name.startsWith('Meem')?'👩':p.name.startsWith('Shakil')?'👨':'👤';const bg=p.name.startsWith('Meem')?'bg-pink-50 dark:bg-pink-950/50 border-pink-200 dark:border-pink-800':p.name.startsWith('Shakil')?'bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800':'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700';return (
+                      <div key={p.name} className={`p-3 rounded-xl border ${bg}`}><div className="flex items-center gap-1.5 text-xs font-bold"><span>{ic}</span><span className="truncate">{p.name}</span></div><div className="font-extrabold text-lg mt-0.5">৳{p.total.toLocaleString()}</div><div className="text-[10px] text-gray-400">{p.count} {t('আইটেম','items')}</div></div>
+                    );})}
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2.5">
+                <h3 className="text-xs font-semibold text-gray-400 px-1">{t('ক্যাটাগরি অনুযায়ী খরচ','Spending by category')}</h3>
+                {reportData.breakdown.length===0 ? <div className={`${cardCls} p-5 text-center text-xs text-gray-400`}>{t('নেই','None')}</div> : reportData.breakdown.map(c=>(
+                  <div key={c.id} className={`${cardCls} p-4 flex items-center gap-3.5`}>
+                    <div className={`w-11 h-11 rounded-2xl ${c.bg} flex items-center justify-center text-xl shrink-0`}>{c.icon}</div>
+                    <div className="flex-1 space-y-1.5">
+                      <div className="flex items-center justify-between"><span className="font-bold text-sm">{lang==='bn'?c.bnName:c.name}</span><span className="font-extrabold text-sm">৳{c.amount.toLocaleString()}</span></div>
+                      <div className="w-full h-2 bg-[#E7F0EA] dark:bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-[#179C49] rounded-full" style={{width:`${c.pct}%`}}/></div>
+                      <div className="text-[11px] text-gray-400">{c.pct}%</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {tab==='settings' && (
+            <div className="space-y-4">
+              <h1 className="text-[24px] font-extrabold">{t('সেটিংস ও ফ্যামিলি কোড','Settings')}</h1>
+              <div className={`${cardCls} p-4 space-y-3`}>
+                <div className="flex items-center justify-between"><span className="text-sm font-bold">{t('ডার্ক মোড','Dark Mode')}</span><button onClick={()=>setDark(!dark)} className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold ${dark?'bg-amber-400 text-slate-900':'bg-slate-900 text-white'}`}>{dark?'ON':'OFF'}</button></div>
+                <div className="flex items-center justify-between pt-2 border-t dark:border-slate-700"><span className="text-sm font-bold">{t('সাউন্ড','Sound')}</span><button onClick={()=>{playSound();toastFn('🔔 Test!');}} className="bg-[#E8F3EB] dark:bg-green-950 text-[#159947] dark:text-green-400 text-xs font-bold px-3 py-1.5 rounded-xl">🔔 {t('টেস্ট','Test')}</button></div>
+              </div>
+
+              <div className={`${cardCls} p-4 space-y-3`}>
+                <div className="flex items-center justify-between pb-2 border-b dark:border-slate-700">
+                  <h3 className="font-bold text-xs">👥 {t('পরিবারের সদস্য','Family Members')}</h3>
+                  <span className="text-[10px] text-gray-400">{t('✏️ এডিট','Tap ✏️')}</span>
+                </div>
+                {(data.members||[]).map(m=>(
+                  <div key={m.id} className="flex items-center justify-between py-1">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-[#EAF4EE] dark:bg-slate-700 flex items-center justify-center text-lg">{m.avatar}</div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <p className="font-bold text-sm">{m.name}</p>
+                          {myId===m.id && <span className="text-[9px] bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded font-bold">YOU</span>}
+                        </div>
+                        <p className="text-[11px] text-gray-400">{m.role}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button onClick={()=>{setEditNameId(m.id);setTempName(m.name);setShowEditName(true);}} className="text-xs bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-lg font-bold">✏️</button>
+                      {myId!==m.id && <button onClick={()=>{setMyId(m.id);toastFn(t(`এখন ${m.name}`,'Switched'));}} className="text-[10px] bg-[#E8F3EB] dark:bg-green-950 text-[#159947] dark:text-green-400 px-2 py-1 rounded-lg font-bold">{t('স্যুইচ','Switch')}</button>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className={`${cardCls} p-5 space-y-4`}>
+                <div><p className="text-xs font-semibold text-gray-400 mb-1">{t('ফ্যামিলি কোড (Family code)','Family code')}</p><div className="flex items-center justify-between"><div className="text-[28px] font-black text-[#146C32] dark:text-green-400 tracking-[0.22em] font-mono">{familyCode}</div><button onClick={onGenerateCode} className="text-xs text-gray-400 flex items-center gap-1 bg-gray-50 dark:bg-slate-700 px-2.5 py-1.5 rounded-lg">🔄 New</button></div></div>
+                <div className="flex justify-center py-2">
+                  <div className="bg-white p-3 rounded-2xl border"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${familyCode}`} alt="QR" /></div>
+                </div>
+                <p className="text-xs text-gray-400 text-center leading-relaxed">অন্য ফোনে "Join with a code" এ গিয়ে এই কোডটি দিন অথবা QR স্ক্যান করুন।</p>
+                <button onClick={()=>{navigator.clipboard.writeText(familyCode);toastFn('কোড কপি হয়েছে!');}} className="w-full bg-[#159947] text-white font-bold py-3.5 rounded-2xl shadow-md text-sm">📤 {t('কোড কপি ও শেয়ার','Share code')}</button>
+              </div>
+
+              <div className={`${cardCls} p-4`}>
+                <button onClick={()=>{localStorage.removeItem('bb_family_code'); window.location.reload();}} className="w-full text-red-500 font-bold text-sm bg-red-50 dark:bg-red-950/30 py-3 rounded-xl border border-red-200 dark:border-red-900">🚪 {t('লগ আউট (Disconnect)','Disconnect')}</button>
+              </div>
+            </div>
+          )}
         </div>
+
+        {tab==='today' && (
+          <div className="absolute bottom-[78px] left-0 right-0 px-5 z-20 pointer-events-none">
+            <button onClick={()=>setShowAdd(true)} className="pointer-events-auto w-full bg-[#159947] text-white font-bold text-[15px] py-3.5 rounded-full shadow-lg shadow-green-700/30 flex items-center justify-center gap-2">
+              <span className="text-xl font-bold">+</span> {t('নতুন আইটেম যোগ করুন','Add item')}
+            </button>
+          </div>
+        )}
+
+        <div className={`${dark?'bg-slate-900 border-slate-800':'bg-white border-gray-100'} border-t px-1 py-2 flex items-center justify-around z-30`}>
+          {[{id:'today',ic:'🧺',bn:'আজ',en:'Today'},{id:'history',ic:'📅',bn:'হিস্ট্রি',en:'History'},{id:'loans',ic:'💰',bn:'ধার',en:'Loans'},{id:'reports',ic:'📊',bn:'রিপোর্ট',en:'Reports'},{id:'settings',ic:'⚙️',bn:'সেটিংস',en:'Settings'}].map(tb=>(
+            <button key={tb.id} onClick={()=>setTab(tb.id)} className="flex flex-col items-center gap-0.5 flex-1 min-w-0">
+              <div className={`px-2.5 py-1 rounded-full transition-all ${tab===tb.id?'bg-[#E5F2E9] dark:bg-green-950':''}`}><span className="text-base">{tb.ic}</span></div>
+              <span className={`text-[9px] font-bold truncate ${tab===tb.id?'text-[#159947] dark:text-green-400':'text-gray-400'}`}>{lang==='bn'?tb.bn:tb.en}</span>
+            </button>
+          ))}
+        </div>
+
+        {showEditName && (
+          <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={()=>setShowEditName(false)}>
+            <div className={`${modalBg} w-full max-w-xs rounded-3xl p-5 space-y-4`} onClick={e=>e.stopPropagation()}>
+              <h3 className="font-extrabold text-base">✏️ {t('নাম পরিবর্তন','Edit Name')}</h3>
+              <form onSubmit={onSaveName} className="space-y-3">
+                <input type="text" autoFocus value={tempName} onChange={e=>setTempName(e.target.value)} placeholder={t('নতুন নাম','New name')} className={`${inputCls} text-base font-bold`} />
+                <div className="flex gap-2">
+                  <button type="button" onClick={()=>setShowEditName(false)} className={`flex-1 py-2.5 rounded-xl font-bold text-xs ${dark?'bg-slate-700':'bg-gray-100'}`}>{t('বাতিল','Cancel')}</button>
+                  <button type="submit" className="flex-1 bg-[#159947] text-white font-bold py-2.5 rounded-xl text-xs">✓ {t('সেভ','Save')}</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {showAdd && (
+          <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <div className={`${modalBg} w-full max-w-[420px] rounded-t-[28px] sm:rounded-[28px] p-5 space-y-3.5 shadow-2xl max-h-[90vh] overflow-y-auto`}>
+              <div className="flex items-center justify-between"><h3 className="text-base font-extrabold">{t('নতুন আইটেম','Add Item')}</h3><button onClick={()=>setShowAdd(false)} className="p-1.5 rounded-full bg-gray-100 dark:bg-slate-700">×</button></div>
+              <div>
+                <div className="flex items-center justify-between mb-1.5"><p className="text-[11px] font-bold text-gray-400">⚡ Quick Add:</p><button type="button" onClick={()=>setShowQaMgr(!showQaMgr)} className="text-[11px] font-bold text-[#159947]">{showQaMgr?`✓`:`✏️`} {t('ম্যানেজ','Manage')}</button></div>
+                {!showQaMgr ? (
+                  <div className="flex gap-1.5 overflow-x-auto pb-1">
+                    {(data.quickAddItems||[]).map(p=>(
+                      <button type="button" key={p.id} onClick={()=>onQuickSel(p)} className={`shrink-0 text-xs px-2.5 py-1.5 rounded-xl font-semibold border ${iName===p.name?'bg-[#159947] text-white border-[#159947]':dark?'bg-slate-900 border-slate-700 text-slate-200':'bg-[#F6F7F3] border-gray-200 text-gray-700'}`}>+ {p.name.split(' ')[0]}{p.size?` ${p.size}`:''}</button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap gap-1.5">
+                      {(data.quickAddItems||[]).map(p=>(
+                        <div key={p.id} className={`flex items-center gap-1 text-xs px-2 py-1 rounded-xl border ${dark?'bg-slate-900 border-slate-700':'bg-[#F6F7F3] border-gray-200'}`}><span className="font-semibold">{p.name.split(' ')[0]}{p.size?` ${p.size}`:''}</span><button type="button" onClick={()=>onDelQuick(p.id)} className="text-red-500 text-xs">×</button></div>
+                      ))}
+                    </div>
+                    <form onSubmit={onAddQuick} className={`space-y-1.5 ${dark?'bg-slate-900':'bg-[#F6F7F3]'} rounded-xl p-2 border ${dark?'border-slate-700':'border-gray-200'}`}>
+                      <input type="text" value={qaName} onChange={e=>setQaName(e.target.value)} placeholder={t('নাম','Name')} className={`${inputCls} text-xs`} />
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <input type="text" value={qaQty} onChange={e=>setQaQty(e.target.value)} placeholder="Qty" className={`${inputCls} text-xs`} />
+                        <select value={qaCat} onChange={e=>setQaCat(e.target.value)} className={`${inputCls} text-xs`}>{CATS.map(c=><option key={c.id} value={c.id}>{lang==='bn'?c.bnName:c.name}</option>)}</select>
+                      </div>
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {['',...SIZES].map(s=><button type="button" key={s||'n'} onClick={()=>setQaSize(s)} className={`text-[10px] px-2 py-1 rounded-lg font-bold border ${qaSize===s?'bg-[#159947] text-white border-[#159947]':dark?'bg-slate-800 border-slate-700':'bg-white border-gray-200'}`}>{s||t('নেই','None')}</button>)}
+                        <button type="submit" className="ml-auto bg-[#159947] text-white text-[10px] font-bold px-3 py-1 rounded-lg">+ {t('যোগ','Add')}</button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+              </div>
+              <form onSubmit={onAddItem} className="space-y-3">
+                <div className="relative">
+                  <label className="text-xs font-bold text-gray-400 block mb-1">{t('নাম','Name')} *</label>
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      required 
+                      value={iName} 
+                      onChange={e=>{setIName(e.target.value); setShowSuggestions(true);}} 
+                      onFocus={()=>setShowSuggestions(true)}
+                      onBlur={()=>setTimeout(()=>setShowSuggestions(false), 200)}
+                      placeholder={t('যেমন: আপেল','e.g. Apple')} 
+                      className={`flex-1 ${inputCls}`} 
+                    />
+                    <button type="button" onClick={onVoice} className={`px-3.5 rounded-xl flex items-center justify-center ${listening?'bg-red-500 text-white animate-pulse':'bg-[#E8F3EB] dark:bg-green-950 text-[#159947] dark:text-green-400'}`}>🎤</button>
+                  </div>
+                  
+                  {showSuggestions && suggestions.length > 0 && (
+                    <div className={`absolute top-full left-0 right-0 mt-1 ${dark?'bg-slate-700 border-slate-600':'bg-white border-gray-200'} border rounded-xl shadow-lg z-30 max-h-40 overflow-y-auto`}>
+                      {suggestions.map((s, idx) => (
+                        <div 
+                          key={idx} 
+                          onClick={() => { setIName(s); setShowSuggestions(false); }} 
+                          className="px-3 py-2 text-sm font-semibold cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-600 flex justify-between items-center"
+                        >
+                          <span>{s}</span>
+                          <span className="text-xs text-gray-400">৳{getPrevPrice(s)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {prevPrice && <p className="text-[11px] text-blue-500 font-bold mt-1">💡 {t(`গতবার: ৳${prevPrice}`,`Last: ৳${prevPrice}`)}</p>}
+                </div>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('পরিমাণ','Qty')}</label><input type="text" value={iQty} onChange={e=>setIQty(e.target.value)} className={inputCls} /></div>
+                  <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('দাম (ঐচ্ছিক)','Price (Optional)')}</label><input type="number" value={iPrice} onChange={e=>setIPrice(e.target.value)} placeholder="৳ 0" className={inputCls} /></div>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-400 block mb-1">{t('সাইজ','Size')}</label>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {['',...SIZES].map(s=><button type="button" key={s||'n'} onClick={()=>setISize(s)} className={`px-3 py-1.5 rounded-xl text-xs font-bold border ${iSize===s?'bg-[#159947] text-white border-[#159947]':dark?'bg-slate-900 border-slate-700 text-slate-300':'bg-white border-gray-200 text-gray-700'}`}>{s||t('নেই','None')}</button>)}
+                  </div>
+                </div>
+                <div className="flex gap-2 items-center">
+                  <input type="text" value={iNote} onChange={e=>setINote(e.target.value)} placeholder={t('নোট','Note')} className={`flex-1 ${inputCls} text-xs`} />
+                  <button type="button" onClick={()=>setIUrgent(!iUrgent)} className={`px-3 py-2 rounded-xl text-xs font-extrabold border shrink-0 ${iUrgent?'bg-red-500 text-white border-red-500':dark?'bg-slate-900 border-slate-700 text-gray-400':'bg-gray-100 border-gray-200 text-gray-600'}`}>🚨 {t('জরুরি','Urgent')}</button>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-400 block mb-1">{t('ক্যাটাগরি','Category')}</label>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {CATS.map(c=>(
+                      <button type="button" key={c.id} onClick={()=>setICat(c.id)} className={`flex items-center gap-1.5 p-2 rounded-xl border text-left ${iCat===c.id?'bg-[#E6F4EA] dark:bg-green-950 border-[#159947] text-[#159947] dark:text-green-400 font-bold':dark?'bg-slate-900 border-slate-700 text-slate-300':'bg-white border-gray-200 text-gray-700'}`}><span className="text-base">{c.icon}</span><span className="text-[11px] truncate">{lang==='bn'?c.bnName:c.name}</span></button>
+                    ))}
+                  </div>
+                </div>
+                <button type="submit" className="w-full bg-[#159947] text-white font-bold py-3 rounded-2xl text-sm">+ {t('লিস্টে যোগ','Add')}</button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {priceItem && (
+          <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={()=>setPriceItem(null)}>
+            <div className={`${modalBg} w-full max-w-xs rounded-[26px] p-5 space-y-4`} onClick={e=>e.stopPropagation()}>
+              <div className="flex items-center justify-between">
+                <div><span className="text-xs font-bold text-[#159947] uppercase">{t('কেনা সম্পন্ন!','Bought')}</span><h3 className="font-extrabold text-base">{priceItem.name}</h3><p className="text-xs text-gray-400">{t('পরিমাণ:','Qty:')} {priceItem.quantity}{priceItem.size && ` • ${priceItem.size}`}</p></div>
+                <button onClick={()=>setPriceItem(null)} className="p-1.5 rounded-full bg-gray-100 dark:bg-slate-700">×</button>
+              </div>
+              {(priceItem.lastPrice>0||getPrevPrice(priceItem.name)) && <div className="bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-300 text-xs font-bold px-3 py-2 rounded-xl">💡 {t('গতবার:','Last:')} ৳{priceItem.lastPrice||getPrevPrice(priceItem.name)}</div>}
+              <form onSubmit={onConfirmPrice} className="space-y-3">
+                <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('দাম (৳)','Price (৳)')}</label><input type="number" autoFocus value={tempPrice} onChange={e=>setTempPrice(e.target.value)} placeholder="400" className={`w-full ${dark?'bg-slate-900 text-white':'bg-[#F6F7F3] text-[#181D19]'} border-2 border-[#159947] rounded-xl px-3 py-2.5 text-xl font-extrabold focus:outline-none`} /></div>
+                <div className="flex gap-1.5 flex-wrap">{[100,200,400,550,950].map(a=><button type="button" key={a} onClick={()=>setTempPrice(String(a))} className="text-xs bg-gray-100 dark:bg-slate-700 font-bold px-2.5 py-1 rounded-lg">৳{a}</button>)}</div>
+                <button type="submit" className="w-full bg-[#159947] text-white font-bold py-3 rounded-xl text-sm">✓ {t('সেভ','Confirm')}</button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {showBudget && (
+          <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={()=>setShowBudget(false)}>
+            <div className={`${modalBg} w-full max-w-xs rounded-[26px] p-5 space-y-4`} onClick={e=>e.stopPropagation()}>
+              <h3 className="font-extrabold text-base">{t('মাসিক বাজেট','Monthly Budget')}</h3>
+              <form onSubmit={onSaveBudget} className="space-y-3">
+                <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('বাজেট (৳)','Budget (৳)')}</label><input type="number" value={tempBudget} onChange={e=>setTempBudget(e.target.value)} className={`${inputCls} text-base font-extrabold`} /></div>
+                <button type="submit" className="w-full bg-[#159947] text-white font-bold py-3 rounded-xl text-sm">{t('সেভ','Save')}</button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {showShare && (
+          <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={()=>setShowShare(false)}>
+            <div className={`${modalBg} w-full max-w-[420px] rounded-t-[28px] sm:rounded-[28px] p-5 space-y-3 shadow-2xl max-h-[90vh] overflow-y-auto`} onClick={e=>e.stopPropagation()}>
+              <div className="flex items-center justify-between"><h3 className="text-base font-extrabold">{t('লিস্ট শেয়ার','Share')}</h3><button onClick={()=>setShowShare(false)} className="p-1.5 rounded-full bg-gray-100 dark:bg-slate-700">×</button></div>
+              <div className={`${dark?'bg-slate-900 border-slate-700':'bg-[#F6F7F3] border-gray-200'} rounded-xl p-3 border max-h-44 overflow-y-auto`}><pre className="text-[11px] whitespace-pre-wrap leading-relaxed">{genShareText()}</pre></div>
+              <div className="grid grid-cols-2 gap-2">
+                <button onClick={shareWA} className="bg-[#25D366] text-white font-bold py-3 rounded-xl flex flex-col items-center"><span className="text-2xl">💬</span><span className="text-[11px]">WhatsApp</span></button>
+                <button onClick={shareMSG} className="bg-[#0084FF] text-white font-bold py-3 rounded-xl flex flex-col items-center"><span className="text-2xl">💌</span><span className="text-[11px]">Messenger</span></button>
+              </div>
+              <button onClick={copyText} className={`w-full flex items-center justify-center gap-2 font-bold text-xs py-2.5 rounded-xl border ${dark?'bg-slate-900 border-slate-700':'bg-[#F6F7F3] border-gray-200'}`}>📋 {t('টেক্সট কপি','Copy')}</button>
+            </div>
+          </div>
+        )}
+
+        {showAddBill && (
+          <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={()=>setShowAddBill(false)}>
+            <div className={`${modalBg} w-full max-w-[420px] rounded-t-[28px] sm:rounded-[28px] p-5 space-y-3.5 max-h-[90vh] overflow-y-auto`} onClick={e=>e.stopPropagation()}>
+              <div className="flex items-center justify-between"><h3 className="font-extrabold text-base">{t('নতুন বিল','Add Bill')}</h3><button onClick={()=>setShowAddBill(false)} className="p-1.5 rounded-full bg-gray-100 dark:bg-slate-700">×</button></div>
+              <form onSubmit={onAddBill} className="space-y-3">
+                <div>
+                  <label className="text-xs font-bold text-gray-400 block mb-1">{t('ধরন (Type)','Type')}</label>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {BILL_TYPES.map(bt=>
+                      <button type="button" key={bt.id} onClick={()=>handleBillTypeSelect(bt.id)} className={`flex flex-col items-center p-2 rounded-xl border ${billType===bt.id?'bg-[#E6F4EA] dark:bg-green-950 border-[#159947] text-[#159947]':dark?'bg-slate-900 border-slate-700':'bg-white border-gray-200'}`}>
+                        <span className="text-base">{bt.icon}</span>
+                        <span className="text-[9px] truncate">{lang==='bn'?bt.bnName:bt.name}</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('নাম','Name')} *</label><input required value={billName} onChange={e=>setBillName(e.target.value)} placeholder={t('বিদ্যুৎ বিল','Electricity')} className={inputCls} /></div>
+                
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div><label className="text-xs font-bold text-gray-400 block mb-1">৳ *</label><input type="number" required value={billAmount} onChange={e=>setBillAmount(e.target.value)} className={`${inputCls} font-extrabold`} /></div>
+                  <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('শেষ তারিখ','Due')}</label><input type="date" value={billDue} onChange={e=>setBillDue(e.target.value)} className={inputCls} /></div>
+                </div>
+                <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('নোট','Note')}</label><input value={billNote} onChange={e=>setBillNote(e.target.value)} className={`${inputCls} text-xs`} /></div>
+                
+                <div className={`flex items-center justify-between p-3 rounded-xl border ${dark?'bg-slate-900 border-slate-700':'bg-[#F6F7F3] border-gray-200'}`}>
+                  <div>
+                    <p className="text-sm font-bold">🔄 {t('মাসিক রিকারিং বিল','Monthly Recurring Bill')}</p>
+                    <p className="text-[10px] text-gray-400">{t('প্রতি মাসে অটোমেটিক ডেট আপডেট হবে','Auto updates date every month')}</p>
+                  </div>
+                  <button type="button" onClick={()=>setBillRecurring(!billRecurring)} className={`w-12 h-6 rounded-full transition-all relative ${billRecurring?'bg-[#159947]':'bg-gray-300 dark:bg-slate-600'}`}>
+                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${billRecurring?'left-7':'left-1'}`}></div>
+                  </button>
+                </div>
+
+                <button type="submit" className="w-full bg-[#159947] text-white font-bold py-3 rounded-2xl text-sm">+ {t('বিল যোগ','Add')}</button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {showAddLoan && (
+          <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={()=>setShowAddLoan(false)}>
+            <div className={`${modalBg} w-full max-w-[420px] rounded-t-[28px] sm:rounded-[28px] p-5 space-y-3.5 max-h-[90vh] overflow-y-auto`} onClick={e=>e.stopPropagation()}>
+              <div className="flex items-center justify-between"><h3 className="font-extrabold text-base">{t('নতুন ধার-দেনা','Add Loan')}</h3><button onClick={()=>setShowAddLoan(false)} className="p-1.5 rounded-full bg-gray-100 dark:bg-slate-700">×</button></div>
+              <form onSubmit={onAddLoan} className="space-y-3">
+                <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('ধরন','Type')}</label><div className="grid grid-cols-2 gap-2">
+                  <button type="button" onClick={()=>setLoanType('lent')} className={`p-3 rounded-xl border flex flex-col items-center ${loanType==='lent'?'bg-green-50 dark:bg-green-950 border-[#159947] text-[#159947] dark:text-green-400':dark?'bg-slate-900 border-slate-700 text-gray-400':'bg-white border-gray-200 text-gray-700'}`}><span className="text-2xl">💚</span><span className="text-xs font-bold">{t('পাওনা','Lent')}</span></button>
+                  <button type="button" onClick={()=>setLoanType('borrowed')} className={`p-3 rounded-xl border flex flex-col items-center ${loanType==='borrowed'?'bg-red-50 dark:bg-red-950 border-red-500 text-red-600 dark:text-red-400':dark?'bg-slate-900 border-slate-700 text-gray-400':'bg-white border-gray-200 text-gray-700'}`}><span className="text-2xl">💔</span><span className="text-xs font-bold">{t('দেনা','Borrowed')}</span></button>
+                </div></div>
+                <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('নাম','Person')} *</label><input required value={loanPerson} onChange={e=>setLoanPerson(e.target.value)} placeholder={t('যেমন: Karim','e.g. Karim')} className={inputCls} /></div>
+                <div><label className="text-xs font-bold text-gray-400 block mb-1">৳ *</label><input type="number" required value={loanAmount} onChange={e=>setLoanAmount(e.target.value)} className={`${inputCls} font-extrabold`} /></div>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('তারিখ','Date')}</label><input type="date" value={loanDate} onChange={e=>setLoanDate(e.target.value)} className={`${inputCls} text-xs`} /></div>
+                  <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('ফেরত','Return')}</label><input type="date" value={loanDue} onChange={e=>setLoanDue(e.target.value)} className={`${inputCls} text-xs`} /></div>
+                </div>
+                <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('নোট','Note')}</label><input value={loanNote} onChange={e=>setLoanNote(e.target.value)} className={`${inputCls} text-xs`} /></div>
+                <button type="submit" className={`w-full text-white font-bold py-3 rounded-2xl text-sm ${loanType==='lent'?'bg-[#159947]':'bg-red-500'}`}>{loanType==='lent'?`💚 ${t('পাওনা যোগ','Add Lent')}`:`💔 ${t('দেনা যোগ','Add Borrowed')}`}</button>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
-  </main>
+  );
+}
 
-  <!-- Bottom Navigation -->
-  <nav>
-    <button class="nav-item active" id="nav-bazar" onclick="switchTab('bazar')"><span style="font-size:18px;">🛒</span><span>বাজার</span></button>
-    <button class="nav-item" id="nav-bills" onclick="switchTab('bills')"><span style="font-size:18px;">🧾</span><span>বিল</span></button>
-    <button class="nav-item" id="nav-loans" onclick="switchTab('loans')"><span style="font-size:18px;">🤝</span><span>ধার-দেনা</span></button>
-    <button class="nav-item" id="nav-settings" onclick="switchTab('settings')"><span style="font-size:18px;">⚙️</span><span>সেটিংস</span></button>
-  </nav>
-
-  <!-- Add Bazar Modal -->
-  <div id="modalAdd" class="modal">
-    <div class="modal-card">
-      <h3 style="margin-bottom:10px;font-size:15px;">নতুন বাজার যোগ করুন</h3>
-      <div style="margin-bottom:10px;">
-        <button class="chip" onclick="quickAdd('ডিম (Eggs)','১ ডজন','মুদি')">+ ডিম</button>
-        <button class="chip" onclick="quickAdd('দুধ (Milk)','১ লিটার','মুদি')">+ দুধ</button>
-        <button class="chip" onclick="quickAdd('আলু (Potato)','২ কেজি','কাঁচাবাজার')">+ আলু</button>
-        <button class="chip" onclick="quickAdd('পেঁয়াজ (Onion)','১ কেজি','কাঁচাবাজার')">+ পেঁয়াজ</button>
-        <button class="chip" onclick="quickAdd('তেল (Oil)','২ লিটার','মুদি')">+ তেল</button>
-      </div>
-      <input id="inName" class="inp" placeholder="আইটেমের নাম (যেমন: চাল, মাছ)">
-      <input id="inQty" class="inp" placeholder="পরিমাণ" value="১ কেজি">
-      <select id="inCat" class="inp">
-        <option value="কাঁচাবাজার">কাঁচাবাজার</option>
-        <option value="মুদি">মুদি</option>
-        <option value="মাছ ও মাংস">মাছ ও মাংস</option>
-        <option value="ফলমূল">ফলমূল</option>
-      </select>
-      <input id="inNote" class="inp" placeholder="নোট (ঐচ্ছিক)">
-      <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:bold;color:#ef4444;margin-bottom:12px;">
-        <input type="checkbox" id="inUrgent"> 🚨 জরুরি প্রয়োজন
-      </label>
-      <div class="row">
-        <button class="inp" style="margin:0;font-weight:bold;cursor:pointer;" onclick="closeModals()">বাতিল</button>
-        <button class="btn-main" style="padding:10px;" onclick="addBazarItem()">যোগ করুন</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Add Bill Modal -->
-  <div id="modalBill" class="modal">
-    <div class="modal-card">
-      <h3 style="margin-bottom:10px;font-size:15px;">নতুন বিল যোগ করুন</h3>
-      <input id="bName" class="inp" placeholder="বিলের নাম (যেমন: গ্যাস বিল)">
-      <input id="bAmt" type="number" class="inp" placeholder="টাকার পরিমাণ (৳)">
-      <input id="bDate" class="inp" placeholder="তারিখ (যেমন: ১০ নভেম্বর)">
-      <div class="row">
-        <button class="inp" style="margin:0;font-weight:bold;" onclick="closeModals()">বাতিল</button>
-        <button class="btn-main" style="padding:10px;" onclick="addBillItem()">সেভ করুন</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Add Loan Modal -->
-  <div id="modalLoan" class="modal">
-    <div class="modal-card">
-      <h3 style="margin-bottom:10px;font-size:15px;">নতুন ধার বা পাওনা</h3>
-      <input id="lName" class="inp" placeholder="ব্যক্তি বা দোকানের নাম">
-      <input id="lAmt" type="number" class="inp" placeholder="টাকার পরিমাণ (৳)">
-      <select id="lType" class="inp">
-        <option value="given">আমি টাকা পাবো (পাওনা)</option>
-        <option value="taken">আমার থেকে পাবে (ধার)</option>
-      </select>
-      <input id="lNote" class="inp" placeholder="নোট">
-      <div class="row">
-        <button class="inp" style="margin:0;font-weight:bold;" onclick="closeModals()">বাতিল</button>
-        <button class="btn-main" style="padding:10px;" onclick="addLoanItem()">সেভ করুন</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    var defaultData = {
-      dark: false,
-      budget: 15000,
-      bazar: [
-        { id: 1, name: 'আপেল (Apple)', qty: '1 kg', cat: 'ফলমূল', bought: true, price: 320, urgent: false, note: 'তাজা দেখে আনবে' },
-        { id: 2, name: 'রুই মাছ (Rui Fish)', qty: '1.5 kg', cat: 'মাছ ও মাংস', bought: false, price: 0, urgent: true, note: 'নদীর মাছ' },
-        { id: 3, name: 'ডিম (Eggs)', qty: '১ ডজন', cat: 'মুদি', bought: false, price: 165, urgent: false, note: 'লাল ডিম' }
-      ],
-      bills: [
-        { id: 1, name: 'WiFi Bill', amount: 1000, paid: true, date: '05 Oct' },
-        { id: 2, name: 'Electricity Bill', amount: 1850, paid: false, date: '15 Oct' }
-      ],
-      loans: [
-        { id: 1, name: 'করিম ভাই', type: 'given', amount: 1500, note: 'বাজারের ধার', settled: false },
-        { id: 2, name: 'রহিম স্টোর', type: 'taken', amount: 500, note: 'খুচরা বাকি', settled: false }
-      ]
-    };
-
-    var db = defaultData;
-    try {
-      var stored = JSON.parse(localStorage.getItem('bouBolcheDB'));
-      if (stored && stored.bazar) db = stored;
-    } catch(e) {}
-
-    function saveDB() {
-      try { localStorage.setItem('bouBolcheDB', JSON.stringify(db)); } catch(e) {}
-    }
-
-    function switchTab(tab) {
-      var tabs = ['bazar', 'bills', 'loans', 'settings'];
-      for (var i=0; i<tabs.length; i++) {
-        document.getElementById('sec-' + tabs[i]).className = (tabs[i] === tab) ? 'sec active' : 'sec';
-        document.getElementById('nav-' + tabs[i]).className = (tabs[i] === tab) ? 'nav-item active' : 'nav-item';
-      }
-    }
-
-    function toggleTheme() {
-      db.dark = !db.dark;
-      saveDB();
-      renderAll();
-    }
-
-    function openModal(id) { document.getElementById(id).className = 'modal open'; }
-    function closeModals() {
-      document.getElementById('modalAdd').className = 'modal';
-      document.getElementById('modalBill').className = 'modal';
-      document.getElementById('modalLoan').className = 'modal';
-    }
-
-    function toggleBazar(id) {
-      for (var i=0; i<db.bazar.length; i++) {
-        if (db.bazar[i].id === id) db.bazar[i].bought = !db.bazar[i].bought;
-      }
-      saveDB(); renderAll();
-    }
-
-    function setPrice(id, val) {
-      for (var i=0; i<db.bazar.length; i++) {
-        if (db.bazar[i].id === id) db.bazar[i].price = Number(val) || 0;
-      }
-      saveDB(); renderAll();
-    }
-
-    function removeBazar(id) {
-      db.bazar = db.bazar.filter(function(x){ return x.id !== id; });
-      saveDB(); renderAll();
-    }
-
-    function quickAdd(name, qty, cat) {
-      db.bazar.unshift({ id: Date.now(), name: name, qty: qty, cat: cat, bought: false, price: 0, urgent: false, note: '' });
-      closeModals(); saveDB(); renderAll();
-    }
-
-    function addBazarItem() {
-      var name = document.getElementById('inName').value.trim();
-      if (!name) return;
-      var qty = document.getElementById('inQty').value.trim() || '১ কেজি';
-      var cat = document.getElementById('inCat').value;
-      var note = document.getElementById('inNote').value.trim();
-      var urgent = document.getElementById('inUrgent').checked;
-      db.bazar.unshift({ id: Date.now(), name: name, qty: qty, cat: cat, bought: false, price: 0, urgent: urgent, note: note });
-      document.getElementById('inName').value = '';
-      document.getElementById('inNote').value = '';
-      document.getElementById('inUrgent').checked = false;
-      closeModals(); saveDB(); renderAll();
-    }
-
-    function addBillItem() {
-      var name = document.getElementById('bName').value.trim();
-      var amt = Number(document.getElementById('bAmt').value);
-      var date = document.getElementById('bDate').value.trim() || 'চলতি মাস';
-      if (!name || !amt) return;
-      db.bills.unshift({ id: Date.now(), name: name, amount: amt, paid: false, date: date });
-      closeModals(); saveDB(); renderAll();
-    }
-
-    function toggleBill(id) {
-      for (var i=0; i<db.bills.length; i++) {
-        if (db.bills[i].id === id) db.bills[i].paid = !db.bills[i].paid;
-      }
-      saveDB(); renderAll();
-    }
-
-    function removeBill(id) {
-      db.bills = db.bills.filter(function(x){ return x.id !== id; });
-      saveDB(); renderAll();
-    }
-
-    function addLoanItem() {
-      var name = document.getElementById('lName').value.trim();
-      var amt = Number(document.getElementById('lAmt').value);
-      var type = document.getElementById('lType').value;
-      var note = document.getElementById('lNote').value.trim();
-      if (!name || !amt) return;
-      db.loans.unshift({ id: Date.now(), name: name, amount: amt, type: type, note: note, settled: false });
-      closeModals(); saveDB(); renderAll();
-    }
-
-    function toggleLoan(id) {
-      for (var i=0; i<db.loans.length; i++) {
-        if (db.loans[i].id === id) db.loans[i].settled = !db.loans[i].settled;
-      }
-      saveDB(); renderAll();
-    }
-
-    function removeLoan(id) {
-      db.loans = db.loans.filter(function(x){ return x.id !== id; });
-      saveDB(); renderAll();
-    }
-
-    function saveBudget() {
-      var val = Number(document.getElementById('budgetInput').value);
-      if (val > 0) { db.budget = val; saveDB(); renderAll(); alert('বাজেট সেভ হয়েছে!'); }
-    }
-
-    function shareWA() {
-      var total = 0, list = [];
-      for (var i=0; i<db.bazar.length; i++) {
-        var b = db.bazar[i];
-        if (b.bought) total += (Number(b.price) || 0);
-        list.push((b.bought ? '✅ ' : '⬜ ') + b.name + ' (' + b.qty + ')' + (b.price ? ' - ৳' + b.price : ''));
-      }
-      var txt = '🛒 *Bou Bolche - বাজারের তালিকা*\n\n' + list.join('\n') + '\n\n💰 *মোট খরচ: ৳' + total + '*';
-      window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(txt), '_blank');
-    }
-
-    function renderAll() {
-      document.body.className = db.dark ? 'dark' : '';
-      document.getElementById('themeBtn').innerHTML = db.dark ? '☀️ লাইট' : '🌙 ডার্ক';
-      document.getElementById('budgetInput').value = db.budget;
-
-      var spent = 0, doneCount = 0;
-      var bHtml = '';
-      for (var i=0; i<db.bazar.length; i++) {
-        var item = db.bazar[i];
-        if (item.bought) { spent += (Number(item.price) || 0); doneCount++; }
-        bHtml += '<div class="card ' + (item.urgent && !item.bought ? 'urgent-card' : '') + '"><div class="row">';
-        bHtml += '<div class="left-col" onclick="toggleBazar(' + item.id + ')">';
-        bHtml += '<input type="checkbox" class="chk" ' + (item.bought ? 'checked' : '') + '>';
-        bHtml += '<div><div class="title ' + (item.bought ? 'done' : '') + '">' + item.name + (item.urgent ? ' <span class="badge badge-red">জরুরি</span>' : '') + '</div>';
-        bHtml += '<div class="sub">' + item.qty + ' • <b style="color:#16a34a;">' + item.cat + '</b>' + (item.note ? ' • "' + item.note + '"' : '') + '</div></div></div>';
-        bHtml += '<div class="row"><input type="number" class="price-box" placeholder="৳ দাম" value="' + (item.price || '') + '" onchange="setPrice(' + item.id + ', this.value)">';
-        bHtml += '<button class="del" onclick="removeBazar(' + item.id + ')">🗑️</button></div></div></div>';
-      }
-      document.getElementById('bazarContainer').innerHTML = bHtml;
-      document.getElementById('totalSpentTxt').innerHTML = '৳' + spent;
-      document.getElementById('budgetTxt').innerHTML = 'বাজেট: ৳' + db.budget;
-      document.getElementById('countBadge').innerHTML = doneCount + ' / ' + db.bazar.length + ' সম্পন্ন';
-      var pct = Math.min((spent / db.budget) * 100, 100);
-      document.getElementById('budgetBar').style.width = pct + '%';
-
-      var billPaid = 0, billHtml = '';
-      for (var j=0; j<db.bills.length; j++) {
-        var bl = db.bills[j];
-        if (bl.paid) billPaid += Number(bl.amount);
-        billHtml += '<div class="card"><div class="row"><div><div class="title">' + bl.name + '</div><div class="sub">তারিখ: ' + bl.date + '</div></div>';
-        billHtml += '<div class="row"><b>৳' + bl.amount + '</b>';
-        billHtml += '<button class="badge" style="border:none;padding:6px 10px;cursor:pointer;" onclick="toggleBill(' + bl.id + ')">' + (bl.paid ? 'Paid ✅' : 'Due ⏳') + '</button>';
-        billHtml += '<button class="del" onclick="removeBill(' + bl.id + ')">🗑️</button></div></div></div>';
-      }
-      document.getElementById('billTotalTxt').innerHTML = '৳' + billPaid;
-      document.getElementById('billContainer').innerHTML = billHtml;
-
-      var loanHtml = '';
-      for (var k=0; k<db.loans.length; k++) {
-        var ln = db.loans[k];
-        loanHtml += '<div class="card"><div class="row"><div><div class="title ' + (ln.settled ? 'done' : '') + '">' + ln.name + ' <span class="badge">' + (ln.type === 'given' ? 'পাবো' : 'দেবো') + '</span></div>';
-        loanHtml += '<div class="sub">' + (ln.note || 'হিসাব') + '</div></div>';
-        loanHtml += '<div class="row"><div style="text-align:right;"><b>৳' + ln.amount + '</b><br><span style="font-size:11px;color:#16a34a;cursor:pointer;font-weight:bold;" onclick="toggleLoan(' + ln.id + ')">' + (ln.settled ? 'পরিশোধিত ✅' : 'বাকি ⏳') + '</span></div>';
-        loanHtml += '<button class="del" onclick="removeLoan(' + ln.id + ')">🗑️</button></div></div></div>';
-      }
-      document.getElementById('loanContainer').innerHTML = loanHtml;
-    }
-
-    renderAll();
-  </script>
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
 </body>
 </html>
