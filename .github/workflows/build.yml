@@ -6,52 +6,51 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up Java 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
-          
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          
-      - name: Install Cordova
-        run: npm install -g cordova
-        
+
+      - name: Install Cordova and ImageMagick
+        run: |
+          npm install -g cordova
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
+
       - name: Create Cordova Project
         run: |
           cordova create app com.boubolche.app "Bou Bolche"
           cd app
-          cp ../index.html www/index.html
-          # config.xml তৈরি করা হচ্ছে যাতে লাইভ লিংক লোড হয়
-          echo '<?xml version="1.0" encoding="utf-8"?>' > config.xml
-          echo '<widget id="com.boubolche.app" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">' >> config.xml
-          echo '<name>Bou Bolche</name>' >> config.xml
-          echo '<content src="https://hamontoshakil.github.io/Bou-Bolche/" />' >> config.xml
-          echo '<allow-navigation href="*" />' >> config.xml
-          echo '<allow-intent href="*" />' >> config.xml
-          echo '<access origin="*" />' >> config.xml
-          echo '</widget>' >> config.xml
+          # লাইভ লিংকটি সরাসরি config.xml এ বসানো হচ্ছে
+          sed -i 's|<content src="index.html" />|<content src="https://hamontoshakil.github.io/Bou-Bolche/" />|' config.xml
+          # ইন্টারনেট এবং নেভিগেশন পারমিশন যোগ করা হচ্ছে
+          sed -i 's|</widget>|    <allow-navigation href="*" />\n    <allow-intent href="*" />\n    <access origin="*" />\n</widget>|' config.xml
           cordova platform add android
-          
-      - name: Generate Custom Icons
+
+      - name: Set Custom App Icon
         run: |
           cd app/platforms/android/app/src/main/res
-          # ImageMagick দিয়ে আপনার লোগো থেকে অ্যান্ড্রয়েডের সব সাইজের আইকন বানানো হচ্ছে
-          convert ${{ github.workspace }}/icon-512.png -resize 48x48 mipmap-mdpi/ic_launcher.png
-          convert ${{ github.workspace }}/icon-512.png -resize 72x72 mipmap-hdpi/ic_launcher.png
-          convert ${{ github.workspace }}/icon-512.png -resize 96x96 mipmap-xhdpi/ic_launcher.png
-          convert ${{ github.workspace }}/icon-512.png -resize 144x144 mipmap-xxhdpi/ic_launcher.png
-          convert ${{ github.workspace }}/icon-512.png -resize 192x192 mipmap-xxxhdpi/ic_launcher.png
-          
+          # অ্যান্ড্রয়েডের প্রতিটি ফোল্ডারের জন্য আলাদা সাইজের আইকন তৈরি করা হচ্ছে
+          for dir in mipmap-mdpi:48 mipmap-hdpi:72 mipmap-xhdpi:96 mipmap-xxhdpi:144 mipmap-xxxhdpi:192; do
+            folder=$(echo $dir | cut -d: -f1)
+            size=$(echo $dir | cut -d: -f2)
+            mkdir -p $folder
+            convert ${{ github.workspace }}/icon-512.png -resize ${size}x${size} $folder/ic_launcher.png
+            convert ${{ github.workspace }}/icon-512.png -resize ${size}x${size} $folder/ic_launcher_round.png
+          done
+
       - name: Build APK
         run: |
           cd app
           cordova build android
-          
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
