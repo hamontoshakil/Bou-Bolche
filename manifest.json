@@ -1,13 +1,25 @@
 {
-  "background_color": "#ffffff",
-  "dir": "ltr",
-  "display": "standalone",
-  "name": "Bou Bolche -  Family Bazar Tracker",
-  "orientation": "any",
-  "scope": "/",
+  "name": "Bou Bolche - Family Bazar Tracker",
   "short_name": "Bou Bolche",
-  "start_url": "/",
-  "theme_color": "#ffffff",
-  "id": "Bou-Bolche",
-  "description": "Bou Bolche - Family Bazar Tracker"
+  "id": "/Bou-Bolche/",
+  "start_url": "/Bou-Bolche/index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#16a34a",
+  "description": "Bou Bolche - Family Bazar Tracker",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
 }
