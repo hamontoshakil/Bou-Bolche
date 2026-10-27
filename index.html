@@ -138,7 +138,6 @@ const INITIAL_DATA = {
   todayItems: []
 };
 
-// Dynamic Months Logic (Last 12 months + Current)
 const getDynamicMonths = () => {
   const months = [];
   const d = new Date();
@@ -171,16 +170,15 @@ const playSound = () => {
 
 function App() {
   const [data, setData] = useState(INITIAL_DATA);
-  const [historyData, setHistoryData] = useState([]); // Subcollection data
+  const [historyData, setHistoryData] = useState([]);
 
-  // Auth State
+  // Auth & Login States
   const [user, setUser] = useState(null);
   const [familyCode, setFamilyCode] = useState(localStorage.getItem('bb_family_code') || '');
   const [myName, setMyName] = useState(localStorage.getItem('bb_my_name') || '');
   const [myPin, setMyPin] = useState(localStorage.getItem('bb_my_pin') || '');
   const [isGuest, setIsGuest] = useState(localStorage.getItem('bb_guest') === 'true');
 
-  // Login Screen States
   const [authMode, setAuthMode] = useState('signin');
   const [inputName, setInputName] = useState('');
   const [inputCode, setInputCode] = useState('');
@@ -188,7 +186,7 @@ function App() {
   const [authLoading, setAuthLoading] = useState(false);
   const pinRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
 
-  // Navigation & Preferences
+  // Navigation & UI States
   const [tab, setTab] = useState('home');
   const [bazarSubTab, setBazarSubTab] = useState('today');
   const [bazarFilter, setBazarFilter] = useState('all');
@@ -202,6 +200,7 @@ function App() {
   const [showAddBill, setShowAddBill] = useState(false);
   const [showAddLoan, setShowAddLoan] = useState(false);
   const [showBudget, setShowBudget] = useState(false);
+  const [showShare, setShowShare] = useState(false);
   const [priceItem, setPriceItem] = useState(null);
   const [tempPrice, setTempPrice] = useState('');
   const [tempBudget, setTempBudget] = useState('0');
@@ -219,7 +218,7 @@ function App() {
   const [aiLoading, setAiLoading] = useState(false);
   const [ocrLoading, setOcrLoading] = useState(false);
   const [iName, setIName] = useState('');
-  const [iQty, setIQty] = useState('None'); // Default None
+  const [iQty, setIQty] = useState('None');
   const [iSize, setISize] = useState('None');
   const [iCat, setICat] = useState('grocery');
   const [iPrice, setIPrice] = useState('');
@@ -233,16 +232,17 @@ function App() {
   const [billName, setBillName] = useState('');
   const [billAmount, setBillAmount] = useState('');
   const [billDue, setBillDue] = useState(new Date().toISOString().split('T')[0]);
-  const [billRecurring, setBillRecurring] = useState(true);
-
+  
   // Loan States
   const [loanFilter, setLoanFilter] = useState('lent');
   const [loanPerson, setLoanPerson] = useState('');
   const [loanType, setLoanType] = useState('lent');
   const [loanAmount, setLoanAmount] = useState('');
   const [loanDate, setLoanDate] = useState(new Date().toISOString().split('T')[0]);
+  const [loanDue, setLoanDue] = useState('');
+  const [loanNote, setLoanNote] = useState('');
 
-  // Settings API Key
+  // Settings
   const [tempApiKey, setTempApiKey] = useState('');
 
   const t = (bn, en) => lang === 'bn' ? bn : en;
@@ -256,28 +256,30 @@ function App() {
   const activeMonth = MONTHS[monthIdx];
 
   useEffect(() => {
-    // Firebase Auth Listener
     if (auth) {
       const unsub = auth.onAuthStateChanged(u => {
         if (u) {
           setUser(u);
           if (!isGuest && !familyCode && u.email) {
-            // Auto-set family code to email prefix if Gmail login
             const code = u.email.split('@')[0].toUpperCase();
             setFamilyCode(code);
             localStorage.setItem('bb_family_code', code);
           }
-        } else {
-          setUser(null);
-        }
+        } else setUser(null);
       });
       return () => unsub();
     }
   }, []);
 
-  // Real-time Firestore Sync (Main Doc)
+  // Sync Main Data
   useEffect(() => {
-    if (!db || !familyCode) return;
+    if (!db || !familyCode || isGuest) {
+      if (isGuest) {
+        const localData = JSON.parse(localStorage.getItem('bb_guest_data') || 'null');
+        if (localData) setData(localData);
+      }
+      return;
+    }
     const docRef = db.collection('families').doc(familyCode.trim().toUpperCase());
     const unsubscribe = docRef.onSnapshot((docSnap) => {
       if (docSnap.exists) {
@@ -285,23 +287,21 @@ function App() {
         setData(prev => ({ ...prev, ...cloudData }));
         if (cloudData.geminiApiKey) setTempApiKey(cloudData.geminiApiKey);
       } else {
-        // If no data, start fresh (All 0 / Empty)
         const newDoc = {
-          ...INITIAL_DATA,
-          familyCode: familyCode.trim().toUpperCase(),
-          owner: myName || user?.displayName || 'Admin',
-          pin: myPin || '1234',
-          members: [{ id: 'm1', name: myName || user?.displayName || 'Admin', role: 'Admin' }],
-          updatedAt: Date.now()
+          ...INITIAL_DATA, familyCode: familyCode.trim().toUpperCase(), owner: myName || user?.displayName || 'Admin', pin: myPin || '1234', members: [{ id: 'm1', name: myName || user?.displayName || 'Admin', role: 'Admin' }], updatedAt: Date.now()
         };
         docRef.set(newDoc).catch(console.error);
       }
     });
     return () => unsubscribe();
-  }, [familyCode, myName, user]);
+  }, [familyCode, myName, user, isGuest]);
 
-  // Real-time Firestore Sync (Subcollection for History)
+  // Sync History Subcollection
   useEffect(() => {
+    if (isGuest) {
+      setHistoryData(JSON.parse(localStorage.getItem('bb_guest_history') || '[]'));
+      return;
+    }
     if (!db || !familyCode) return;
     const histRef = db.collection('families').doc(familyCode.trim().toUpperCase()).collection('history').orderBy('timestamp', 'desc');
     const unsubscribe = histRef.onSnapshot((snap) => {
@@ -310,10 +310,14 @@ function App() {
       setHistoryData(hData);
     });
     return () => unsubscribe();
-  }, [familyCode]);
+  }, [familyCode, isGuest]);
 
   const save = (newData) => {
     setData(newData);
+    if (isGuest) {
+      localStorage.setItem('bb_guest_data', JSON.stringify(newData));
+      return;
+    }
     if (!db || !familyCode) return;
     db.collection('families').doc(familyCode.trim().toUpperCase()).set({ ...newData, updatedAt: Date.now() }, { merge: true }).catch(console.error);
   };
@@ -336,49 +340,31 @@ function App() {
       const nameClean = inputName.trim();
       let codeClean = inputCode.trim().toUpperCase().replace(/[^A-Z0-9@.]/g, '');
       const pinClean = pinDigits.join('');
-      
-      if (!nameClean) return toastFn(t('আপনার নাম লিখুন', 'Please enter your name'));
+      if (!nameClean) return toastFn(t('আপনার নাম লিখুন', 'Enter your name'));
       if (!codeClean) {
         const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
         for (let i = 0; i < 6; i++) codeClean += chars.charAt(Math.floor(Math.random() * chars.length));
       }
       if (pinClean.length < 4) return toastFn(t('৪ সংখ্যার পিন দিন', 'Enter 4-digit PIN'));
-
-      localStorage.setItem('bb_family_code', codeClean);
-      localStorage.setItem('bb_my_name', nameClean);
-      localStorage.setItem('bb_my_pin', pinClean);
-      localStorage.setItem('bb_guest', 'false');
-      
+      localStorage.setItem('bb_family_code', codeClean); localStorage.setItem('bb_my_name', nameClean); localStorage.setItem('bb_my_pin', pinClean); localStorage.setItem('bb_guest', 'false');
       setMyName(nameClean); setMyPin(pinClean); setFamilyCode(codeClean); setIsGuest(false);
       toastFn(t('ফ্যামিলি একাউন্ট তৈরি হয়েছে!', 'Family account created!'));
     } else {
-      // Sign In with Code
       const codeClean = inputCode.trim().toUpperCase();
       const pinClean = pinDigits.join('');
       if (!codeClean || pinClean.length < 4) return toastFn(t('কোড এবং পিন দিন', 'Enter code and PIN'));
-
       if (db) {
         setAuthLoading(true);
         try {
           const snap = await db.collection('families').doc(codeClean).get();
           if (snap.exists) {
             const existing = snap.data();
-            if (existing.pin && existing.pin !== pinClean) {
-              setAuthLoading(false);
-              return toastFn(t('❌ পিন সঠিক নয়!', '❌ Incorrect PIN!'));
-            }
-            localStorage.setItem('bb_family_code', codeClean);
-            localStorage.setItem('bb_my_name', existing.owner || 'User');
-            localStorage.setItem('bb_my_pin', pinClean);
-            localStorage.setItem('bb_guest', 'false');
+            if (existing.pin && existing.pin !== pinClean) { setAuthLoading(false); return toastFn(t('❌ পিন সঠিক নয়!', '❌ Incorrect PIN!')); }
+            localStorage.setItem('bb_family_code', codeClean); localStorage.setItem('bb_my_name', existing.owner || 'User'); localStorage.setItem('bb_my_pin', pinClean); localStorage.setItem('bb_guest', 'false');
             setMyName(existing.owner || 'User'); setMyPin(pinClean); setFamilyCode(codeClean); setIsGuest(false);
             toastFn(t('লগইন সফল!', 'Logged in successfully!'));
-          } else {
-            toastFn(t('এই কোডে কোনো একাউন্ট নেই!', 'No account found with this code!'));
-          }
-        } catch (err) {
-          toastFn(t('ইন্টারনেট চেক করুন', 'Check your internet'));
-        }
+          } else toastFn(t('এই কোডে কোনো একাউন্ট নেই!', 'No account found!'));
+        } catch (err) { toastFn(t('ইন্টারনেট চেক করুন', 'Check your internet')); }
         setAuthLoading(false);
       }
     }
@@ -392,134 +378,24 @@ function App() {
       const res = await auth.signInWithPopup(provider);
       const u = res.user;
       const code = u.email.split('@')[0].toUpperCase();
-      
-      localStorage.setItem('bb_family_code', code);
-      localStorage.setItem('bb_my_name', u.displayName || 'User');
-      localStorage.setItem('bb_my_pin', '1234'); // Default PIN for Google users
-      localStorage.setItem('bb_guest', 'false');
-      
-      setMyName(u.displayName || 'User');
-      setMyPin('1234');
-      setFamilyCode(code);
-      setIsGuest(false);
+      localStorage.setItem('bb_family_code', code); localStorage.setItem('bb_my_name', u.displayName || 'User'); localStorage.setItem('bb_my_pin', '1234'); localStorage.setItem('bb_guest', 'false');
+      setMyName(u.displayName || 'User'); setMyPin('1234'); setFamilyCode(code); setIsGuest(false);
       toastFn(t('গুগল লগইন সফল!', 'Google Login Successful!'));
-    } catch (err) {
-      toastFn(t('লগইন ব্যর্থ! SHA-1 চেক করুন।', 'Login failed! Check SHA-1.'));
-    }
+    } catch (err) { toastFn(t('লগইন ব্যর্থ! SHA-1 চেক করুন।', 'Login failed! Check SHA-1.')); }
     setAuthLoading(false);
   };
 
   const handleGuestLogin = () => {
-    localStorage.setItem('bb_guest', 'true');
-    localStorage.setItem('bb_family_code', 'GUEST_' + Date.now());
-    localStorage.setItem('bb_my_name', 'Guest');
-    setIsGuest(true);
-    setFamilyCode('GUEST_' + Date.now());
-    setMyName('Guest');
-    toastFn(t('গেস্ট মোড চালু (ডাটা সেভ হবে না)', 'Guest Mode (Data not synced)'));
-  };
-
-  // AI Budget Suggestion
-  const getBudgetSuggestion = async () => {
-    if (!data.geminiApiKey) return toastFn(t('সেটিংসে Gemini API Key দিন', 'Add Gemini API Key in Settings'));
-    setIsSuggesting(true);
-    try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${data.geminiApiKey}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: `I spend around ${stats.monthTotal} BDT monthly on groceries and bills in Bangladesh. Based on this, what is a realistic monthly budget I should set? Reply with just a number and a short 1-line reason.` }] }] })
-      });
-      const json = await res.json();
-      const text = json.candidates[0].content.parts[0].text;
-      setAiBudgetSuggest(text);
-    } catch (e) {
-      toastFn('AI Suggestion Failed');
-    }
-    setIsSuggesting(false);
-  };
-
-  // AI Receipt OCR (Image to Text)
-  const handleReceiptUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (!data.geminiApiKey) return toastFn(t('সেটিংসে Gemini API Key দিন!', 'Add Gemini API Key in Settings!'));
-
-    setOcrLoading(true);
-    toastFn(t('রসিদ স্ক্যান হচ্ছে...', 'Scanning receipt...'));
-
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-      const base64Data = ev.target.result.split(',')[1];
-      try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${data.geminiApiKey}`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [
-              { text: "Extract all items and their prices from this receipt image. Return ONLY a valid JSON array: [{'name': 'item', 'price': 100}]. No markdown." },
-              { inlineData: { mimeType: file.type, data: base64Data } }
-            ]}]
-          })
-        });
-        const json = await res.json();
-        const rawText = json?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        const cleanJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-        const parsed = JSON.parse(cleanJson);
-
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const newItems = parsed.map((item, idx) => ({
-            id: 'ocr_' + Date.now() + idx, name: item.name, quantity: '1 pc', size: '', category: 'grocery', addedBy: myName, addedAt: nowStr(), bought: true, price: Number(item.price) || 0, lastPrice: Number(item.price) || 0, urgent: false, note: '📸 Receipt OCR'
-          }));
-          const u = [...newItems, ...(data.todayItems || [])];
-          save({ ...data, todayItems: u });
-          if (sound) playSound();
-          setShowAdd(false);
-          toastFn(`✅ ${parsed.length} ${t('টি আইটেম রসিদ থেকে যোগ হয়েছে!', 'items added from receipt!')}`);
-        }
-      } catch (err) {
-        toastFn('❌ OCR Failed. Try again.');
-      }
-      setOcrLoading(false);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  // Smart AI Text Parse
-  const handleAiExtract = async () => {
-    const promptText = aiPrompt.trim();
-    if (!promptText) return toastFn(t('কিছু লিখুন', 'Type something'));
-
-    if (!data.geminiApiKey) return toastFn(t('সেটিংসে API Key দিন', 'Add API Key in Settings'));
-
-    setAiLoading(true);
-    try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${data.geminiApiKey}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: `Extract items from: "${promptText}". Return JSON: [{'name': 'name', 'quantity': '1 kg'}]. No markdown.` }] }] })
-      });
-      const json = await res.json();
-      const text = json.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
-      const parsed = JSON.parse(text);
-
-      if (Array.isArray(parsed)) {
-        const newItems = parsed.map((item, idx) => ({
-          id: 'ai_' + Date.now() + idx, name: item.name, quantity: item.quantity || 'None', size: '', category: 'grocery', addedBy: myName, addedAt: nowStr(), bought: false, price: 0, lastPrice: getPrevPrice(item.name), urgent: false, note: '✨ AI Add'
-        }));
-        const u = [...newItems, ...(data.todayItems || [])];
-        save({ ...data, todayItems: u });
-        if (sound) playSound();
-        setAiPrompt(''); setShowAdd(false);
-        toastFn(`✨ ${newItems.length} items added!`);
-      }
-    } catch (e) { toastFn('AI Parsing Failed'); }
-    setAiLoading(false);
+    localStorage.setItem('bb_guest', 'true'); localStorage.setItem('bb_family_code', 'GUEST_' + Date.now()); localStorage.setItem('bb_my_name', 'Guest');
+    setIsGuest(true); setFamilyCode('GUEST_' + Date.now()); setMyName('Guest'); setData(INITIAL_DATA);
+    toastFn(t('গেস্ট মোড চালু (ডাটা ক্লাউডে সেভ হবে না)', 'Guest Mode (Offline)'));
   };
 
   const getPrevPrice = (name) => {
     if (!name) return 0;
     const dict = data.priceHistory || {};
     const lower = name.toLowerCase().trim();
-    for (const [k, v] of Object.entries(dict)) {
-      if (lower.includes(k.toLowerCase())) return v;
-    }
+    for (const [k, v] of Object.entries(dict)) { if (lower.includes(k.toLowerCase())) return v; }
     return 0;
   };
 
@@ -527,11 +403,9 @@ function App() {
     e.preventDefault();
     if (!iName.trim()) return;
     const prev = getPrevPrice(iName);
-    const newItem = {
-      id: 'i' + Date.now(), name: iName.trim(), quantity: iQty, size: iSize, category: iCat, addedBy: myName, addedAt: nowStr(), bought: false, price: Number(iPrice) || 0, lastPrice: prev || Number(iPrice) || 0, urgent: iUrgent, note: iNote.trim()
-    };
+    const newItem = { id: 'i' + Date.now(), name: iName.trim(), quantity: iQty === 'None' ? '' : iQty, size: iSize === 'None' ? '' : iSize, category: iCat, addedBy: myName, addedAt: nowStr(), bought: false, price: Number(iPrice) || 0, lastPrice: prev || Number(iPrice) || 0, urgent: iUrgent, note: iNote.trim() };
     const u = [newItem, ...(data.todayItems || [])];
-    save({ ...data, todayItems: u });
+    save({ ...data, todayItems: u, notification: { active: true, sender: myName, dateStr: todayDateDisplay(), itemCount: u.length } });
     if (sound) playSound();
     setIName(''); setIQty('None'); setISize('None'); setIPrice(''); setINote(''); setIUrgent(false); setShowAdd(false);
     toastFn(`"${newItem.name}" ${t('যোগ হয়েছে', 'added')}`);
@@ -563,26 +437,15 @@ function App() {
     if (bought.length === 0) return toastFn(t('অন্তত ১টি আইটেম কিনুন!', 'Check at least 1 item!'));
     const total = bought.reduce((s, i) => s + (Number(i.price) || 0), 0);
     
-    const sess = {
-      dateStr: `${todayDateDisplay()} (${nowStr()})`,
-      monthKey: currentMonthKey,
-      boughtCount: bought.length,
-      totalCount: data.todayItems.length,
-      totalSpent: total,
-      sender: myName,
-      tag: 'Completed',
-      items: [...data.todayItems],
-      timestamp: Date.now()
-    };
+    const sess = { dateStr: `${todayDateDisplay()} (${nowStr()})`, monthKey: currentMonthKey, boughtCount: bought.length, totalCount: data.todayItems.length, totalSpent: total, sender: myName, tag: 'Completed', items: [...data.todayItems], timestamp: Date.now() };
 
-    if (db && !isGuest) {
-      await db.collection('families').doc(familyCode).collection('history').add(sess);
-    } else {
-      // Local save for guest
-      const localHist = JSON.parse(localStorage.getItem('bb_history') || '[]');
+    if (isGuest) {
+      const localHist = JSON.parse(localStorage.getItem('bb_guest_history') || '[]');
       localHist.unshift({ id: 'h'+Date.now(), ...sess });
-      localStorage.setItem('bb_history', JSON.stringify(localHist));
+      localStorage.setItem('bb_guest_history', JSON.stringify(localHist));
       setHistoryData(localHist);
+    } else if (db) {
+      await db.collection('families').doc(familyCode).collection('history').add(sess);
     }
 
     const rem = (data.todayItems || []).filter(i => !i.bought);
@@ -592,35 +455,180 @@ function App() {
     setBazarSubTab('history');
   };
 
-  // Edit Price in History
   const handleEditHistSubmit = async (e) => {
     e.preventDefault();
     if (!editHistItem || !selectedHist) return;
     const newP = Number(editHistPrice) || 0;
-    
-    // Update in selectedHist items
     const updatedItems = selectedHist.items.map(it => it.id === editHistItem.id ? { ...it, price: newP } : it);
     const newTotal = updatedItems.filter(i => i.bought).reduce((s, i) => s + (Number(i.price) || 0), 0);
-    
     const updatedSess = { ...selectedHist, items: updatedItems, totalSpent: newTotal };
 
-    if (db && !isGuest) {
-      await db.collection('families').doc(familyCode).collection('history').doc(selectedHist.id).update({
-        items: updatedItems, totalSpent: newTotal
-      });
-    } else {
-      const localHist = JSON.parse(localStorage.getItem('bb_history') || '[]');
+    if (isGuest) {
+      const localHist = JSON.parse(localStorage.getItem('bb_guest_history') || '[]');
       const idx = localHist.findIndex(h => h.id === selectedHist.id);
       if(idx > -1) localHist[idx] = updatedSess;
-      localStorage.setItem('bb_history', JSON.stringify(localHist));
+      localStorage.setItem('bb_guest_history', JSON.stringify(localHist));
       setHistoryData(localHist);
+    } else if (db) {
+      await db.collection('families').doc(familyCode).collection('history').doc(selectedHist.id).update({ items: updatedItems, totalSpent: newTotal });
     }
-    setSelectedHist(updatedSess);
-    setEditHistItem(null);
-    toastFn('Price Updated ✔');
+    setSelectedHist(updatedSess); setEditHistItem(null); toastFn('Price Updated ✔');
   };
 
-  // Stats Calculation
+  // AI Integrations
+  const getBudgetSuggestion = async () => {
+    if (!data.geminiApiKey) return toastFn(t('সেটিংসে Gemini API Key দিন', 'Add Gemini API Key'));
+    setIsSuggesting(true);
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${data.geminiApiKey}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: `I spend around ${stats.monthTotal} BDT monthly on groceries in Bangladesh. Reply with a realistic budget number and 1-line reason.` }] }] })
+      });
+      const json = await res.json();
+      setAiBudgetSuggest(json.candidates[0].content.parts[0].text);
+    } catch (e) { toastFn('AI Suggestion Failed'); }
+    setIsSuggesting(false);
+  };
+
+  const handleReceiptUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!data.geminiApiKey) return toastFn(t('সেটিংসে Gemini API Key দিন!', 'Add API Key!'));
+    setOcrLoading(true);
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const base64Data = ev.target.result.split(',')[1];
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${data.geminiApiKey}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: "Extract items and prices. Return JSON: [{'name': 'item', 'price': 100}]. No markdown." }, { inlineData: { mimeType: file.type, data: base64Data } }] }] })
+        });
+        const json = await res.json();
+        const text = json.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
+        const parsed = JSON.parse(text);
+        if (Array.isArray(parsed)) {
+          const newItems = parsed.map((item, idx) => ({ id: 'ocr_' + Date.now() + idx, name: item.name, quantity: '', size: '', category: 'grocery', addedBy: myName, addedAt: nowStr(), bought: true, price: Number(item.price) || 0, lastPrice: Number(item.price) || 0, urgent: false, note: '📸 Receipt OCR' }));
+          const u = [...newItems, ...(data.todayItems || [])];
+          save({ ...data, todayItems: u });
+          if (sound) playSound();
+          setShowAdd(false);
+          toastFn(`✅ ${parsed.length} ${t('টি আইটেম রসিদ থেকে যোগ হয়েছে!', 'items added from receipt!')}`);
+        }
+      } catch (err) { toastFn('❌ OCR Failed.'); }
+      setOcrLoading(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAiExtract = async () => {
+    if (!aiPrompt.trim()) return;
+    if (!data.geminiApiKey) return toastFn(t('সেটিংসে API Key দিন', 'Add API Key'));
+    setAiLoading(true);
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${data.geminiApiKey}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: `Extract items from: "${aiPrompt}". Return JSON: [{'name': 'name', 'quantity': '1 kg'}]. No markdown.` }] }] })
+      });
+      const json = await res.json();
+      const text = json.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
+      const parsed = JSON.parse(text);
+      if (Array.isArray(parsed)) {
+        const newItems = parsed.map((item, idx) => ({ id: 'ai_' + Date.now() + idx, name: item.name, quantity: item.quantity || '', size: '', category: 'grocery', addedBy: myName, addedAt: nowStr(), bought: false, price: 0, lastPrice: getPrevPrice(item.name), urgent: false, note: '✨ AI Add' }));
+        const u = [...newItems, ...(data.todayItems || [])];
+        save({ ...data, todayItems: u });
+        if (sound) playSound();
+        setAiPrompt(''); setShowAdd(false);
+        toastFn(`✨ ${newItems.length} items added!`);
+      }
+    } catch (e) { toastFn('AI Parsing Failed'); }
+    setAiLoading(false);
+  };
+
+  const applyVoiceText = (txt, isAiField = false) => {
+    if (!txt) return;
+    if (isAiField) { setAiPrompt(prev => prev ? `${prev}, ${txt}` : txt); return; }
+    const m = txt.match(/(\d+(?:\.\d+)?\s*(?:কেজি|গ্রাম|পিস|প্যাকেট|লিটার|ডজন|kg|gm|pc|pcs|pack|ltr))/i);
+    if (m) { setIQty(m[1]); setIName(txt.replace(m[1], '').trim() || txt); } else { setIName(txt); }
+  };
+
+  const onVoice = (isAiField = false) => {
+    const voiceLang = lang === 'bn' ? 'bn-BD' : 'en-US';
+    if (window.plugins && window.plugins.speechRecognition) {
+      window.plugins.speechRecognition.hasPermission((hasPerm) => {
+        const startNative = () => {
+          setListening(true);
+          window.plugins.speechRecognition.startListening(
+            (matches) => { setListening(false); if (matches && matches.length > 0) applyVoiceText(matches[0].trim(), isAiField); },
+            () => { setListening(false); toastFn('Try again'); },
+            { language: voiceLang, matches: 1, showPopup: true }
+          );
+        };
+        if (!hasPerm) window.plugins.speechRecognition.requestPermission(startNative, () => toastFn('Mic permission required!'));
+        else startNative();
+      }, () => {});
+      return;
+    }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return toastFn('Mic not supported');
+    try {
+      const r = new SR(); r.lang = voiceLang; r.interimResults = false;
+      setListening(true);
+      r.onresult = (e) => { applyVoiceText(e.results[0][0].transcript.trim(), isAiField); setListening(false); };
+      r.onerror = () => { setListening(false); toastFn('Allow mic'); };
+      r.onend = () => setListening(false);
+      r.start();
+    } catch (e) { setListening(false); }
+  };
+
+  // Bills & Loans
+  const onAddBill = (e) => {
+    e.preventDefault();
+    if (!billName.trim() || !billAmount) return;
+    const newBill = { id: 'b' + Date.now(), name: billName.trim(), type: billType, amount: Number(billAmount) || 0, dueDate: billDue || '', paid: false, paidDate: null, note: '', recurring: true };
+    save({ ...data, bills: [newBill, ...(data.bills || [])] });
+    if (sound) playSound();
+    setBillName(''); setBillAmount(''); setShowAddBill(false); toastFn('Bill Added ✔');
+  };
+
+  const onToggleBill = (bill) => {
+    const nextPaid = !bill.paid;
+    const paidDate = nextPaid ? new Date().toISOString().split('T')[0] : null;
+    const u = (data.bills || []).map(b => b.id === bill.id ? { ...b, paid: nextPaid, paidDate } : b);
+    save({ ...data, bills: u });
+    if (sound && nextPaid) playSound();
+  };
+
+  const onAddLoan = (e) => {
+    e.preventDefault();
+    if (!loanPerson.trim() || !loanAmount) return;
+    const newLoan = { id: 'l' + Date.now(), person: loanPerson.trim(), type: loanType, amount: Number(loanAmount) || 0, date: loanDate, dueDate: loanDue, note: loanNote, settled: false };
+    save({ ...data, loans: [newLoan, ...(data.loans || [])] });
+    if (sound) playSound();
+    setLoanPerson(''); setLoanAmount(''); setLoanDue(''); setLoanNote(''); setShowAddLoan(false);
+    toastFn('Loan Added ✔');
+  };
+
+  const onToggleLoan = (loan) => {
+    const u = (data.loans || []).map(l => l.id === loan.id ? { ...l, settled: !l.settled } : l);
+    save({ ...data, loans: u });
+    if (sound) playSound();
+  };
+
+  // Export & Share
+  const exportCSV = () => {
+    let csv = "Type,Name,Category,Amount,Status\n";
+    (data.todayItems || []).forEach(i => { csv += `Bazar,"${i.name}","${i.category}",${i.price || 0},${i.bought ? 'Bought' : 'Pending'}\n`; });
+    (data.bills || []).forEach(b => { csv += `Bill,"${b.name}","${b.type}",${b.amount || 0},${b.paid ? 'Paid' : 'Due'}\n`; });
+    (data.loans || []).forEach(l => { csv += `Loan(${l.type}),"${l.person}","${l.date}",${l.amount || 0},${l.settled ? 'Settled' : 'Active'}\n`; });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Bou_Bolche_Data.csv`; a.click();
+    toastFn('Downloaded!');
+  };
+
+  const genShareText = () => {
+    let s = `🛒 *Bou Bolche - Bazar List*\n📅 ${todayDateDisplay()}\n━━━━━━━━━━━━━━\n`;
+    (data.todayItems || []).forEach((it, idx) => { s += `${it.bought ? '✅' : '⬜'} ${idx + 1}. ${it.name} ${it.quantity ? `(${it.quantity})` : ''}\n`; });
+    return s;
+  };
+
+  // Stats
   const stats = useMemo(() => {
     const items = data.todayItems || [];
     const bought = items.filter(i => i.bought);
@@ -628,34 +636,28 @@ function App() {
     const bazarSpentToday = bought.reduce((s, i) => s + (Number(i.price) || 0), 0);
     const remainingEst = unbought.reduce((s, i) => s + getPrevPrice(i.name), 0);
     const estTotal = bazarSpentToday + remainingEst;
-
-    const todayISO = new Date().toISOString().split('T')[0];
-    const paidBills = (data.bills || []).filter(b => b.paid);
-    const billsPaidToday = paidBills.filter(b => b.paidDate === todayISO).reduce((s, b) => s + Number(b.amount || 0), 0);
-    const spentToday = bazarSpentToday + billsPaidToday;
-
     const monthHist = historyData.filter(h => h.monthKey === activeMonth.key);
     const histSpent = monthHist.reduce((s, h) => s + (Number(h.totalSpent) || 0), 0);
-    const monthBillsTotal = paidBills.filter(b => !b.paidDate || b.paidDate.startsWith(activeMonth.key)).reduce((s, b) => s + Number(b.amount || 0), 0);
-
+    const monthBillsTotal = (data.bills || []).filter(b => b.paid && b.paidDate && b.paidDate.startsWith(activeMonth.key)).reduce((s, b) => s + Number(b.amount || 0), 0);
     const isCurrentMonth = activeMonth.key === currentMonthKey;
     const monthTotal = histSpent + monthBillsTotal + (isCurrentMonth ? bazarSpentToday : 0);
-
     const budget = Number(data.monthlyBudget) || 0;
     const budgetPct = budget > 0 ? Math.round((monthTotal / budget) * 100) : 0;
-    const budgetRemaining = Math.max(0, budget - monthTotal);
-    const trackedDays = Math.max(1, monthHist.length + (bazarSpentToday > 0 ? 1 : 0));
-    const dailyAvg = monthTotal > 0 ? Math.round(monthTotal / trackedDays) : 0;
-
-    return { total: items.length, boughtCount: bought.length, leftCount: unbought.length, urgentCount: items.filter(i => i.urgent && !i.bought).length, bazarSpentToday, remainingEst, estTotal, spentToday, cartProgress: items.length > 0 ? Math.round((bought.length / items.length) * 100) : 0, monthTotal, budget, budgetPct, budgetRemaining, dailyAvg };
+    return { total: items.length, boughtCount: bought.length, leftCount: unbought.length, bazarSpentToday, estTotal, monthTotal, budget, budgetPct, budgetRemaining: Math.max(0, budget - monthTotal) };
   }, [data, activeMonth, historyData, currentMonthKey]);
 
-  // Login Screen Render
+  const loansStats = useMemo(() => {
+    const all = data.loans || [];
+    const activeLent = all.filter(x => x.type === 'lent' && !x.settled);
+    const activeBorrowed = all.filter(x => x.type === 'borrowed' && !x.settled);
+    return { lentTotal: activeLent.reduce((s, x) => s + Number(x.amount || 0), 0), borrowedTotal: activeBorrowed.reduce((s, x) => s + Number(x.amount || 0), 0), lentCount: activeLent.length, borrowedCount: activeBorrowed.length, allLentCount: all.filter(x => x.type === 'lent').length, allBorrowedCount: all.filter(x => x.type === 'borrowed').length };
+  }, [data.loans]);
+
+  // ======================== LOGIN SCREEN ========================
   if (!familyCode) {
     return (
       <div className={`${dark ? 'dark bg-slate-950 text-white' : 'bg-slate-100 text-slate-900'} h-screen w-full flex flex-col items-center justify-center p-4`}>
         <div className="w-full max-w-[400px] bg-white dark:bg-slate-900 rounded-3xl shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800">
-          
           <div className="bg-primary/5 p-6 flex flex-col items-center border-b border-slate-100 dark:border-slate-800">
             <div className="w-20 h-20 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-3 overflow-hidden border border-slate-100">
                <img src="icon-192.png" alt="Logo" className="w-full h-full object-cover" onError={(e)=>e.target.style.display='none'} />
@@ -663,9 +665,6 @@ function App() {
             </div>
             <h1 className="text-2xl font-headline font-extrabold flex items-center gap-1">Bou Bolche <span className="text-primary text-sm font-bold">(বউ বলছে)</span></h1>
             <p className="text-[11px] text-slate-500 mt-1 text-center">Family Daily Bazar, Budget & Shared Expense Ledger</p>
-            <div className="mt-3 inline-flex items-center gap-1 px-3 py-1 bg-indigo-50 text-primary rounded-full text-[10px] font-bold">
-              <span className="material-symbols-outlined text-[14px]">groups</span> Instant Couple & Family Sync
-            </div>
           </div>
 
           <div className="p-5 space-y-4">
@@ -678,78 +677,41 @@ function App() {
               {authMode === 'signup' && (
                 <div className="space-y-1">
                   <label className="text-xs font-semibold">Your Name *</label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-2.5 material-symbols-outlined text-slate-400 text-[18px]">person</span>
-                    <input type="text" value={inputName} onChange={e => setInputName(e.target.value)} placeholder="e.g. Tanvir" className="w-full h-10 pl-9 pr-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:border-primary" />
-                  </div>
+                  <div className="relative"><span className="absolute left-3 top-2.5 material-symbols-outlined text-slate-400 text-[18px]">person</span><input type="text" value={inputName} onChange={e => setInputName(e.target.value)} placeholder="e.g. Tanvir" className="w-full h-10 pl-9 pr-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 text-sm outline-none focus:border-primary" /></div>
                 </div>
               )}
-
               <div className="space-y-1">
-                <div className="flex justify-between items-center">
-                  <label className="text-xs font-semibold">Gmail or Family Code</label>
-                  <span className="text-[10px] text-slate-400">e.g. 64T95L</span>
-                </div>
-                <div className="relative">
-                  <span className="absolute left-3 top-2.5 material-symbols-outlined text-slate-400 text-[18px]">alternate_email</span>
-                  <input type="text" value={inputCode} onChange={e => setInputCode(e.target.value.toUpperCase())} placeholder="tanvir@gmail.com or 64T95L" className="w-full h-10 pl-9 pr-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-mono font-bold outline-none focus:border-primary" />
-                </div>
+                <div className="flex justify-between items-center"><label className="text-xs font-semibold">Gmail or Family Code</label><span className="text-[10px] text-slate-400">e.g. 64T95L</span></div>
+                <div className="relative"><span className="absolute left-3 top-2.5 material-symbols-outlined text-slate-400 text-[18px]">alternate_email</span><input type="text" value={inputCode} onChange={e => setInputCode(e.target.value.toUpperCase())} placeholder="tanvir@gmail.com or 64T95L" className="w-full h-10 pl-9 pr-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 text-sm font-mono font-bold outline-none focus:border-primary" /></div>
               </div>
-
               <div className="space-y-1.5">
-                <div className="flex justify-between items-center">
-                  <label className="text-xs font-semibold flex items-center gap-1"><span className="material-symbols-outlined text-[16px] text-slate-400">lock</span> 4-Digit Security PIN</label>
-                  <button type="button" onClick={() => toastFn('লগইন করতে গুগল বাটন ব্যবহার করুন', 'Use Google button to recover')} className="text-[10px] text-primary font-bold">Forgot PIN?</button>
-                </div>
+                <div className="flex justify-between items-center"><label className="text-xs font-semibold flex items-center gap-1"><span className="material-symbols-outlined text-[16px] text-slate-400">lock</span> 4-Digit Security PIN</label><button type="button" onClick={() => toastFn('গুগল লগইন ব্যবহার করুন')} className="text-[10px] text-primary font-bold">Forgot PIN?</button></div>
                 <div className="grid grid-cols-4 gap-2">
-                  {[0, 1, 2, 3].map(idx => (
-                    <input key={idx} ref={pinRefs[idx]} type="password" inputMode="numeric" maxLength={1} value={pinDigits[idx]} onChange={e => handlePinChange(idx, e.target.value)} onKeyDown={e => handlePinKeyDown(idx, e)} placeholder="•" className="h-11 text-center text-lg font-extrabold rounded-xl bg-slate-100 dark:bg-slate-800 border-0 outline-none focus:ring-2 focus:ring-primary" />
-                  ))}
+                  {[0, 1, 2, 3].map(idx => (<input key={idx} ref={pinRefs[idx]} type="password" inputMode="numeric" maxLength={1} value={pinDigits[idx]} onChange={e => handlePinChange(idx, e.target.value)} onKeyDown={e => handlePinKeyDown(idx, e)} placeholder="•" className="h-11 text-center text-lg font-extrabold rounded-xl bg-slate-100 dark:bg-slate-800 border-0 outline-none focus:ring-2 focus:ring-primary" />))}
                 </div>
               </div>
-
-              <button type="submit" disabled={authLoading} className="w-full h-11 rounded-xl bg-primary hover:bg-deep-violet text-white font-bold text-sm flex items-center justify-center gap-1 shadow-md">
-                {authLoading ? <div className="spinner"></div> : <>{authMode === 'signin' ? 'Log In to Family Space' : 'Create Shared Family Hub'} <span className="material-symbols-outlined text-[18px]">arrow_forward</span></>}
+              <button type="submit" disabled={authLoading} className="w-full h-11 rounded-xl bg-primary text-white font-bold text-sm flex items-center justify-center gap-1 shadow-md">
+                {authLoading ? <div className="spinner"></div> : <>{authMode === 'signin' ? 'Log In' : 'Create Account'} <span className="material-symbols-outlined text-[18px]">arrow_forward</span></>}
               </button>
             </form>
 
-            <div className="relative flex items-center justify-center py-1">
-              <div className="w-full h-[1px] bg-slate-200 dark:bg-slate-700"></div>
-              <span className="absolute px-2 bg-white dark:bg-slate-900 text-slate-400 text-[10px] font-bold">OR QUICK CONNECT</span>
-            </div>
-
-            <button onClick={handleGoogleLogin} disabled={authLoading} className="w-full h-11 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold text-xs flex items-center justify-center gap-2 hover:bg-slate-50 transition-all">
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-4 h-4" alt="G" /> Continue with Google (1-Tap Sync)
-            </button>
-            
-            <button onClick={() => { setAuthMode('signin'); toastFn('পার্টনারের কোড ও পিন উপরে দিন'); }} className="w-full h-11 rounded-xl bg-mint-surface text-secondary border border-emerald-200 font-bold text-xs flex items-center justify-center gap-2">
-              <span className="material-symbols-outlined text-[18px]">key</span> Enter Spouse's Invite Code
-            </button>
-
-            <div className="text-center pt-2">
-               <button onClick={handleGuestLogin} className="text-[11px] text-slate-500 font-semibold hover:underline">Continue as Guest (Offline Mode)</button>
-            </div>
+            <div className="relative flex items-center justify-center py-1"><div className="w-full h-[1px] bg-slate-200 dark:bg-slate-700"></div><span className="absolute px-2 bg-white dark:bg-slate-900 text-slate-400 text-[10px] font-bold">OR QUICK CONNECT</span></div>
+            <button onClick={handleGoogleLogin} disabled={authLoading} className="w-full h-11 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold text-xs flex items-center justify-center gap-2 hover:bg-slate-50 transition-all"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-4 h-4" alt="G" /> Continue with Google</button>
+            <button onClick={() => { setAuthMode('signin'); toastFn('পার্টনারের কোড ও পিন উপরে দিন'); }} className="w-full h-11 rounded-xl bg-mint-surface text-secondary border border-emerald-200 font-bold text-xs flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[18px]">key</span> Enter Spouse's Code</button>
+            <div className="text-center pt-2"><button onClick={handleGuestLogin} className="text-[11px] text-slate-500 font-semibold hover:underline">Continue as Guest (Offline Mode)</button></div>
           </div>
-          
-          <div className="bg-slate-50 dark:bg-slate-800/50 p-3 text-center border-t border-slate-100 dark:border-slate-800">
-             <p className="text-[10px] text-slate-400 flex items-center justify-center gap-1"><span className="material-symbols-outlined text-[14px] text-secondary">verified_user</span> 100% Free • End-to-End Encrypted • No SMS Charges</p>
-          </div>
+          <div className="bg-slate-50 dark:bg-slate-800/50 p-3 text-center border-t border-slate-100 dark:border-slate-800"><p className="text-[10px] text-slate-400 flex items-center justify-center gap-1"><span className="material-symbols-outlined text-[14px] text-secondary">verified_user</span> 100% Free • End-to-End Encrypted</p></div>
         </div>
       </div>
     );
   }
 
-  // Main App Render
+  // ======================== MAIN APP ========================
   return (
     <div className={`${dark ? 'dark bg-slate-950' : 'bg-slate-200/70'} h-screen w-full flex justify-center items-center overflow-hidden`}>
       <div className={`w-full max-w-[435px] h-full sm:h-[880px] ${dark ? 'bg-slate-900 text-slate-100 sm:border-slate-800' : 'bg-[#F8FAFC] text-slate-900 sm:border-white'} sm:rounded-[36px] sm:shadow-2xl sm:border-[6px] flex flex-col relative overflow-hidden`}>
         
-        {toast && (
-          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white px-4 py-2.5 rounded-full shadow-xl text-xs font-semibold flex items-center gap-2 border border-emerald-500/40 backdrop-blur-md">
-            <span className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold">✓</span>
-            <span>{toast}</span>
-          </div>
-        )}
+        {toast && (<div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white px-4 py-2.5 rounded-full shadow-xl text-xs font-semibold flex items-center gap-2 border border-emerald-500/40 backdrop-blur-md"><span className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold">✓</span><span>{toast}</span></div>)}
 
         <main className="flex-1 overflow-y-auto no-scrollbar px-4 pt-4 pb-32 space-y-4">
           
@@ -757,71 +719,39 @@ function App() {
           {tab === 'home' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between px-0.5">
-                <div>
-                  <div className="flex items-center gap-1 text-slate-500 text-xs font-medium">
-                    <span className="material-symbols-outlined text-[15px]">calendar_today</span> {todayDateDisplay()}
-                  </div>
-                  <h1 className="text-2xl font-headline font-extrabold mt-0.5">{t('আজকের বাজার', "Today's Bazar")}</h1>
-                </div>
-                <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-[11px] font-bold text-emerald-700 border border-emerald-200 shadow-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> {isGuest ? 'Offline Mode' : 'Live Sync'}
-                </div>
+                <div><div className="flex items-center gap-1 text-slate-500 text-xs font-medium"><span className="material-symbols-outlined text-[15px]">calendar_today</span> {todayDateDisplay()}</div><h1 className="text-2xl font-headline font-extrabold mt-0.5">{t('আজকের বাজার', "Today's Bazar")}</h1></div>
+                <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-[11px] font-bold text-emerald-700 border border-emerald-200 shadow-sm"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> {isGuest ? 'Offline Mode' : 'Live Sync'}</div>
               </div>
 
               <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#4338CA] via-[#4f46e5] to-[#6366F1] p-5 text-white shadow-xl">
                 <div className="relative z-10 flex flex-col gap-4">
                   <div className="flex items-start justify-between">
-                    <div>
-                      <span className="text-[11px] font-semibold text-indigo-200 uppercase">Spent Today</span>
-                      <div className="flex items-baseline gap-2 mt-1">
-                        <span className="text-3xl font-headline font-extrabold">৳{stats.spentToday.toLocaleString()}</span>
-                        <span className="text-[11px] font-semibold text-indigo-100 bg-white/15 px-2 py-0.5 rounded-full">{stats.leftCount} left</span>
-                      </div>
-                    </div>
-                    <button onClick={() => { setTempBudget(String(data.monthlyBudget || 0)); setShowBudget(true); }} className="flex items-center gap-1 bg-white/15 border border-white/20 px-2.5 py-1.5 rounded-full text-xs font-semibold">
-                      <span className="text-indigo-100">Budget:</span> <span className="font-bold text-white">৳{stats.budget.toLocaleString()}</span>
-                      <span className="material-symbols-outlined text-[14px]">edit</span>
-                    </button>
+                    <div><span className="text-[11px] font-semibold text-indigo-200 uppercase">Spent Today</span><div className="flex items-baseline gap-2 mt-1"><span className="text-3xl font-headline font-extrabold">৳{stats.bazarSpentToday.toLocaleString()}</span><span className="text-[11px] font-semibold text-indigo-100 bg-white/15 px-2 py-0.5 rounded-full">{stats.leftCount} left</span></div></div>
+                    <button onClick={() => { setTempBudget(String(data.monthlyBudget || 0)); setShowBudget(true); }} className="flex items-center gap-1 bg-white/15 border border-white/20 px-2.5 py-1.5 rounded-full text-xs font-semibold"><span className="text-indigo-100">Budget:</span> <span className="font-bold text-white">৳{stats.budget.toLocaleString()}</span><span className="material-symbols-outlined text-[14px]">edit</span></button>
                   </div>
                   <div className="space-y-1.5">
-                    <div className="flex justify-between text-xs font-medium text-indigo-100">
-                      <span>{stats.budgetPct}% Spent</span>
-                      <span>Remaining: <span className="text-white font-bold">৳{stats.budgetRemaining.toLocaleString()}</span></span>
-                    </div>
-                    <div className="w-full bg-black/25 h-2.5 rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full ${stats.budgetPct >= 100 ? 'bg-rose-400' : 'bg-emerald-400'}`} style={{ width: `${Math.min(100, stats.budgetPct)}%` }}></div>
-                    </div>
+                    <div className="flex justify-between text-xs font-medium text-indigo-100"><span>{stats.budgetPct}% Spent</span><span>Remaining: <span className="text-white font-bold">৳{stats.budgetRemaining.toLocaleString()}</span></span></div>
+                    <div className="w-full bg-black/25 h-2.5 rounded-full overflow-hidden"><div className={`h-full rounded-full ${stats.budgetPct >= 100 ? 'bg-rose-400' : 'bg-emerald-400'}`} style={{ width: `${Math.min(100, stats.budgetPct)}%` }}></div></div>
                   </div>
                 </div>
               </div>
 
               <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 shadow-sm">
                 <div className="flex justify-between items-center mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center text-primary"><span className="material-symbols-outlined text-[18px]">shopping_basket</span></div>
-                    <h3 className="font-headline font-bold text-sm">Today's Smart Bazar</h3>
-                  </div>
+                  <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center text-primary"><span className="material-symbols-outlined text-[18px]">shopping_basket</span></div><h3 className="font-headline font-bold text-sm">Today's Smart Bazar</h3></div>
                   <button onClick={() => setTab('bazar')} className="text-xs font-bold text-primary flex items-center gap-0.5">View All <span className="material-symbols-outlined text-[15px]">arrow_forward</span></button>
                 </div>
-                
-                {(data.todayItems || []).length === 0 ? (
-                  <div className="py-5 text-center border border-dashed border-slate-200 rounded-xl"><p className="text-xs text-slate-400">No items in list yet!</p></div>
-                ) : (
+                {(data.todayItems || []).length === 0 ? (<div className="py-5 text-center border border-dashed border-slate-200 rounded-xl"><p className="text-xs text-slate-400">No items in list yet!</p></div>) : (
                   <div className="flex flex-col gap-2">
                     {(data.todayItems || []).slice(0, 3).map(item => (
                       <div key={item.id} onClick={() => onToggleItem(item)} className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer ${item.bought ? 'bg-slate-50 border-slate-100 opacity-70' : 'bg-white border-slate-200'}`}>
-                        <div className="flex items-center gap-2.5">
-                          <div className={`w-5 h-5 rounded-md flex items-center justify-center ${item.bought ? 'bg-secondary text-white' : 'border-2 border-slate-300'}`}>{item.bought && <span className="material-symbols-outlined text-[14px]">check</span>}</div>
-                          <p className={`text-xs font-semibold ${item.bought ? 'line-through text-slate-400' : ''}`}>{item.name} <span className="text-slate-400 font-normal">({item.quantity})</span></p>
-                        </div>
+                        <div className="flex items-center gap-2.5"><div className={`w-5 h-5 rounded-md flex items-center justify-center ${item.bought ? 'bg-secondary text-white' : 'border-2 border-slate-300'}`}>{item.bought && <span className="material-symbols-outlined text-[14px]">check</span>}</div><p className={`text-xs font-semibold ${item.bought ? 'line-through text-slate-400' : ''}`}>{item.name} <span className="text-slate-400 font-normal">({item.quantity})</span></p></div>
                         <span className="text-xs font-bold">{item.price > 0 ? `৳${item.price}` : (item.lastPrice > 0 ? `~৳${item.lastPrice}` : '+ Price')}</span>
                       </div>
                     ))}
                   </div>
                 )}
-                <button onClick={() => setShowAdd(true)} className="w-full mt-3 py-3 bg-emerald-600 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2">
-                  <span className="material-symbols-outlined text-[20px]">add_circle</span> + Add New Item
-                </button>
+                <button onClick={() => setShowAdd(true)} className="w-full mt-3 py-3 bg-emerald-600 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[20px]">add_circle</span> + Add New Item</button>
               </div>
             </div>
           )}
@@ -830,62 +760,31 @@ function App() {
           {tab === 'bazar' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h1 className="font-headline text-2xl font-extrabold">{t('স্মার্ট বাজার', 'Smart Bazar')}</h1>
-                <div className="flex items-center gap-1 bg-indigo-50 p-1 rounded-xl">
-                  <button onClick={() => setBazarSubTab('today')} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${bazarSubTab === 'today' ? 'bg-white text-primary shadow-sm' : 'text-slate-500'}`}>Today</button>
-                  <button onClick={() => setBazarSubTab('history')} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${bazarSubTab === 'history' ? 'bg-white text-primary shadow-sm' : 'text-slate-500'}`}>History</button>
-                </div>
+                <h1 className="font-headline text-2xl font-extrabold">Smart Bazar</h1>
+                <div className="flex items-center gap-1 bg-indigo-50 p-1 rounded-xl"><button onClick={() => setBazarSubTab('today')} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${bazarSubTab === 'today' ? 'bg-white text-primary shadow-sm' : 'text-slate-500'}`}>Today</button><button onClick={() => setBazarSubTab('history')} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${bazarSubTab === 'history' ? 'bg-white text-primary shadow-sm' : 'text-slate-500'}`}>History</button></div>
               </div>
 
               {bazarSubTab === 'today' ? (
                 <>
                   <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
-                    <div className="flex justify-between">
-                      <div>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">Estimated Total</span>
-                        <div className="font-headline text-xl font-extrabold">৳{stats.estTotal.toLocaleString()}</div>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-[10px] font-bold text-secondary uppercase">Actual Spent</span>
-                        <div className="font-headline text-xl font-extrabold text-secondary">৳{stats.bazarSpentToday.toLocaleString()}</div>
-                      </div>
-                    </div>
-                    <div className="w-full h-2 rounded-full bg-indigo-50 overflow-hidden">
-                      <div className="h-full rounded-full bg-primary" style={{ width: `${stats.cartProgress}%` }}></div>
-                    </div>
+                    <div className="flex justify-between"><div><span className="text-[10px] font-bold text-slate-400 uppercase">Estimated</span><div className="font-headline text-xl font-extrabold">৳{stats.estTotal.toLocaleString()}</div></div><div className="text-right"><span className="text-[10px] font-bold text-secondary uppercase">Actual Spent</span><div className="font-headline text-xl font-extrabold text-secondary">৳{stats.bazarSpentToday.toLocaleString()}</div></div></div>
                   </div>
 
                   <div className="space-y-2">
                     {(data.todayItems || []).map(item => (
                       <div key={item.id} className={`p-3.5 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-between ${item.bought ? 'opacity-70' : ''}`}>
-                        <div onClick={() => onToggleItem(item)} className="flex items-center gap-3 flex-1 cursor-pointer">
-                          <div className={`w-5 h-5 rounded-md flex items-center justify-center ${item.bought ? 'bg-secondary text-white' : 'border-2 border-slate-300'}`}>{item.bought && <span className="material-symbols-outlined text-[15px]">check</span>}</div>
-                          <div>
-                            <p className={`font-bold text-sm ${item.bought ? 'line-through text-slate-400' : ''}`}>{item.name} ({item.quantity})</p>
-                            <p className="text-[10px] text-slate-400">👤 {item.addedBy} {item.size !== 'None' && `• [${item.size}]`}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <button onClick={() => { setPriceItem(item); setTempPrice(item.price > 0 ? String(item.price) : ''); }} className={`px-2.5 py-1 rounded-lg text-xs font-bold ${item.bought ? 'text-secondary bg-emerald-50' : 'text-primary bg-indigo-50'}`}>
-                            {item.price > 0 ? `৳${item.price}` : '+ Price'}
-                          </button>
-                          <button onClick={() => { const u = data.todayItems.filter(i => i.id !== item.id); save({...data, todayItems: u}); }} className="text-slate-300 hover:text-rose-500 p-1"><span className="material-symbols-outlined text-[18px]">delete</span></button>
-                        </div>
+                        <div onClick={() => onToggleItem(item)} className="flex items-center gap-3 flex-1 cursor-pointer"><div className={`w-5 h-5 rounded-md flex items-center justify-center ${item.bought ? 'bg-secondary text-white' : 'border-2 border-slate-300'}`}>{item.bought && <span className="material-symbols-outlined text-[15px]">check</span>}</div><div><p className={`font-bold text-sm ${item.bought ? 'line-through text-slate-400' : ''}`}>{item.name} {item.quantity && `(${item.quantity})`}</p><p className="text-[10px] text-slate-400">👤 {item.addedBy} {item.size && `• [${item.size}]`}</p></div></div>
+                        <div className="flex items-center gap-1"><button onClick={() => { setPriceItem(item); setTempPrice(item.price > 0 ? String(item.price) : ''); }} className={`px-2.5 py-1 rounded-lg text-xs font-bold ${item.bought ? 'text-secondary bg-emerald-50' : 'text-primary bg-indigo-50'}`}>{item.price > 0 ? `৳${item.price}` : '+ Price'}</button><button onClick={() => { const u = data.todayItems.filter(i => i.id !== item.id); save({...data, todayItems: u}); }} className="text-slate-300 hover:text-rose-500 p-1"><span className="material-symbols-outlined text-[18px]">delete</span></button></div>
                       </div>
                     ))}
                   </div>
                 </>
               ) : (
                 <div className="space-y-3">
-                  {historyData.length === 0 ? (
-                    <div className="text-center py-10 bg-white rounded-2xl border border-dashed"><p className="text-xs text-slate-400">No history found</p></div>
-                  ) : (
+                  {historyData.length === 0 ? (<div className="text-center py-10 bg-white rounded-2xl border border-dashed"><p className="text-xs text-slate-400">No history found</p></div>) : (
                     historyData.map(h => (
                       <div key={h.id} onClick={() => setSelectedHist(h)} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between cursor-pointer">
-                        <div>
-                          <span className="font-bold text-sm">{h.dateStr}</span>
-                          <p className="text-[11px] text-slate-400 mt-0.5">{h.boughtCount}/{h.totalCount} items • 👤 {h.sender}</p>
-                        </div>
+                        <div><span className="font-bold text-sm">{h.dateStr}</span><p className="text-[11px] text-slate-400 mt-0.5">{h.boughtCount}/{h.totalCount} items • 👤 {h.sender}</p></div>
                         <div className="font-extrabold text-sm text-primary">৳{Number(h.totalSpent || 0).toLocaleString()} <span className="material-symbols-outlined text-[16px] align-middle">chevron_right</span></div>
                       </div>
                     ))
@@ -900,27 +799,12 @@ function App() {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <h1 className="font-headline text-2xl font-extrabold">Expenses</h1>
-                <div className="flex items-center bg-white px-2 py-1 rounded-full border shadow-sm">
-                  <button onClick={() => setMonthIdx(i => Math.max(0, i - 1))} className="p-0.5 text-slate-400"><span className="material-symbols-outlined text-[16px]">chevron_left</span></button>
-                  <span className="text-xs px-2 font-bold">{lang === 'bn' ? activeMonth.bn : activeMonth.label}</span>
-                  <button onClick={() => setMonthIdx(i => Math.min(MONTHS.length - 1, i + 1))} className="p-0.5 text-slate-400"><span className="material-symbols-outlined text-[16px]">chevron_right</span></button>
-                </div>
+                <div className="flex items-center bg-white px-2 py-1 rounded-full border shadow-sm"><button onClick={() => setMonthIdx(i => Math.max(0, i - 1))} className="p-0.5 text-slate-400"><span className="material-symbols-outlined text-[16px]">chevron_left</span></button><span className="text-xs px-2 font-bold">{lang === 'bn' ? activeMonth.bn : activeMonth.label}</span><button onClick={() => setMonthIdx(i => Math.min(MONTHS.length - 1, i + 1))} className="p-0.5 text-slate-400"><span className="material-symbols-outlined text-[16px]">chevron_right</span></button></div>
               </div>
 
               <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400">Monthly Budget</span>
-                    <div className="flex items-baseline gap-1 mt-1">
-                      <span className="font-extrabold text-2xl">৳{stats.monthTotal.toLocaleString()}</span>
-                      <span className="text-xs text-slate-400">/ ৳{stats.budget.toLocaleString()}</span>
-                    </div>
-                  </div>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-bold">৳{stats.budgetRemaining.toLocaleString()} left</span>
-                </div>
-                <div className="w-full bg-indigo-50 h-2.5 rounded-full mt-3 overflow-hidden">
-                  <div className="h-full bg-primary" style={{ width: `${Math.min(100, stats.budgetPct)}%` }}></div>
-                </div>
+                <div className="flex justify-between items-start"><div><span className="text-[10px] uppercase font-bold text-slate-400">Monthly Budget</span><div className="flex items-baseline gap-1 mt-1"><span className="font-extrabold text-2xl">৳{stats.monthTotal.toLocaleString()}</span><span className="text-xs text-slate-400">/ ৳{stats.budget.toLocaleString()}</span></div></div><span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-bold">৳{stats.budgetRemaining.toLocaleString()} left</span></div>
+                <div className="w-full bg-indigo-50 h-2.5 rounded-full mt-3 overflow-hidden"><div className="h-full bg-primary" style={{ width: `${Math.min(100, stats.budgetPct)}%` }}></div></div>
               </div>
 
               <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-2">
@@ -929,20 +813,34 @@ function App() {
                   const bt = BILL_TYPES.find(x => x.id === bill.type) || BILL_TYPES[0];
                   return (
                     <div key={bill.id} className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${bt.bg}`}><span className="material-symbols-outlined text-[16px]">{bt.icon}</span></div>
-                        <div>
-                          <p className={`text-xs font-bold ${bill.paid ? 'line-through text-slate-400' : ''}`}>{bill.name}</p>
-                          <p className={`text-[10px] ${bill.paid ? 'text-secondary' : 'text-rose-500'}`}>{bill.paid ? 'Paid' : `Due: ${bill.dueDate}`}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-extrabold">৳{bill.amount}</span>
-                        <button onClick={() => { const u = data.bills.map(b => b.id === bill.id ? { ...b, paid: !b.paid, paidDate: !b.paid ? new Date().toISOString().split('T')[0] : null } : b); save({...data, bills: u}); }} className={`px-2 py-1 rounded text-[10px] font-bold ${bill.paid ? 'bg-emerald-50 text-emerald-600' : 'bg-primary text-white'}`}>{bill.paid ? 'Paid' : 'Pay'}</button>
-                      </div>
+                      <div className="flex items-center gap-2"><div className={`w-8 h-8 rounded-lg flex items-center justify-center ${bt.bg}`}><span className="material-symbols-outlined text-[16px]">{bt.icon}</span></div><div><p className={`text-xs font-bold ${bill.paid ? 'line-through text-slate-400' : ''}`}>{bill.name}</p><p className={`text-[10px] ${bill.paid ? 'text-secondary' : 'text-rose-500'}`}>{bill.paid ? 'Paid' : `Due: ${bill.dueDate}`}</p></div></div>
+                      <div className="flex items-center gap-2"><span className="text-xs font-extrabold">৳{bill.amount}</span><button onClick={() => onToggleBill(bill)} className={`px-2 py-1 rounded text-[10px] font-bold ${bill.paid ? 'bg-emerald-50 text-emerald-600' : 'bg-primary text-white'}`}>{bill.paid ? 'Paid' : 'Pay'}</button></div>
                     </div>
                   )
                 })}
+              </div>
+            </div>
+          )}
+
+          {/* LOANS TAB */}
+          {tab === 'loans' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between"><h1 className="font-headline text-2xl font-extrabold">{t('ধার ও লেনদেন', 'Loan Ledger')}</h1><button onClick={() => setShowAddLoan(true)} className="px-3 py-1.5 rounded-full bg-primary text-white text-xs font-bold flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">add</span> Add</button></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-gradient-to-br from-indigo-50 to-indigo-100/50 rounded-2xl p-4 border border-indigo-100"><span className="text-xs font-bold text-indigo-900 block mb-2">Total Lent</span><div className="font-headline font-extrabold text-xl">৳{loansStats.lentTotal.toLocaleString()}</div></div>
+                <div className="bg-gradient-to-br from-emerald-50 to-teal-100/50 rounded-2xl p-4 border border-emerald-100"><span className="text-xs font-bold text-emerald-900 block mb-2">Borrowed</span><div className="font-headline font-extrabold text-xl">৳{loansStats.borrowedTotal.toLocaleString()}</div></div>
+              </div>
+              <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-200/70 rounded-2xl">
+                <button onClick={() => setLoanFilter('lent')} className={`py-2 rounded-xl font-bold text-xs ${loanFilter === 'lent' ? 'bg-primary text-white shadow-sm' : 'text-slate-600'}`}>Lent ({loansStats.allLentCount})</button>
+                <button onClick={() => setLoanFilter('borrowed')} className={`py-2 rounded-xl font-bold text-xs ${loanFilter === 'borrowed' ? 'bg-secondary text-white shadow-sm' : 'text-slate-600'}`}>Borrowed ({loansStats.allBorrowedCount})</button>
+              </div>
+              <div className="space-y-2">
+                {(data.loans || []).filter(l => l.type === loanFilter).map(loan => (
+                  <div key={loan.id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center justify-between">
+                    <div><h3 className="font-bold text-sm">{loan.person}</h3><span className="text-[11px] text-slate-400">{loan.date}</span></div>
+                    <div className="text-right"><div className={`font-extrabold text-base ${loan.settled ? 'line-through text-slate-400' : ''}`}>৳{loan.amount}</div><button onClick={() => onToggleLoan(loan)} className={`px-2 py-1 rounded text-[10px] font-bold ${loan.settled ? 'bg-slate-100 text-slate-500' : 'bg-primary text-white'}`}>{loan.settled ? 'Reopen' : 'Settle'}</button></div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -954,31 +852,28 @@ function App() {
               
               <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase text-slate-500"><span className="material-symbols-outlined text-[18px] text-primary">tune</span> Preferences</div>
-                <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50">
-                  <span className="text-xs font-bold">Appearance</span>
-                  <button onClick={() => { setDark(!dark); localStorage.setItem('bb_dark', String(!dark)); }} className={`w-10 h-5 rounded-full p-0.5 transition-colors ${dark ? 'bg-primary' : 'bg-slate-300'}`}><span className={`block w-4 h-4 rounded-full bg-white transform transition-transform ${dark ? 'translate-x-5' : 'translate-x-0'}`}></span></button>
-                </div>
-                <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50">
-                  <span className="text-xs font-bold">Language</span>
-                  <div className="flex p-0.5 bg-slate-200 rounded-lg">
-                    <button onClick={() => { setLang('bn'); localStorage.setItem('bb_lang', 'bn'); }} className={`px-2 py-1 rounded text-[10px] font-bold ${lang === 'bn' ? 'bg-white text-primary' : 'text-slate-500'}`}>বাংলা</button>
-                    <button onClick={() => { setLang('en'); localStorage.setItem('bb_lang', 'en'); }} className={`px-2 py-1 rounded text-[10px] font-bold ${lang === 'en' ? 'bg-white text-primary' : 'text-slate-500'}`}>English</button>
-                  </div>
-                </div>
+                <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50"><span className="text-xs font-bold">Appearance</span><button onClick={() => { setDark(!dark); localStorage.setItem('bb_dark', String(!dark)); }} className={`w-10 h-5 rounded-full p-0.5 transition-colors ${dark ? 'bg-primary' : 'bg-slate-300'}`}><span className={`block w-4 h-4 rounded-full bg-white transform transition-transform ${dark ? 'translate-x-5' : 'translate-x-0'}`}></span></button></div>
+                <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50"><span className="text-xs font-bold">Language</span><div className="flex p-0.5 bg-slate-200 rounded-lg"><button onClick={() => { setLang('bn'); localStorage.setItem('bb_lang', 'bn'); }} className={`px-2 py-1 rounded text-[10px] font-bold ${lang === 'bn' ? 'bg-white text-primary' : 'text-slate-500'}`}>বাংলা</button><button onClick={() => { setLang('en'); localStorage.setItem('bb_lang', 'en'); }} className={`px-2 py-1 rounded text-[10px] font-bold ${lang === 'en' ? 'bg-white text-primary' : 'text-slate-500'}`}>English</button></div></div>
+                <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50"><span className="text-xs font-bold">Export Data</span><div className="flex gap-2"><button onClick={() => window.print()} className="px-2 py-1 rounded bg-white border text-[10px] font-bold">PDF</button><button onClick={exportCSV} className="px-2 py-1 rounded bg-white border text-[10px] font-bold">CSV</button></div></div>
               </div>
 
               <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-2">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase text-slate-500 mb-1"><span className="material-symbols-outlined text-[18px] text-primary">auto_awesome</span> AI Configuration</div>
                 <p className="text-[10px] text-slate-400">Enter Gemini API Key to enable Receipt OCR, Budget Suggestion & Smart Parsing.</p>
-                <div className="flex gap-2">
-                  <input type="password" value={tempApiKey} onChange={e => setTempApiKey(e.target.value)} placeholder="AIzaSy..." className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs outline-none" />
-                  <button onClick={() => { save({ ...data, geminiApiKey: tempApiKey.trim() }); toastFn('API Key Saved ✔'); }} className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg">Save</button>
-                </div>
+                <div className="flex gap-2"><input type="password" value={tempApiKey} onChange={e => setTempApiKey(e.target.value)} placeholder="AIzaSy..." className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs outline-none" /><button onClick={() => { save({ ...data, geminiApiKey: tempApiKey.trim() }); toastFn('API Key Saved ✔'); }} className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg">Save</button></div>
               </div>
 
-              <button onClick={() => { localStorage.clear(); window.location.reload(); }} className="w-full py-3 rounded-xl bg-rose-50 text-rose-600 font-bold text-xs flex items-center justify-center gap-1 border border-rose-200">
-                <span className="material-symbols-outlined text-[18px]">logout</span> Log Out
-              </button>
+              {!isGuest && (
+                <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase text-slate-500 mb-1"><span className="material-symbols-outlined text-[18px] text-primary">diversity_3</span> Family Members</div>
+                  {(data.members || []).map(m => (
+                    <div key={m.id} className="flex justify-between items-center p-2 bg-slate-50 rounded-xl"><span className="text-xs font-bold">{m.name} ({m.role})</span><button onClick={() => { setEditNameId(m.id); setTempName(m.name); setShowEditName(true); }} className="text-xs text-primary">✏️</button></div>
+                  ))}
+                  <div className="pt-2 text-[10px] text-slate-400 text-center">Family Code: <span className="font-bold text-primary">{familyCode}</span></div>
+                </div>
+              )}
+
+              <button onClick={() => { localStorage.clear(); window.location.reload(); }} className="w-full py-3 rounded-xl bg-rose-50 text-rose-600 font-bold text-xs flex items-center justify-center gap-1 border border-rose-200"><span className="material-symbols-outlined text-[18px]">logout</span> Log Out</button>
             </div>
           )}
         </main>
@@ -987,12 +882,10 @@ function App() {
         {tab === 'bazar' && bazarSubTab === 'today' && (
           <div className={`absolute bottom-16 left-0 right-0 z-30 px-4 py-2.5 ${dark ? 'bg-slate-900/95 border-slate-800' : 'bg-white/95 border-slate-200'} backdrop-blur-md border-t shadow-lg`}>
             <div className="flex items-center justify-between gap-2.5">
-              <div className="px-3 py-1 bg-slate-100 rounded-xl">
-                <span className="text-[9px] text-slate-500 font-bold block">Total</span>
-                <span className="font-extrabold text-sm text-secondary">৳{stats.bazarSpentToday}</span>
-              </div>
+              <div className="px-3 py-1 bg-slate-100 rounded-xl"><span className="text-[9px] text-slate-500 font-bold block">Total</span><span className="font-extrabold text-sm text-secondary">৳{stats.bazarSpentToday}</span></div>
               <div className="flex gap-2 flex-1 justify-end">
                 <button onClick={() => setShowAdd(true)} className="flex-1 h-10 px-3 rounded-xl bg-primary text-white text-xs font-bold flex items-center justify-center gap-1"><span className="material-symbols-outlined text-[17px]">add</span> Add Item</button>
+                <button onClick={() => setShowShare(true)} className="h-10 px-3 rounded-xl bg-indigo-50 text-primary text-xs font-bold flex items-center justify-center gap-1"><span className="material-symbols-outlined text-[17px]">share</span> Share</button>
                 <button onClick={onFinishBazar} className="h-10 px-3 rounded-xl bg-secondary text-white text-xs font-bold flex items-center justify-center gap-1"><span className="material-symbols-outlined text-[17px]">check_circle</span> Finish</button>
               </div>
             </div>
@@ -1005,77 +898,35 @@ function App() {
             { id: 'home', icon: 'home', label: 'Home' },
             { id: 'bazar', icon: 'shopping_basket', label: 'Bazar' },
             { id: 'expenses', icon: 'payments', label: 'Expenses' },
+            { id: 'loans', icon: 'handshake', label: 'Loans' },
             { id: 'settings', icon: 'settings', label: 'Settings' }
           ].map(nav => (
-            <button key={nav.id} onClick={() => setTab(nav.id)} className={`flex flex-col items-center justify-center gap-0.5 py-1 px-3 rounded-xl ${tab === nav.id ? 'text-primary font-bold' : 'text-slate-400'}`}>
-              <span className={`material-symbols-outlined text-[22px] ${tab === nav.id ? 'icon-fill' : ''}`}>{nav.icon}</span>
-              <span className="text-[11px] tracking-tight">{nav.label}</span>
-            </button>
+            <button key={nav.id} onClick={() => setTab(nav.id)} className={`flex flex-col items-center justify-center gap-0.5 py-1 px-3 rounded-xl ${tab === nav.id ? 'text-primary font-bold' : 'text-slate-400'}`}><span className={`material-symbols-outlined text-[22px] ${tab === nav.id ? 'icon-fill' : ''}`}>{nav.icon}</span><span className="text-[11px] tracking-tight">{nav.label}</span></button>
           ))}
         </nav>
 
-        {/* MODAL: ADD ITEM (With AI & OCR) */}
+        {/* MODAL: ADD ITEM (AI, OCR, VOICE, QUICK ADD) */}
         {showAdd && (
           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/60 backdrop-blur-sm" onClick={() => setShowAdd(false)}>
             <div className="w-full max-w-[435px] bg-[#182234] text-slate-100 rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden" onClick={e => e.stopPropagation()}>
-              <div className="flex items-center justify-between px-5 py-3 border-b border-slate-700/50">
-                <h2 className="text-base font-headline font-extrabold">Add Item</h2>
-                <button onClick={() => setShowAdd(false)} className="text-slate-400">✕</button>
-              </div>
+              <div className="flex items-center justify-between px-5 py-3 border-b border-slate-700/50"><h2 className="text-base font-headline font-extrabold">Add Item</h2><button onClick={() => setShowAdd(false)} className="text-slate-400">✕</button></div>
               <div className="overflow-y-auto px-5 py-4 space-y-4 text-xs no-scrollbar">
                 
-                {/* AI & OCR Box */}
                 <div className="rounded-xl bg-[#1e293b] border border-emerald-500/30 p-3 space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-white text-xs flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">auto_awesome</span> AI & OCR</span>
-                    <button onClick={() => fileInputRef.current.click()} className="text-[10px] bg-emerald-600 text-white px-2 py-1 rounded-lg font-bold flex items-center gap-1">
-                      {ocrLoading ? <div className="spinner"></div> : <><span className="material-symbols-outlined text-[14px]">photo_camera</span> Receipt</>}
-                    </button>
-                    <input type="file" accept="image/*" ref={fileInputRef} onChange={handleReceiptUpload} className="hidden" />
-                  </div>
-                  <div className="relative flex items-center">
-                    <input type="text" value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} placeholder="২ কেজি আলু, ১ ডজন ডিম..." className="w-full bg-[#121a29] border border-emerald-500/40 rounded-lg pl-3 pr-10 py-2 text-xs text-white outline-none" />
-                    <button onClick={handleAiExtract} disabled={aiLoading} className="absolute right-1 p-1.5 rounded bg-emerald-600 text-white">
-                      {aiLoading ? <div className="spinner"></div> : <span className="material-symbols-outlined text-[16px]">arrow_forward</span>}
-                    </button>
-                  </div>
+                  <div className="flex justify-between items-center"><span className="font-bold text-white text-xs flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">auto_awesome</span> AI & OCR</span><button onClick={() => fileInputRef.current.click()} className="text-[10px] bg-emerald-600 text-white px-2 py-1 rounded-lg font-bold flex items-center gap-1">{ocrLoading ? <div className="spinner"></div> : <><span className="material-symbols-outlined text-[14px]">photo_camera</span> Receipt</>}</button><input type="file" accept="image/*" ref={fileInputRef} onChange={handleReceiptUpload} className="hidden" /></div>
+                  <div className="relative flex items-center"><input type="text" value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} placeholder="২ কেজি আলু, ১ ডজন ডিম..." className="w-full bg-[#121a29] border border-emerald-500/40 rounded-lg pl-3 pr-10 py-2 text-xs text-white outline-none" /><button onClick={handleAiExtract} disabled={aiLoading} className="absolute right-1 p-1.5 rounded bg-emerald-600 text-white">{aiLoading ? <div className="spinner"></div> : <span className="material-symbols-outlined text-[16px]">arrow_forward</span>}</button></div>
                 </div>
 
+                <div className="space-y-1.5"><span className="text-amber-400 font-bold text-[11px]">⚡ Quick Add:</span><div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">{(data.quickAddItems || DEFAULT_QUICK).map(p => (<button key={p.id} type="button" onClick={() => { setIName(p.name); setIQty(p.qty); setICat(p.category); setISize(p.size || 'None'); }} className="px-3 py-1.5 rounded-lg bg-[#222f46] text-xs font-semibold whitespace-nowrap text-emerald-300">+ {p.name}</button>))}</div></div>
+
                 <form onSubmit={onAddItem} className="space-y-3">
-                  <div>
-                    <label className="text-slate-300 font-bold block mb-1">Item Name *</label>
-                    <input type="text" required value={iName} onChange={e => setIName(e.target.value)} placeholder="e.g. Apple 2 kg" className="w-full bg-[#121a29] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white outline-none" />
-                  </div>
-
+                  <div><label className="text-slate-300 font-bold block mb-1">Item Name *</label><div className="flex gap-2"><input type="text" required value={iName} onChange={e => setIName(e.target.value)} placeholder="e.g. Apple 2 kg" className="flex-1 bg-[#121a29] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white outline-none" /><button type="button" onClick={() => onVoice(false)} className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${listening ? 'bg-rose-500 animate-pulse' : 'bg-emerald-600 text-white'}`}><span className="material-symbols-outlined text-[18px]">mic</span></button></div></div>
                   <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-slate-300 font-bold block mb-1">Quantity</label>
-                      <select value={iQty} onChange={e => setIQty(e.target.value)} className="w-full bg-[#121a29] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white outline-none">
-                        {QUICK_WEIGHTS.map(w => <option key={w} value={w}>{w}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-slate-300 font-bold block mb-1">Size (Optional)</label>
-                      <select value={iSize} onChange={e => setISize(e.target.value)} className="w-full bg-[#121a29] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white outline-none">
-                        {SIZES.map(s => <option key={s} value={s}>{s}</option>)}
-                      </select>
-                    </div>
+                    <div><label className="text-slate-300 font-bold block mb-1">Quantity</label><select value={iQty} onChange={e => setIQty(e.target.value)} className="w-full bg-[#121a29] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white outline-none">{QUICK_WEIGHTS.map(w => <option key={w} value={w}>{w}</option>)}</select></div>
+                    <div><label className="text-slate-300 font-bold block mb-1">Size</label><select value={iSize} onChange={e => setISize(e.target.value)} className="w-full bg-[#121a29] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white outline-none">{SIZES.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
                   </div>
-
-                  <div>
-                    <label className="text-slate-300 font-bold block mb-1">Price (৳) Optional</label>
-                    <input type="number" value={iPrice} onChange={e => setIPrice(e.target.value)} placeholder="0" className="w-full bg-[#121a29] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white outline-none" />
-                  </div>
-
-                  <div>
-                    <label className="text-slate-300 font-bold block mb-1">Category</label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {CATS.map(c => (
-                        <button key={c.id} type="button" onClick={() => setICat(c.id)} className={`p-2 rounded-lg border text-[11px] ${iCat === c.id ? 'bg-emerald-900/50 border-emerald-500 text-emerald-300' : 'bg-[#121a29] border-slate-700 text-slate-400'}`}>{c.emoji} {c.name}</button>
-                      ))}
-                    </div>
-                  </div>
-
+                  <div><label className="text-slate-300 font-bold block mb-1">Price (৳) Optional</label><input type="number" value={iPrice} onChange={e => setIPrice(e.target.value)} placeholder="0" className="w-full bg-[#121a29] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white outline-none" /></div>
+                  <div><label className="text-slate-300 font-bold block mb-1">Category</label><div className="grid grid-cols-3 gap-2">{CATS.map(c => (<button key={c.id} type="button" onClick={() => setICat(c.id)} className={`p-2 rounded-lg border text-[11px] ${iCat === c.id ? 'bg-emerald-900/50 border-emerald-500 text-emerald-300' : 'bg-[#121a29] border-slate-700 text-slate-400'}`}>{c.emoji} {c.name}</button>))}</div></div>
                   <button type="submit" className="w-full py-3 mt-2 rounded-xl bg-emerald-600 text-white font-bold text-sm shadow-lg">+ Add to List</button>
                 </form>
               </div>
@@ -1088,14 +939,8 @@ function App() {
           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/60 backdrop-blur-sm" onClick={() => setShowAddBill(false)}>
             <div className="w-full max-w-[435px] bg-[#111827] text-white rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl" onClick={e => e.stopPropagation()}>
               <h2 className="text-lg font-bold mb-4">Add Bill</h2>
-              <form onSubmit={e => { e.preventDefault(); const nb = { id: 'b'+Date.now(), name: billName, type: billType, amount: Number(billAmount), dueDate: billDue, paid: false }; save({...data, bills: [nb, ...(data.bills||[])]}); setBillName(''); setBillAmount(''); setShowAddBill(false); toastFn('Bill Added ✔'); }} className="space-y-3">
-                <div className="grid grid-cols-4 gap-2 mb-2">
-                  {BILL_TYPES.map(bt => (
-                    <button key={bt.id} type="button" onClick={() => { setBillType(bt.id); setBillName(lang==='bn'?bt.bnName+' বিল':bt.name+' Bill'); }} className={`p-2 rounded-lg border flex flex-col items-center ${billType === bt.id ? 'bg-emerald-900/40 border-emerald-500 text-emerald-300' : 'bg-slate-800 border-slate-700 text-slate-400'}`}>
-                      <span className="material-symbols-outlined text-[18px] mb-1">{bt.icon}</span><span className="text-[9px]">{bt.name}</span>
-                    </button>
-                  ))}
-                </div>
+              <form onSubmit={onAddBill} className="space-y-3">
+                <div className="grid grid-cols-4 gap-2 mb-2">{BILL_TYPES.map(bt => (<button key={bt.id} type="button" onClick={() => { setBillType(bt.id); setBillName(lang==='bn'?bt.bnName+' বিল':bt.name+' Bill'); }} className={`p-2 rounded-lg border flex flex-col items-center ${billType === bt.id ? 'bg-emerald-900/40 border-emerald-500 text-emerald-300' : 'bg-slate-800 border-slate-700 text-slate-400'}`}><span className="material-symbols-outlined text-[18px] mb-1">{bt.icon}</span><span className="text-[9px]">{bt.name}</span></button>))}</div>
                 <input type="text" required placeholder="Bill Name" value={billName} onChange={e => setBillName(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none" />
                 <input type="number" required placeholder="Amount (৳)" value={billAmount} onChange={e => setBillAmount(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none" />
                 <input type="date" value={billDue} onChange={e => setBillDue(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none" />
@@ -1105,7 +950,23 @@ function App() {
           </div>
         )}
 
-        {/* MODAL: BUDGET & AI SUGGESTION */}
+        {/* MODAL: ADD LOAN */}
+        {showAddLoan && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4" onClick={() => setShowAddLoan(false)}>
+            <div className="bg-[#111827] text-white w-full max-w-[400px] rounded-3xl p-5 space-y-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+              <h2 className="font-bold text-lg">Add Loan</h2>
+              <form onSubmit={onAddLoan} className="space-y-3">
+                <div className="grid grid-cols-2 gap-2"><button type="button" onClick={() => setLoanType('lent')} className={`p-2 rounded-xl border text-xs font-bold ${loanType === 'lent' ? 'bg-indigo-950 border-indigo-500 text-indigo-300' : 'bg-slate-800 text-slate-400'}`}>💚 Lent</button><button type="button" onClick={() => setLoanType('borrowed')} className={`p-2 rounded-xl border text-xs font-bold ${loanType === 'borrowed' ? 'bg-emerald-950 border-emerald-500 text-emerald-300' : 'bg-slate-800 text-slate-400'}`}>💔 Borrowed</button></div>
+                <input type="text" required placeholder="Person Name" value={loanPerson} onChange={e => setLoanPerson(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none" />
+                <input type="number" required placeholder="Amount (৳)" value={loanAmount} onChange={e => setLoanAmount(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none" />
+                <input type="date" value={loanDate} onChange={e => setLoanDate(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none" />
+                <button type="submit" className="w-full py-3 bg-primary text-white font-bold rounded-xl text-sm">Save Loan</button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL: BUDGET (AI) */}
         {showBudget && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4" onClick={() => setShowBudget(false)}>
             <div className="bg-white dark:bg-slate-800 w-full max-w-xs rounded-3xl p-5 space-y-4 shadow-2xl" onClick={e => e.stopPropagation()}>
@@ -1114,12 +975,7 @@ function App() {
                 <input type="number" autoFocus value={tempBudget} onChange={e => setTempBudget(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-primary rounded-xl px-3 py-2 text-xl font-bold outline-none" />
                 <button type="submit" className="w-full bg-primary text-white font-bold py-2 rounded-xl text-sm">Save</button>
               </form>
-              <div className="border-t dark:border-slate-700 pt-3">
-                <button type="button" onClick={getBudgetSuggestion} disabled={isSuggesting} className="w-full py-2 bg-indigo-50 dark:bg-slate-900 text-primary dark:text-indigo-400 font-bold text-xs rounded-xl flex items-center justify-center gap-1">
-                  {isSuggesting ? <div className="spinner border-primary"></div> : <><span className="material-symbols-outlined text-[16px]">auto_awesome</span> Get AI Suggestion</>}
-                </button>
-                {aiBudgetSuggest && <p className="text-[11px] text-slate-500 mt-2 text-center bg-slate-50 dark:bg-slate-900 p-2 rounded-lg">{aiBudgetSuggest}</p>}
-              </div>
+              <div className="border-t dark:border-slate-700 pt-3"><button type="button" onClick={getBudgetSuggestion} disabled={isSuggesting} className="w-full py-2 bg-indigo-50 dark:bg-slate-900 text-primary dark:text-indigo-400 font-bold text-xs rounded-xl flex items-center justify-center gap-1">{isSuggesting ? <div className="spinner border-primary"></div> : <><span className="material-symbols-outlined text-[16px]">auto_awesome</span> Get AI Suggestion</>}</button>{aiBudgetSuggest && <p className="text-[11px] text-slate-500 mt-2 text-center bg-slate-50 dark:bg-slate-900 p-2 rounded-lg">{aiBudgetSuggest}</p>}</div>
             </div>
           </div>
         )}
@@ -1128,47 +984,46 @@ function App() {
         {priceItem && (
           <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setPriceItem(null)}>
             <div className="bg-white dark:bg-slate-800 w-full max-w-xs rounded-3xl p-5 space-y-4 shadow-2xl" onClick={e => e.stopPropagation()}>
-              <div>
-                <span className="text-[10px] font-extrabold text-secondary uppercase">Bought!</span>
-                <h3 className="font-bold text-base">{priceItem.name}</h3>
-              </div>
-              <form onSubmit={onConfirmPrice} className="space-y-3">
-                <input type="number" autoFocus value={tempPrice} onChange={e => setTempPrice(e.target.value)} placeholder="0" className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-primary rounded-xl px-3 py-2 text-xl font-bold outline-none" />
-                <button type="submit" className="w-full bg-primary text-white font-bold py-2 rounded-xl text-sm">✓ Confirm</button>
-              </form>
+              <div><span className="text-[10px] font-extrabold text-secondary uppercase">Bought!</span><h3 className="font-bold text-base">{priceItem.name}</h3></div>
+              <form onSubmit={onConfirmPrice} className="space-y-3"><input type="number" autoFocus value={tempPrice} onChange={e => setTempPrice(e.target.value)} placeholder="0" className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-primary rounded-xl px-3 py-2 text-xl font-bold outline-none" /><button type="submit" className="w-full bg-primary text-white font-bold py-2 rounded-xl text-sm">✓ Confirm</button></form>
             </div>
           </div>
         )}
 
-        {/* MODAL: HISTORY DETAILS (WITH EDIT PRICE) */}
+        {/* MODAL: HISTORY DETAILS (EDIT PRICE) */}
         {selectedHist && (
           <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setSelectedHist(null)}>
             <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-5 space-y-4 shadow-2xl" onClick={e => e.stopPropagation()}>
-              <div className="flex justify-between border-b dark:border-slate-700 pb-3">
-                <div>
-                  <h3 className="font-bold text-sm">{selectedHist.dateStr}</h3>
-                  <p className="text-xs text-slate-400">Total: ৳{Number(selectedHist.totalSpent).toLocaleString()}</p>
-                </div>
-                <button onClick={() => setSelectedHist(null)} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700">×</button>
-              </div>
+              <div className="flex justify-between border-b dark:border-slate-700 pb-3"><div><h3 className="font-bold text-sm">{selectedHist.dateStr}</h3><p className="text-xs text-slate-400">Total: ৳{Number(selectedHist.totalSpent).toLocaleString()}</p></div><button onClick={() => setSelectedHist(null)} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700">×</button></div>
               <div className="space-y-2 max-h-64 overflow-y-auto no-scrollbar">
                 {(selectedHist.items || []).map((it, idx) => (
                   <div key={idx} className="flex items-center justify-between text-xs py-1.5 border-b border-slate-50 dark:border-slate-800">
-                    <span>{it.bought ? '✅' : '⬜'} {it.name} ({it.quantity})</span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold">৳{Number(it.price || 0).toLocaleString()}</span>
-                      {editHistItem?.id === it.id ? (
-                        <form onSubmit={handleEditHistSubmit} className="flex items-center gap-1">
-                          <input type="number" autoFocus value={editHistPrice} onChange={e => setEditHistPrice(e.target.value)} className="w-12 border rounded px-1 text-[10px]" />
-                          <button type="submit" className="text-emerald-500 font-bold text-[10px]">OK</button>
-                        </form>
-                      ) : (
-                        <button onClick={() => { setEditHistItem(it); setEditHistPrice(String(it.price)); }} className="text-primary text-[10px]">✏️ Edit</button>
-                      )}
-                    </div>
+                    <span>{it.bought ? '✅' : '⬜'} {it.name} {it.quantity && `(${it.quantity})`}</span>
+                    <div className="flex items-center gap-2"><span className="font-bold">৳{Number(it.price || 0).toLocaleString()}</span>{editHistItem?.id === it.id ? (<form onSubmit={handleEditHistSubmit} className="flex items-center gap-1"><input type="number" autoFocus value={editHistPrice} onChange={e => setEditHistPrice(e.target.value)} className="w-12 border rounded px-1 text-[10px]" /><button type="submit" className="text-emerald-500 font-bold text-[10px]">OK</button></form>) : (<button onClick={() => { setEditHistItem(it); setEditHistPrice(String(it.price)); }} className="text-primary text-[10px]">✏️ Edit</button>)}</div>
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL: SHARE */}
+        {showShare && (
+          <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowShare(false)}>
+            <div className="bg-white dark:bg-slate-800 w-full max-w-[435px] rounded-t-3xl sm:rounded-3xl p-5 space-y-3 shadow-2xl" onClick={e => e.stopPropagation()}>
+              <div className="flex justify-between items-center"><h3 className="font-bold text-base">Share Bazar List</h3><button onClick={() => setShowShare(false)} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700">×</button></div>
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-3 border max-h-44 overflow-y-auto"><pre className="text-[11px] whitespace-pre-wrap font-sans">{genShareText()}</pre></div>
+              <div className="grid grid-cols-2 gap-2.5"><button onClick={() => { window.open(`https://wa.me/?text=${encodeURIComponent(genShareText())}`, '_blank'); setShowShare(false); }} className="bg-[#25D366] text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-1.5"><span>💬 WhatsApp</span></button><button onClick={() => { navigator.clipboard?.writeText(genShareText()); setShowShare(false); toastFn('Copied!'); }} className="bg-primary text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-1.5"><span>📋 Copy Text</span></button></div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL: EDIT MEMBER NAME */}
+        {showEditName && (
+          <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowEditName(false)}>
+            <div className="bg-white dark:bg-slate-800 w-full max-w-xs rounded-3xl p-5 space-y-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+              <h3 className="font-bold text-base">✏️ Edit Member Name</h3>
+              <form onSubmit={e => { e.preventDefault(); const u = (data.members || []).map(m => m.id === editNameId ? { ...m, name: tempName.trim() } : m); save({ ...data, members: u }); setShowEditName(false); toastFn('Updated ✔'); }} className="space-y-3"><input type="text" autoFocus value={tempName} onChange={e => setTempName(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border rounded-xl px-3 py-2 text-sm font-bold outline-none" /><button type="submit" className="w-full bg-primary text-white font-bold py-2 rounded-xl text-xs">Save</button></form>
             </div>
           </div>
         )}
