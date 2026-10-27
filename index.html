@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>বউ বলছে - Live</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-512.png">
 <!-- React & Tailwind -->
 <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -28,7 +31,7 @@
 window.onerror = function(message, source, lineno, colno, error) {
   var errDiv = document.getElementById('error-log');
   errDiv.style.display = 'block';
-  errDiv.innerHTML += `<b>Error:</b> ${message} <br> <b>Line:</b> ${lineno} <br> <b>Check if you saved as UTF-8</b><br><hr>`;
+  errDiv.innerHTML += `<b>Error:</b> ${message} <br> <b>Line:</b> ${lineno} <br><hr>`;
   return false;
 };
 </script>
@@ -48,7 +51,11 @@ const firebaseConfig = {
 
 let app, db, auth;
 try {
-  app = firebase.initializeApp(firebaseConfig);
+  if (!firebase.apps.length) {
+    app = firebase.initializeApp(firebaseConfig);
+  } else {
+    app = firebase.app();
+  }
   db = firebase.firestore();
   auth = firebase.auth();
 } catch(e) { console.error("Firebase init error:", e); }
@@ -103,9 +110,8 @@ const playSound=()=>{try{const C=window.AudioContext||window.webkitAudioContext;
 const prevMonthKey=(k)=>{const[y,m]=k.split('-').map(Number);const d=new Date(y,m-2,1);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;};
 
 function App(){
-  const [user, setUser] = useState(null);
   const [isSynced, setIsSynced] = useState(false);
-  const [syncError, setSyncError] = useState(false);
+  const [syncError, setSyncError] = useState('');
   
   const [data,setData]=useState(DEMO);
   const [familyCode,setFamilyCode]=useState(localStorage.getItem('bb_family_code') || '');
@@ -173,14 +179,11 @@ function App(){
   const nowStr=()=>new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
   const getPrevPrice=(n)=>{if(!n)return null;const dict=data.priceHistory||{};const l=n.toLowerCase().trim();for(const[k,v]of Object.entries(dict))if(l.includes(k.toLowerCase()))return v;return null;};
 
+  // Try anonymous auth optionally in background, but NEVER block Firestore sync!
   useEffect(() => {
-    if(!auth) return;
-    auth.signInAnonymously().catch(e=>{
-        console.error("Auth Error:", e);
-        setSyncError(true);
-    });
-    const unsub = auth.onAuthStateChanged(u => setUser(u));
-    return () => unsub();
+    if(auth) {
+      auth.signInAnonymously().catch(e => console.warn("Optional Auth skipped:", e.message));
+    }
   }, []);
 
   const suggestions = useMemo(() => {
@@ -197,33 +200,34 @@ function App(){
     }, 0);
   }, [data.todayItems, data.priceHistory]);
 
+  // Direct Real-Time Firestore Sync (Works without waiting for Auth)
   useEffect(() => {
-    if (!user || !familyCode) return;
+    if (!db || !familyCode) return;
     
-    // Timeout for sync failure check
-    const syncTimeout = setTimeout(() => {
-        if(!isSynced) setSyncError(true);
-    }, 10000);
-
-    const docRef = db.collection('artifacts').doc('bou-bolche-app').collection('public').doc('data').collection('families').doc(familyCode.toUpperCase());
+    const cleanCode = familyCode.trim().toUpperCase();
+    const docRef = db.collection('families').doc(cleanCode);
 
     const unsubscribe = docRef.onSnapshot((docSnap) => {
-      clearTimeout(syncTimeout);
-      setSyncError(false);
+      setSyncError('');
+      setIsSynced(true);
       if (docSnap.exists) {
         const cloudData = docSnap.data();
         setData(prev => ({ ...prev, ...cloudData }));
-        setIsSynced(true);
       } else {
-        const newData = { ...DEMO, familyCode: familyCode.toUpperCase(), members: [{id:'m1', name:myName, avatar:'👤'}], updatedAt: Date.now() };
-        docRef.set(newData);
+        const newData = { ...DEMO, familyCode: cleanCode, members: [{id:'m1', name:myName||'Member', role:'Admin', avatar:'👤'}], updatedAt: Date.now() };
+        docRef.set(newData).catch(err => {
+          console.error("Write error:", err);
+          setSyncError(err.code || 'permission-denied');
+        });
       }
     }, (error) => {
-        console.error("Firestore Error:", error);
-        setSyncError(true);
+      console.error("Firestore Listen Error:", error);
+      setIsSynced(false);
+      setSyncError(error.code || 'sync-error');
     });
-    return () => { unsubscribe(); clearTimeout(syncTimeout); };
-  }, [user, familyCode]);
+
+    return () => unsubscribe();
+  }, [familyCode, myName]);
 
   useEffect(() => {
     if (!isSynced || !myName) return;
@@ -251,28 +255,25 @@ function App(){
     });
 
     if (changed) {
-      const updatedData = { ...data, bills: updatedBills };
-      setData(updatedData);
-      if(user) {
-          const docRef = db.collection('artifacts').doc('bou-bolche-app').collection('public').doc('data').collection('families').doc(familyCode.toUpperCase());
-          docRef.set({ ...updatedData, updatedAt: Date.now() }).catch(console.error);
-      }
+      save({ ...data, bills: updatedBills });
     }
-  }, [isSynced, data.bills, user, familyCode]);
+  }, [isSynced, data.bills, familyCode]);
 
   const save=(newData)=>{
     setData(newData);
-    if (!user || !familyCode) return;
-    const docRef = db.collection('artifacts').doc('bou-bolche-app').collection('public').doc('data').collection('families').doc(familyCode.toUpperCase());
-    docRef.set({ ...newData, updatedAt: Date.now() }).catch(e=>{
+    if (!db || !familyCode) return;
+    const cleanCode = familyCode.trim().toUpperCase();
+    const docRef = db.collection('families').doc(cleanCode);
+    docRef.set({ ...newData, updatedAt: Date.now() }, { merge: true }).catch(e=>{
         console.error("Save error:", e);
-        toastFn("সেভ করা যায়নি, ইন্টারনেট চেক করুন");
+        setSyncError(e.code || 'save-error');
+        toastFn("সিংক এরর! ফায়ারবেস রুলস চেক করুন");
     });
   };
 
   const onJoinFamily = (e) => {
     e.preventDefault();
-    if(joinCodeInput.trim().length < 4) return toastFn('কোড দিন');
+    if(joinCodeInput.trim().length < 4) return toastFn('সঠিক কোড দিন');
     if(!joinNameInput.trim()) return toastFn('আপনার নাম লিখুন');
     
     const code = joinCodeInput.trim().toUpperCase();
@@ -286,12 +287,12 @@ function App(){
   };
 
   const onGenerateCode = () => {
-    if(!joinNameInput.trim()) return toastFn('আপনার নাম লিখুন');
+    const nameToUse = joinNameInput.trim() || myName || 'Admin';
     const cs='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let c='';for(let i=0;i<6;i++)c+=cs.charAt(Math.floor(Math.random()*cs.length));
     localStorage.setItem('bb_family_code', c);
-    localStorage.setItem('bb_my_name', joinNameInput.trim());
+    localStorage.setItem('bb_my_name', nameToUse);
     setFamilyCode(c);
-    setMyName(joinNameInput.trim());
+    setMyName(nameToUse);
     toastFn(`নতুন কোড: ${c}`);
   };
 
@@ -367,7 +368,7 @@ function App(){
         (data.history||[]).filter(h=>h.monthKey===mk&&!h.isNew).forEach(h=>{(h.items||[]).filter(i=>i.bought).forEach(it=>{const c=it.category||'other';tot[c]=(tot[c]||0)+(Number(it.price)||0);});});
         if(mk==='2026-10'){(data.todayItems||[]).filter(i=>i.bought).forEach(it=>{const c=it.category||'other';tot[c]=(tot[c]||0)+(Number(it.price)||0);});}
         const monthBills = (data.bills||[]).filter(b => b.paid && b.paidDate && b.paidDate.startsWith(mk));
-        monthBills.forEach(b => { const c = b.type || 'other'; tot[c] = (tot[c] || 0) + Number(b.amount); });
+        monthBills.forEach(b => { const c = b.type || 'other'; tot[c] = (catT => (tot[c] || 0) + Number(b.amount))(); });
         return tot;
     };
     const ct=getTot(cur),pt=getTot(prv);
@@ -396,7 +397,7 @@ function App(){
     const total=bought.reduce((s,i)=>s+(Number(i.price)||0),0);
     const ex=[...(data.history||[])];
     const idx=ex.findIndex(h=>h.id==='h1'||h.isNew);
-    const entry={id:'h1',dateStr:'Mon, 26 Oct 2026 • Today',monthKey:'2026-10',isNew:true,boughtCount:bought.length,totalCount:items.length,totalSpent:total,sender:myName,tag:'Shopping',type:'received',items:items.map(i=>({name:i.name,quantity:i.quantity,size:i.size||'',category:i.category,price:i.price,bought:i.bought,addedBy:i.addedBy}))};
+    const entry={id:'h1',dateStr:'Tue, 27 Oct 2026 • Today',monthKey:'2026-10',isNew:true,boughtCount:bought.length,totalCount:items.length,totalSpent:total,sender:myName,tag:'Shopping',type:'received',items:items.map(i=>({name:i.name,quantity:i.quantity,size:i.size||'',category:i.category,price:i.price,bought:i.bought,addedBy:i.addedBy}))};
     if(idx>=0)ex[idx]=entry;else ex.unshift(entry);
     return ex;
   };
@@ -435,25 +436,25 @@ function App(){
         note:iNote.trim()
     };
     const u=[...(data.todayItems||[]),newItem];
-    save({...data,todayItems:u,history:syncHist(u),notification:{active:true,sender:myName,dateStr:'Mon, 26 Oct 2026',itemCount:u.length}});
+    save({...data,todayItems:u,history:syncHist(u),senderTag:`From ${myName}`,notification:{active:true,sender:myName,dateStr:'Today',itemCount:u.length}});
     if(sound)playSound();
     setIName('');setIQty('1 kg');setISize('');setIPrice('');setINote('');setIUrgent(false);setShowAdd(false);setShowSuggestions(false);
-    toastFn(`"${newItem.name}" ✔`);
+    toastFn(`"${newItem.name}" যোগ হয়েছে ✔`);
   };
 
   const onDeleteItem=(id)=>{
     const u=data.todayItems.filter(i=>i.id!==id);
-    save({...data,todayItems:u,history:syncHist(u)});setMenuOpen(null);toastFn(t('মুছে','Deleted'));
+    save({...data,todayItems:u,history:syncHist(u)});setMenuOpen(null);toastFn(t('মুছে ফেলা হয়েছে','Deleted'));
   };
 
   const onComplete=()=>{
     const bought=(data.todayItems||[]).filter(i=>i.bought);
     if(bought.length===0){toastFn(t('অন্তত ১টি কিনুন!','Buy 1!'));return;}
     const total=bought.reduce((s,i)=>s+(Number(i.price)||0),0);
-    const sess={id:'h'+Date.now(),dateStr:`Mon, 26 Oct 2026 (${nowStr()})`,monthKey:'2026-10',isNew:false,boughtCount:bought.length,totalCount:data.todayItems.length,totalSpent:total,sender:myName,tag:'Completed',type:'received',items:[...data.todayItems]};
+    const sess={id:'h'+Date.now(),dateStr:`27 Oct 2026 (${nowStr()})`,monthKey:'2026-10',isNew:false,boughtCount:bought.length,totalCount:data.todayItems.length,totalSpent:total,sender:myName,tag:'Completed',type:'received',items:[...data.todayItems]};
     const rem=data.todayItems.filter(i=>!i.bought);
     save({...data,todayItems:rem,history:[sess,...(data.history||[]).filter(h=>!h.isNew)]});
-    if(sound)playSound();toastFn(t('🎉 সেভ!','🎉 Saved!'));setTab('history');
+    if(sound)playSound();toastFn(t('🎉 সেভ হয়েছে!','🎉 Saved!'));setTab('history');
   };
 
   const onSaveBudget=(e)=>{e.preventDefault();save({...data,monthlyBudget:Math.max(500,Number(tempBudget)||15000)});setShowBudget(false);toastFn(t('আপডেট ✔','Updated ✔'));};
@@ -474,7 +475,7 @@ function App(){
       const b={id:'b'+Date.now(),name:billName.trim(),type:billType,amount:Number(billAmount)||0,dueDate:billDue||'',paid:false,paidDate:null,note:billNote.trim(), recurring: billRecurring};
       save({...data,bills:[...(data.bills||[]),b]});
       setBillName('');setBillAmount('');setBillDue('');setBillNote('');setBillType('electricity');setBillRecurring(false);setShowAddBill(false);
-      toastFn(t('বিল ✔','Bill ✔'));
+      toastFn(t('বিল যোগ হয়েছে ✔','Bill ✔'));
   };
   
   const onToggleBill=(b)=>{
@@ -484,11 +485,11 @@ function App(){
     toastFn(b.paid?t('বাকি','Due'):t('পরিশোধিত ✔','Paid ✔'));
   };
   
-  const onDelBill=(id)=>{save({...data,bills:(data.bills||[]).filter(b=>b.id!==id)});toastFn(t('মুছে','Deleted'));};
+  const onDelBill=(id)=>{save({...data,bills:(data.bills||[]).filter(b=>b.id!==id)});toastFn(t('মুছে ফেলা হয়েছে','Deleted'));};
 
   const onAddLoan=(e)=>{e.preventDefault();if(!loanPerson.trim()||!loanAmount)return;const l={id:'l'+Date.now(),person:loanPerson.trim(),type:loanType,amount:Number(loanAmount)||0,date:loanDate||new Date().toISOString().split('T')[0],dueDate:loanDue||null,note:loanNote.trim(),settled:false};save({...data,loans:[...(data.loans||[]),l]});setLoanPerson('');setLoanAmount('');setLoanDue('');setLoanNote('');setLoanType('lent');setLoanDate(new Date().toISOString().split('T')[0]);setShowAddLoan(false);toastFn(loanType==='lent'?t('💚 পাওনা','💚 Lent'):t('💔 দেনা','💔 Borrowed'));};
   const onToggleLoan=(l)=>{save({...data,loans:(data.loans||[]).map(x=>x.id===l.id?{...x,settled:!x.settled}:x)});toastFn(l.settled?t('চলমান','Active'):t('পরিশোধিত ✔','Settled ✔'));};
-  const onDelLoan=(id)=>{save({...data,loans:(data.loans||[]).filter(l=>l.id!==id)});toastFn(t('মুছে','Deleted'));};
+  const onDelLoan=(id)=>{save({...data,loans:(data.loans||[]).filter(l=>l.id!==id)});toastFn(t('মুছে ফেলা হয়েছে','Deleted'));};
 
   const onSaveName=(e)=>{e.preventDefault();const n=tempName.trim();if(!n)return;const u=(data.members||[]).map(m=>m.id===editNameId?{...m,name:n}:m);save({...data,members:u});setShowEditName(false);toastFn(t('নাম আপডেট ✔','Name updated ✔'));};
 
@@ -496,12 +497,12 @@ function App(){
   const onAddQuick=(e)=>{e.preventDefault();if(!qaName.trim())return;const n={id:'q'+Date.now(),name:qaName.trim(),qty:qaQty||'1 pc',category:qaCat,size:qaSize};save({...data,quickAddItems:[...(data.quickAddItems||[]),n]});setQaName('');setQaQty('1 kg');setQaCat('grocery');setQaSize('');toastFn(t('⚡ যোগ','⚡ Added'));};
   const onDelQuick=(id)=>{save({...data,quickAddItems:(data.quickAddItems||[]).filter(q=>q.id!==id)});toastFn(t('মুছে','Removed'));};
 
-  const onVoice=()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){toastFn(t('ভয়েস নেই','No voice'));return;}const r=new SR();r.lang=lang==='bn'?'bn-BD':'en-US';r.interimResults=false;setListening(true);toastFn(t('🎤 বলুন...','🎤 Speak...'));r.onresult=(e)=>{const txt=e.results[0][0].transcript.trim();const m=txt.match(/(\d+(?:\.\d+)?\s*(?:কেজি|গ্রাম|পিস|প্যাকেট|লিটার|ডজন|kg|gm|pc|pcs|pack|ltr))/i);if(m){setIQty(m[1]);setIName(txt.replace(m[1],'').trim()||txt);}else setIName(txt);setListening(false);};r.onerror=()=>{setListening(false);toastFn(t('আবার','Retry'));};r.onend=()=>setListening(false);r.start();};
+  const onVoice=()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){toastFn(t('ভয়েস সাপোর্ট নেই','No voice'));return;}const r=new SR();r.lang=lang==='bn'?'bn-BD':'en-US';r.interimResults=false;setListening(true);toastFn(t('🎤 বলুন...','🎤 Speak...'));r.onresult=(e)=>{const txt=e.results[0][0].transcript.trim();const m=txt.match(/(\d+(?:\.\d+)?\s*(?:কেজি|গ্রাম|পিস|প্যাকেট|লিটার|ডজন|kg|gm|pc|pcs|pack|ltr))/i);if(m){setIQty(m[1]);setIName(txt.replace(m[1],'').trim()||txt);}else setIName(txt);setListening(false);};r.onerror=()=>{setListening(false);toastFn(t('আবার চেষ্টা করুন','Retry'));};r.onend=()=>setListening(false);r.start();};
 
-  const genShareText=()=>{const items=data.todayItems||[];const unb=items.filter(i=>!i.bought);let s=`🛒 *${t('বাজার লিস্ট','Bazar List')}*\n📅 ${data.notification?.dateStr||'Today'} • 👤 ${myName}\n━━━━━━━━━━━━━━\n`;if(items.length===0)s+=t('(খালি)','(empty)')+'\n';else items.forEach((it,idx)=>{s+=`${it.bought?'✅':'⬜'} ${idx+1}. ${it.name}${it.size?` [${it.size}]`:''} — ${it.quantity}`;if(it.note)s+=` _(${it.note})_`;s+='\n';});s+=`━━━━━━━━━━━━━━\n📦 ${t('মোট','Total')}: ${items.length} • ${t('বাকি','Left')}: ${unb.length}\n🔑 ${t('কোড','Code')}: ${data.familyCode}\n— ${t('বউ বলছে','Bou Bolche')}`;return s;};
+  const genShareText=()=>{const items=data.todayItems||[];const unb=items.filter(i=>!i.bought);let s=`🛒 *${t('বাজার লিস্ট','Bazar List')}*\n📅 ${data.notification?.dateStr||'Today'} • 👤 ${myName}\n━━━━━━━━━━━━━━\n`;if(items.length===0)s+=t('(খালি)','(empty)')+'\n';else items.forEach((it,idx)=>{s+=`${it.bought?'✅':'⬜'} ${idx+1}. ${it.name}${it.size?` [${it.size}]`:''} — ${it.quantity}`;if(it.note)s+=` _(${it.note})_`;s+='\n';});s+=`━━━━━━━━━━━━━━\n📦 ${t('মোট','Total')}: ${items.length} • ${t('বাকি','Left')}: ${unb.length}\n🔑 ${t('কোড','Code')}: ${familyCode}\n— ${t('বউ বলছে','Bou Bolche')}`;return s;};
   const shareWA=()=>{window.open(`https://wa.me/?text=${encodeURIComponent(genShareText())}`,'_blank');setShowShare(false);toastFn('WhatsApp 💬');};
-  const shareMSG=async()=>{const s=genShareText();try{await navigator.clipboard.writeText(s);}catch{}if(navigator.share){try{await navigator.share({title:'Bazar',text:s});setShowShare(false);return;}catch{}}setShowShare(false);toastFn(t('কপি! paste করুন','Copied!'));};
-  const copyText=async()=>{try{await navigator.clipboard.writeText(genShareText());toastFn(t('কপি!','Copied!'));}catch{}};
+  const shareMSG=async()=>{const s=genShareText();try{await navigator.clipboard.writeText(s);}catch{}if(navigator.share){try{await navigator.share({title:'Bazar',text:s});setShowShare(false);return;}catch{}}setShowShare(false);toastFn(t('কপি হয়েছে!','Copied!'));};
+  const copyText=async()=>{try{await navigator.clipboard.writeText(genShareText());toastFn(t('কপি হয়েছে!','Copied!'));}catch{}};
 
   const cardCls=`${dark?'bg-slate-800 border-slate-700':'bg-white border-gray-100'} rounded-[22px] border shadow-2xs`;
   const inputCls=`${dark?'bg-slate-900 border-slate-700 text-white':'bg-[#F6F7F3] border-gray-200'} border rounded-xl px-3 py-2 text-sm w-full focus:outline-none`;
@@ -520,12 +521,12 @@ function App(){
           </div>
           
           <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-3 text-xs text-amber-800 dark:text-amber-300">
-            ⚠️ {t('এক ফোনে নতুন কোড তৈরি করুন, অন্য ফোনগুলোতে সেই কোডটি লিখুন।','Generate code on one phone, enter it on others.')}
+            ⚠️ {t('এক ফোনে নতুন কোড তৈরি করুন, অন্য ফোনগুলোতে সেই একই কোডটি লিখে কানেক্ট করুন।','Generate code on one phone, enter the same code on others.')}
           </div>
 
           <form onSubmit={onJoinFamily} className="space-y-3">
             <input type="text" placeholder={t('আপনার নাম (যেমন: Shakil)','Your Name (e.g. Shakil)')} value={joinNameInput} onChange={e=>setJoinNameInput(e.target.value)} className={`${inputCls} text-sm font-bold`} />
-            <input type="text" placeholder={t('ফ্যামিলি কোড (যেমন: W4ZZXF)','Family Code (e.g. W4ZZXF)')} value={joinCodeInput} onChange={e=>setJoinCodeInput(e.target.value.toUpperCase())} className={`${inputCls} text-center text-lg font-mono uppercase tracking-widest font-bold`} maxLength={6} />
+            <input type="text" placeholder={t('ফ্যামিলি কোড (যেমন: M3KK3F)','Family Code (e.g. M3KK3F)')} value={joinCodeInput} onChange={e=>setJoinCodeInput(e.target.value.toUpperCase())} className={`${inputCls} text-center text-lg font-mono uppercase tracking-widest font-bold`} maxLength={6} />
             <button type="submit" className="w-full bg-[#159947] text-white font-bold py-3 rounded-xl shadow-md text-sm">🔗 {t('কানেক্ট করুন','Connect')}</button>
           </form>
           
@@ -549,16 +550,16 @@ function App(){
 
         {/* FIXED HEADER */}
         <div className={`flex-none px-5 pt-4 pb-3 border-b ${dark?'bg-slate-900/90 border-slate-800':'bg-white/90 border-gray-200/70'} backdrop-blur-md flex items-center justify-between z-20`}>
-          <div className="flex items-center gap-2">
-            <img src="icon-192.png" alt="Logo" className="w-8 h-8 rounded-xl shadow-xs object-cover" onError={(e)=>{e.target.style.display='none'; document.getElementById('fallback-logo-mini').style.display='flex';}} />
-            <div id="fallback-logo-mini" className="w-8 h-8 rounded-xl bg-[#159947] hidden items-center justify-center text-white font-black text-base shadow-xs">🧺</div>
+          <div className="flex items-center gap-2.5">
+            <img src="icon-192.png" alt="Logo" className="w-9 h-9 rounded-xl shadow-xs object-cover" onError={(e)=>{e.target.style.display='none'; document.getElementById('fallback-logo-mini').style.display='flex';}} />
+            <div id="fallback-logo-mini" className="w-9 h-9 rounded-xl bg-[#159947] hidden items-center justify-center text-white font-black text-base shadow-xs">🧺</div>
             
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-[16px] tracking-tight">{t('বউ বলছে','Bou Bolche')}</span>
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 ${syncError ? 'bg-red-100 text-red-600' : isSynced?(dark?'bg-slate-800 text-green-400':'bg-green-50 text-[#159947]'):'bg-amber-100 text-amber-600'}`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${syncError ? 'bg-red-500' : isSynced?'bg-[#179C49] animate-pulse':'bg-amber-500'}`}/>
-                  {syncError ? 'Error' : isSynced ? 'Synced' : '...'}
+                  {syncError ? 'Error' : isSynced ? 'Live' : '...'}
                 </span>
               </div>
               <p className="text-[10px] text-gray-400 font-medium">{t('ফ্যামিলি বাজার','Family Bazar')} • {familyCode}</p>
@@ -576,14 +577,14 @@ function App(){
           
           {syncError && (
              <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 p-3 rounded-xl mb-4 text-xs font-bold text-red-700 dark:text-red-400">
-               ⚠️ সার্ভারের সাথে কানেক্ট করা যাচ্ছে না। ইন্টারনেট চেক করুন অথবা ফায়ারবেস Rules চেক করুন। (কোড: F-01)
+               ⚠️ ফায়ারবেস কানেক্ট হচ্ছে না ({syncError})। আপনার Firebase Console ➔ Firestore Database ➔ Rules-এ গিয়ে `allow read, write: if true;` করে Publish করুন।
              </div>
           )}
 
           {tab==='today' && (
             <div className="space-y-4">
                <div className="flex items-center justify-between">
-                <div><span className="text-xs font-semibold text-gray-400">Mon, 26 Oct 2026</span><h1 className="text-[26px] font-extrabold leading-tight">{t('আজকের বাজার','Today’s bazar')}</h1></div>
+                <div><span className="text-xs font-semibold text-gray-400">Tue, 27 Oct 2026</span><h1 className="text-[26px] font-extrabold leading-tight">{t('আজকের বাজার','Today’s bazar')}</h1></div>
                 <button onClick={()=>setShowShare(true)} className="bg-[#E8F3EB] dark:bg-green-950/80 border border-[#CBE4D2] dark:border-green-800 px-3.5 py-2 rounded-full flex items-center gap-1.5 shadow-xs"><span className="text-[#147D3B] dark:text-green-400 font-bold text-xs">📤 {t('লিস্ট পাঠান','Send list')}</span></button>
               </div>
 
@@ -596,7 +597,7 @@ function App(){
                 <div className={`${cardCls} p-3.5 border-l-[6px] border-l-[#179C49] flex items-center justify-between`}>
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-[#EEF7F0] dark:bg-green-950 flex items-center justify-center text-lg">📥</div>
-                    <div><h3 className="font-bold text-sm">{data.notification.sender} {t('একটি লিস্ট পাঠিয়েছেন','sent a list')}</h3><p className="text-[11px] text-gray-400 mt-0.5">{data.notification.dateStr} • {data.todayItems?.length||0} {t('টি আইটেম','items')}</p></div>
+                    <div><h3 className="font-bold text-sm">{data.notification.sender} {t('একটি লিস্ট আপডেট করেছেন','updated the list')}</h3><p className="text-[11px] text-gray-400 mt-0.5">{data.notification.dateStr} • {data.todayItems?.length||0} {t('টি আইটেম','items')}</p></div>
                   </div>
                   <button onClick={onDismissNotif} className="text-[#179C49] font-extrabold text-xs px-3 py-1.5 rounded-lg hover:bg-green-50 dark:hover:bg-slate-700">OK</button>
                 </div>
@@ -835,37 +836,6 @@ function App(){
                 </div>
               </div>
 
-              <div className={`${cardCls} p-4 space-y-2.5`}>
-                <div className="flex items-center justify-between"><h3 className="text-xs font-semibold text-gray-400">📊 {t('গত মাসের সাথে তুলনা','vs Last Month')}</h3><span className="text-[10px] text-gray-400 font-mono">{MONTHS.find(m=>m.key===comparison.prevKey)?.label||comparison.prevKey}</span></div>
-                {comparison.rows.length===0 ? <p className="text-xs text-gray-400 text-center py-2">{t('তুলনা নেই','No data')}</p> : comparison.rows.map(c=>(
-                  <div key={c.id} className="flex items-center gap-2">
-                    <span className="text-base">{c.icon}</span>
-                    <span className="text-xs flex-1 font-semibold truncate">{lang==='bn'?c.bnName:c.name}</span>
-                    <span className="text-xs font-bold">৳{c.current.toLocaleString()}</span>
-                    {c.current>0&&c.previous>0 ? (
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${c.change>0?'bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400':c.change<0?'bg-green-100 dark:bg-green-950 text-green-600 dark:text-green-400':'bg-gray-100 dark:bg-slate-700 text-gray-500'}`}>{c.change>0?'↑':c.change<0?'↓':'='} {Math.abs(c.change)}%</span>
-                    ) : c.current>0 ? <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400">NEW</span> : <span className="text-[10px] text-gray-400">—</span>}
-                  </div>
-                ))}
-                {comparison.rows.length>0 && (
-                  <div className="pt-2 border-t dark:border-slate-700 flex items-center justify-between text-xs font-bold">
-                    <span>{t('মোট','Total')}</span>
-                    <div className="flex items-center gap-2"><span>৳{comparison.totalCur.toLocaleString()}</span><span className={`text-[10px] px-1.5 py-0.5 rounded ${comparison.totalChange>0?'bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400':comparison.totalChange<0?'bg-green-100 dark:bg-green-950 text-green-600 dark:text-green-400':'bg-gray-100 dark:bg-slate-700 text-gray-500'}`}>{comparison.totalChange>0?'↑':comparison.totalChange<0?'↓':'='} {Math.abs(comparison.totalChange)}%</span></div>
-                  </div>
-                )}
-              </div>
-
-              <div className={`${cardCls} p-4 space-y-2.5`}>
-                <h3 className="text-xs font-semibold text-gray-400">👥 {t('কে কত খরচ করেছে','Spending per person')}</h3>
-                {perPerson.length===0 ? <p className="text-xs text-gray-400 text-center py-2">{t('ডেটা নেই','No data')}</p> : (
-                  <div className={`grid ${perPerson.length===1?'grid-cols-1':'grid-cols-2'} gap-2`}>
-                    {perPerson.map(p=>{const ic=p.name.startsWith('Meem')?'👩':p.name.startsWith('Shakil')?'👨':'👤';const bg=p.name.startsWith('Meem')?'bg-pink-50 dark:bg-pink-950/50 border-pink-200 dark:border-pink-800':p.name.startsWith('Shakil')?'bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800':'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700';return (
-                      <div key={p.name} className={`p-3 rounded-xl border ${bg}`}><div className="flex items-center gap-1.5 text-xs font-bold"><span>{ic}</span><span className="truncate">{p.name}</span></div><div className="font-extrabold text-lg mt-0.5">৳{p.total.toLocaleString()}</div><div className="text-[10px] text-gray-400">{p.count} {t('আইটেম','items')}</div></div>
-                    );})}
-                  </div>
-                )}
-              </div>
-
               <div className="space-y-2.5">
                 <h3 className="text-xs font-semibold text-gray-400 px-1">{t('ক্যাটাগরি অনুযায়ী খরচ','Spending by category')}</h3>
                 {reportData.breakdown.length===0 ? <div className={`${cardCls} p-5 text-center text-xs text-gray-400`}>{t('নেই','None')}</div> : reportData.breakdown.map(c=>(
@@ -919,12 +889,12 @@ function App(){
                 <div className="flex justify-center py-2">
                   <div className="bg-white p-3 rounded-2xl border"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${familyCode}`} alt="QR" /></div>
                 </div>
-                <p className="text-xs text-gray-400 text-center leading-relaxed">অন্য ফোনে "Join with a code" এ গিয়ে এই কোডটি দিন অথবা QR স্ক্যান করুন।</p>
+                <p className="text-xs text-gray-400 text-center leading-relaxed">অন্য ফোনে এই একই কোডটি ({familyCode}) দিয়ে কানেক্ট করলে দুটি ফোনে একসাথে রিয়েল-টাইম ডাটা আপডেট হবে।</p>
                 <button onClick={()=>{navigator.clipboard.writeText(familyCode);toastFn('কোড কপি হয়েছে!');}} className="w-full bg-[#159947] text-white font-bold py-3.5 rounded-2xl shadow-md text-sm">📤 {t('কোড কপি ও শেয়ার','Share code')}</button>
               </div>
 
               <div className={`${cardCls} p-4`}>
-                <button onClick={()=>{localStorage.removeItem('bb_family_code'); localStorage.removeItem('bb_my_name'); window.location.reload();}} className="w-full text-red-500 font-bold text-sm bg-red-50 dark:bg-red-950/30 py-3 rounded-xl border border-red-200 dark:border-red-900">🚪 {t('লগ আউট (Disconnect)','Disconnect')}</button>
+                <button onClick={()=>{localStorage.removeItem('bb_family_code'); localStorage.removeItem('bb_my_name'); window.location.reload();}} className="w-full text-red-500 font-bold text-sm bg-red-50 dark:bg-red-950/30 py-3 rounded-xl border border-red-200 dark:border-red-900">🚪 {t('ফ্যামিলি কোড পরিবর্তন / লগ আউট','Disconnect / Change Code')}</button>
               </div>
             </div>
           )}
