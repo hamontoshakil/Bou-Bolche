@@ -223,7 +223,7 @@ function App() {
   const [iUrgent, setIUrgent] = useState(false);
   const [listening, setListening] = useState(false);
 
-  // AI Recipe & Advisor Feature States
+  // AI Recipe & Advisor States
   const [recipeModal, setRecipeModal] = useState(false);
   const [recipeLoading, setRecipeLoading] = useState(false);
   const [recipeResult, setRecipeResult] = useState('');
@@ -428,7 +428,6 @@ function App() {
     toastFn(t('সফলভাবে কানেক্ট হয়েছে!', 'Connected!'));
   };
 
-  // Calculations & Metrics
   const activeMonth = MONTHS[monthIdx] || MONTHS[5];
 
   const stats = useMemo(() => {
@@ -677,7 +676,6 @@ function App() {
     }
   };
 
-  // AI Feature 2: Smart Recipe Suggestion
   const generateAiRecipe = async () => {
     const key = data.geminiApiKey || '';
     const items = (data.todayItems || []).map(i => i.name).join(', ');
@@ -703,7 +701,6 @@ function App() {
     }
   };
 
-  // AI Feature 3: Monthly Financial Advisor & Expense Insight
   const generateAiAdvisor = async () => {
     const key = data.geminiApiKey || '';
     if (!key) return toastFn(t('দয়া করে Settings থেকে Gemini API Key দিন', 'Please add Gemini API Key in Settings first'));
@@ -1418,8 +1415,8 @@ function App() {
                       <input type="text" value={iQty} onChange={e => setIQty(e.target.value)} className="w-full bg-[#121a29] border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white font-semibold outline-none" />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-slate-300 font-semibold text-xs block">Price (Auto Estimate)</label>
-                      <input type="number" value={iPrice} onChange={e => setIPrice(e.target.value)} placeholder="0 (Auto)" className="w-full bg-[#121a29] border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none" />
+                      <label className="text-slate-300 font-semibold text-xs block">Price (Optional)</label>
+                      <input type="number" value={iPrice} onChange={e => setIPrice(e.target.value)} placeholder="0 (Auto Estimate)" className="w-full bg-[#121a29] border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none" />
                     </div>
                   </div>
 
