@@ -24,26 +24,30 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y imagemagick
 
-      - name: Create Cordova Project
+      - name: Create Cordova Project & Configure Icon
         run: |
-          cordova create app com.boubolche.app "Bou Bolche"
+          cordova create app com.boubolche.app "বউ বলছে"
+          cp ${{ github.workspace }}/icon-512.png app/icon.png
           cd app
-          # লাইভ লিংকটি সরাসরি config.xml এ বসানো হচ্ছে
+          # লাইভ লিংক, ইন্টারনেট পারমিশন এবং মেইন আইকন সরাসরি config.xml এ বসানো হচ্ছে
           sed -i 's|<content src="index.html" />|<content src="https://hamontoshakil.github.io/Bou-Bolche/" />|' config.xml
-          # ইন্টারনেট এবং নেভিগেশন পারমিশন যোগ করা হচ্ছে
-          sed -i 's|</widget>|    <allow-navigation href="*" />\n    <allow-intent href="*" />\n    <access origin="*" />\n</widget>|' config.xml
+          sed -i 's|</widget>|    <icon src="icon.png" />\n    <allow-navigation href="*" />\n    <allow-intent href="*" />\n    <access origin="*" />\n</widget>|' config.xml
           cordova platform add android
 
-      - name: Set Custom App Icon
+      - name: Fix Android Adaptive & All Mipmap Icons
         run: |
           cd app/platforms/android/app/src/main/res
-          # অ্যান্ড্রয়েডের প্রতিটি ফোল্ডারের জন্য আলাদা সাইজের আইকন তৈরি করা হচ্ছে
+          # আধুনিক অ্যান্ড্রয়েডের ডিফল্ট রোবট/কর্ডোভা আইকন ওভাররাইড রিমুভ করা হচ্ছে
+          rm -rf mipmap-anydpi-v26
+          rm -rf mipmap-*-v26
+          # প্রতিটি ফোল্ডারে আপনার সুন্দর আইকনটি বসানো হচ্ছে
           for dir in mipmap-mdpi:48 mipmap-hdpi:72 mipmap-xhdpi:96 mipmap-xxhdpi:144 mipmap-xxxhdpi:192; do
             folder=$(echo $dir | cut -d: -f1)
             size=$(echo $dir | cut -d: -f2)
             mkdir -p $folder
             convert ${{ github.workspace }}/icon-512.png -resize ${size}x${size} $folder/ic_launcher.png
             convert ${{ github.workspace }}/icon-512.png -resize ${size}x${size} $folder/ic_launcher_round.png
+            convert ${{ github.workspace }}/icon-512.png -resize ${size}x${size} $folder/ic_launcher_foreground.png
           done
 
       - name: Build APK
