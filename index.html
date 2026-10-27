@@ -8,7 +8,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-512.png">
-<!-- Cordova Native Bridge (For Microphone Permission & Voice) -->
+<!-- Cordova Native Bridge (For Mic Permission) -->
 <script src="cordova.js"></script>
 <!-- React & Tailwind -->
 <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
@@ -28,19 +28,9 @@
     <div style="margin-top:12px;font-weight:bold;color:#159947">Loading Bou Bolche...</div>
   </div>
 </div>
-<div id="error-log" style="display:none;position:fixed;top:0;left:0;right:0;background:red;color:white;padding:10px;z-index:9999;font-size:12px;font-family:monospace;white-space:pre-wrap;"></div>
-
-<script>
-window.onerror = function(message, source, lineno, colno, error) {
-  var errDiv = document.getElementById('error-log');
-  errDiv.style.display = 'block';
-  errDiv.innerHTML += `<b>Error:</b> ${message} <br> <b>Line:</b> ${lineno} <br><hr>`;
-  return false;
-};
-</script>
 
 <script type="text/babel">
-const {useState,useEffect,useMemo,useRef}=React;
+const {useState,useEffect,useMemo}=React;
 
 const firebaseConfig = {
   apiKey: "AIzaSyB27N6VoJ49J40XixYmru-kAb-cXHY97o",
@@ -54,11 +44,8 @@ const firebaseConfig = {
 
 let app, db, auth;
 try {
-  if (!firebase.apps.length) {
-    app = firebase.initializeApp(firebaseConfig);
-  } else {
-    app = firebase.app();
-  }
+  if (!firebase.apps.length) app = firebase.initializeApp(firebaseConfig);
+  else app = firebase.app();
   db = firebase.firestore();
   auth = firebase.auth();
 } catch(e) { console.error("Firebase init error:", e); }
@@ -98,7 +85,7 @@ const DEFAULT_QUICK=[
 ];
 
 const DEMO={
-  familyCode:'', senderTag:'From Meem', categoryTag:'Shopping', monthlyBudget:15000, lastMonthSpent:12450,
+  familyCode:'', owner:'', pin:'', monthlyBudget:0, lastMonthSpent:0,
   priceHistory:{'আপেল':380,'apple':380,'রুই মাছ':450,'ডায়াপার':950,'ডিম':165,'দুধ':100,'আলু':55,'পেঁয়াজ':115,'তেল':340,'মুরগি':310,'নাপা':30},
   quickAddItems:DEFAULT_QUICK,
   bills:[],
@@ -109,8 +96,7 @@ const DEMO={
   history:[]
 };
 
-const playSound=()=>{try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=new C();const o1=c.createOscillator(),g1=c.createGain();o1.type='sine';o1.frequency.setValueAtTime(659.25,c.currentTime);g1.gain.setValueAtTime(0.18,c.currentTime);g1.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.25);o1.connect(g1);g1.connect(c.destination);o1.start();o1.stop(c.currentTime+0.25);const o2=c.createOscillator(),g2=c.createGain();o2.type='sine';o2.frequency.setValueAtTime(880,c.currentTime+0.14);g2.gain.setValueAtTime(0.22,c.currentTime+0.14);g2.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.55);o2.connect(g2);g2.connect(c.destination);o2.start(c.currentTime+0.14);o2.stop(c.currentTime+0.55);}catch(e){}};
-const prevMonthKey=(k)=>{const[y,m]=k.split('-').map(Number);const d=new Date(y,m-2,1);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;};
+const playSound=()=>{try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=new C();const o1=c.createOscillator(),g1=c.createGain();o1.type='sine';o1.frequency.setValueAtTime(659.25,c.currentTime);g1.gain.setValueAtTime(0.18,c.currentTime);g1.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.25);o1.connect(g1);g1.connect(c.destination);o1.start();o1.stop(c.currentTime+0.25);}catch(e){}};
 
 function App(){
   const [isSynced, setIsSynced] = useState(false);
@@ -119,8 +105,11 @@ function App(){
   const [data,setData]=useState(DEMO);
   const [familyCode,setFamilyCode]=useState(localStorage.getItem('bb_family_code') || '');
   const [myName,setMyName]=useState(localStorage.getItem('bb_my_name') || '');
-  const [joinCodeInput,setJoinCodeInput]=useState('');
-  const [joinNameInput,setJoinNameInput]=useState('');
+  const [myPin,setMyPin]=useState(localStorage.getItem('bb_my_pin') || '');
+  
+  const [inputName,setInputName]=useState('');
+  const [inputCode,setInputCode]=useState('');
+  const [inputPin,setInputPin]=useState('');
   
   const [tab,setTab]=useState('today');
   const [dark,setDark]=useState(localStorage.getItem('bb_dark') === 'true');
@@ -136,7 +125,7 @@ function App(){
   const [selectedHist,setSelectedHist]=useState(null);
   const [reportIdx,setReportIdx]=useState(5);
   const [showBudget,setShowBudget]=useState(false);
-  const [tempBudget,setTempBudget]=useState('15000');
+  const [tempBudget,setTempBudget]=useState('0');
   const [showShare,setShowShare]=useState(false);
   const [loanFilter,setLoanFilter]=useState('all');
   const [showAddLoan,setShowAddLoan]=useState(false);
@@ -150,7 +139,6 @@ function App(){
   const [editNameId,setEditNameId]=useState(null);
   const [tempName,setTempName]=useState('');
   
-  // Add Item States
   const [iName,setIName]=useState('');
   const [iQty,setIQty]=useState('1 kg');
   const [iSize,setISize]=useState('');
@@ -161,14 +149,12 @@ function App(){
   const [listening,setListening]=useState(false);
   const [showSuggestions,setShowSuggestions]=useState(false);
 
-  // Quick Add States
   const [showQaMgr,setShowQaMgr]=useState(false);
   const [qaName,setQaName]=useState('');
   const [qaQty,setQaQty]=useState('1 kg');
   const [qaCat,setQaCat]=useState('grocery');
   const [qaSize,setQaSize]=useState('');
   
-  // Bill States
   const [showAddBill,setShowAddBill]=useState(false);
   const [billName,setBillName]=useState('');
   const [billType,setBillType]=useState('electricity');
@@ -197,9 +183,7 @@ function App(){
   };
 
   useEffect(() => {
-    if(auth) {
-      auth.signInAnonymously().catch(e => console.warn("Optional Auth skipped:", e.message));
-    }
+    if(auth) auth.signInAnonymously().catch(e => console.warn("Auth skipped:", e.message));
   }, []);
 
   const suggestions = useMemo(() => {
@@ -218,7 +202,6 @@ function App(){
 
   useEffect(() => {
     if (!db || !familyCode) return;
-    
     const cleanCode = familyCode.trim().toUpperCase();
     const docRef = db.collection('families').doc(cleanCode);
 
@@ -229,109 +212,76 @@ function App(){
         const cloudData = docSnap.data();
         setData(prev => ({ ...prev, ...cloudData }));
       } else {
-        const newData = { ...DEMO, familyCode: cleanCode, members: [{id:'m1', name:myName||'Member', role:'Admin', avatar:'👤'}], updatedAt: Date.now() };
-        docRef.set(newData).catch(err => {
-          console.error("Write error:", err);
-          setSyncError(err.code || 'permission-denied');
-        });
+        const newData = { ...DEMO, familyCode: cleanCode, owner: myName, pin: myPin, monthlyBudget: 0, lastMonthSpent: 0, members: [{id:'m1', name:myName||'Admin', role:'Admin', avatar:'👤'}], updatedAt: Date.now() };
+        docRef.set(newData).catch(err => setSyncError(err.code || 'permission-denied'));
       }
     }, (error) => {
-      console.error("Firestore Listen Error:", error);
       setIsSynced(false);
       setSyncError(error.code || 'sync-error');
     });
 
     return () => unsubscribe();
-  }, [familyCode, myName]);
-
-  useEffect(() => {
-    if (!isSynced || !myName) return;
-    const exists = (data.members||[]).find(m => m.name.toLowerCase() === myName.toLowerCase());
-    if (!exists) {
-      const newMember = { id: 'm' + Date.now(), name: myName, role: 'Member', avatar: '👤' };
-      const updated = [...(data.members||[]), newMember];
-      save({ ...data, members: updated });
-    }
-  }, [isSynced, myName]);
-
-  useEffect(() => {
-    if (!isSynced || !data.bills || data.bills.length === 0) return;
-    let changed = false;
-    const today = new Date().toISOString().split('T')[0];
-    
-    const updatedBills = data.bills.map(b => {
-      if (b.recurring && !b.paid && b.dueDate && b.dueDate < today) {
-        const nextDate = new Date(b.dueDate);
-        nextDate.setMonth(nextDate.getMonth() + 1);
-        changed = true;
-        return { ...b, dueDate: nextDate.toISOString().split('T')[0] };
-      }
-      return b;
-    });
-
-    if (changed) {
-      save({ ...data, bills: updatedBills });
-    }
-  }, [isSynced, data.bills, familyCode]);
+  }, [familyCode]);
 
   const save=(newData)=>{
     setData(newData);
     if (!db || !familyCode) return;
     const cleanCode = familyCode.trim().toUpperCase();
-    const docRef = db.collection('families').doc(cleanCode);
-    docRef.set({ ...newData, updatedAt: Date.now() }, { merge: true }).catch(e=>{
-        console.error("Save error:", e);
-        setSyncError(e.code || 'save-error');
-        toastFn(t("সিংক এরর! ইন্টারনেট চেক করুন","Sync Error! Check Internet"));
+    db.collection('families').doc(cleanCode).set({ ...newData, updatedAt: Date.now() }, { merge: true }).catch(e=>{
+      setSyncError(e.code || 'save-error');
+      toastFn(t("সিংক এরর!","Sync Error!"));
     });
   };
 
-  const onJoinFamily = (e) => {
+  const handleLogin = (e) => {
     e.preventDefault();
-    if(joinCodeInput.trim().length < 4) return toastFn(t('সঠিক কোড দিন','Enter valid code'));
-    if(!joinNameInput.trim()) return toastFn(t('আপনার নাম লিখুন','Enter your name'));
-    
-    const code = joinCodeInput.trim().toUpperCase();
-    const name = joinNameInput.trim();
-    
+    if(!inputName.trim()) return toastFn(t('আপনার নাম লিখুন','Enter your name'));
+    if(!inputCode.trim()) return toastFn(t('ফ্যামিলি কোড বা আইডি দিন','Enter Family ID/Code'));
+    if(!inputPin || inputPin.length < 4) return toastFn(t('৪ সংখ্যার পিন দিন','Enter 4-digit PIN'));
+
+    const code = inputCode.trim().toUpperCase();
+    const name = inputName.trim();
+    const pin = inputPin.trim();
+
     localStorage.setItem('bb_family_code', code);
     localStorage.setItem('bb_my_name', name);
+    localStorage.setItem('bb_my_pin', pin);
     setFamilyCode(code);
     setMyName(name);
+    setMyPin(pin);
     toastFn(t('কানেক্ট হচ্ছে...','Connecting...'));
   };
 
-  const onGenerateCode = () => {
-    const nameToUse = joinNameInput.trim() || myName || 'Admin';
+  const handleGenerateNewCode = () => {
+    if(!inputName.trim()) return toastFn(t('প্রথমে আপনার নাম লিখুন','Enter your name first'));
     const cs='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let c='';for(let i=0;i<6;i++)c+=cs.charAt(Math.floor(Math.random()*cs.length));
+    const pin = inputPin.trim() || '1234';
     localStorage.setItem('bb_family_code', c);
-    localStorage.setItem('bb_my_name', nameToUse);
+    localStorage.setItem('bb_my_name', inputName.trim());
+    localStorage.setItem('bb_my_pin', pin);
     setFamilyCode(c);
-    setMyName(nameToUse);
-    toastFn(t(`নতুন কোড: ${c}`, `New Code: ${c}`));
+    setMyName(inputName.trim());
+    setMyPin(pin);
+    toastFn(t(`কোড: ${c}`, `Code: ${c}`));
   };
 
   const stats=useMemo(()=>{
     const items=data.todayItems||[];
     const bought=items.filter(i=>i.bought);
     const bazarSpent=bought.reduce((s,i)=>s+(Number(i.price)||0),0);
-    
     const todayStr = new Date().toISOString().split('T')[0];
     const paidBills = (data.bills||[]).filter(b=>b.paid);
-    const billsPaidToday = paidBills.filter(b=>b.paidDate === todayStr).reduce((s,b)=>s+Number(b.amount),0);
     const allPaidBillsTotal = paidBills.reduce((s,b)=>s+Number(b.amount),0);
-
-    const spent = bazarSpent + billsPaidToday;
-    
+    const spent = bazarSpent + paidBills.filter(b=>b.paidDate === todayStr).reduce((s,b)=>s+Number(b.amount),0);
     const pastOct=(data.history||[]).filter(h=>h.monthKey==='2026-10'&&!h.isNew).reduce((s,h)=>s+(Number(h.totalSpent)||0),0);
     const monthTotal = pastOct + bazarSpent + allPaidBillsTotal;
-    const budget=Number(data.monthlyBudget)||15000;
+    const budget=Number(data.monthlyBudget)||0;
     
     return {
       total:items.length, bought:bought.length, left:items.length-bought.length,
-      spent, bazarSpent, billsPaidToday,
+      spent, bazarSpent,
       progress:items.length>0?Math.round((bought.length/items.length)*100):0,
-      monthTotal, budget, budgetPct:Math.round((monthTotal/budget)*100)
+      monthTotal, budget, budgetPct:budget>0?Math.round((monthTotal/budget)*100):0
     };
   },[data]);
 
@@ -355,24 +305,18 @@ function App(){
     const hM=(data.history||[]).filter(h=>h.monthKey===reportMonth.key&&!h.isNew);
     const hB=hM.flatMap(h=>(h.items||[]).filter(i=>i.bought));
     const its=isOct?[...fromToday,...hB]:hB;
-    
     const monthBills = (data.bills||[]).filter(b => b.paid && b.paidDate && b.paidDate.startsWith(reportMonth.key));
-    
     const bazarTotal=its.reduce((s,i)=>s+(Number(i.price)||0),0);
     const billsTotal = monthBills.reduce((s,b)=>s+Number(b.amount),0);
     const total = bazarTotal + billsTotal;
-    
     const days=isOct?(fromToday.length>0?1:0)+hM.length:hM.length||(total>0?1:0);
-    
     const catT={};
     its.forEach(it=>{const c=it.category||'other';catT[c]=(catT[c]||0)+(Number(it.price)||0);});
     monthBills.forEach(b => { const c = b.type || 'other'; catT[c] = (catT[c] || 0) + Number(b.amount); });
-
     const breakdown=Object.entries(catT).map(([c,a])=>{
         const obj=CATS.find(x=>x.id===c) || BILL_TYPES.find(x=>x.id===c) || CATS[0];
         return{...obj,amount:a,pct:total>0?Math.round((a/total)*100):0};
     }).sort((a,b)=>b.amount-a.amount);
-    
     return {total,days,items:its.length,avg:days>0?Math.round(total/days):0,breakdown};
   },[data,reportMonth]);
 
@@ -409,18 +353,7 @@ function App(){
     e.preventDefault();if(!iName.trim())return;
     const prev=getPrevPrice(iName);
     const newItem={
-        id:'i'+Date.now(),
-        name:iName.trim(),
-        quantity:iQty.trim()||'1 kg',
-        size:iSize,
-        category:iCat,
-        addedBy:myName,
-        addedAt:nowStr(),
-        bought: false,
-        price:Number(iPrice)||0,
-        lastPrice:prev||Number(iPrice)||0,
-        urgent:iUrgent,
-        note:iNote.trim()
+        id:'i'+Date.now(),name:iName.trim(),quantity:iQty.trim()||'1 kg',size:iSize,category:iCat,addedBy:myName,addedAt:nowStr(),bought:false,price:Number(iPrice)||0,lastPrice:prev||Number(iPrice)||0,urgent:iUrgent,note:iNote.trim()
     };
     const u=[...(data.todayItems||[]),newItem];
     save({...data,todayItems:u,history:syncHist(u),senderTag:`From ${myName}`,notification:{active:true,sender:myName,dateStr:'Today',itemCount:u.length}});
@@ -444,17 +377,14 @@ function App(){
     if(sound)playSound();toastFn(t('🎉 সেভ হয়েছে!','🎉 Saved!'));setTab('history');
   };
 
-  const onSaveBudget=(e)=>{e.preventDefault();save({...data,monthlyBudget:Math.max(500,Number(tempBudget)||15000)});setShowBudget(false);toastFn(t('আপডেট ✔','Updated ✔'));};
+  const onSaveBudget=(e)=>{e.preventDefault();save({...data,monthlyBudget:Math.max(0,Number(tempBudget)||0)});setShowBudget(false);toastFn(t('আপডেট ✔','Updated ✔'));};
   const onDismissNotif=()=>save({...data,notification:{...data.notification,active:false}});
 
   const handleBillTypeSelect = (typeId) => {
     setBillType(typeId);
     const typeObj = BILL_TYPES.find(t => t.id === typeId);
-    if (typeObj && typeId !== 'other') {
-      setBillName(lang === 'bn' ? typeObj.bnName : typeObj.name);
-    } else {
-      setBillName('');
-    }
+    if (typeObj && typeId !== 'other') setBillName(lang === 'bn' ? typeObj.bnName : typeObj.name);
+    else setBillName('');
   };
   
   const onAddBill=(e)=>{
@@ -484,82 +414,40 @@ function App(){
   const onAddQuick=(e)=>{e.preventDefault();if(!qaName.trim())return;const n={id:'q'+Date.now(),name:qaName.trim(),qty:qaQty||'1 pc',category:qaCat,size:qaSize};save({...data,quickAddItems:[...(data.quickAddItems||[]),n]});setQaName('');setQaQty('1 kg');setQaCat('grocery');setQaSize('');toastFn(t('⚡ যোগ হয়েছে','⚡ Added'));};
   const onDelQuick=(id)=>{save({...data,quickAddItems:(data.quickAddItems||[]).filter(q=>q.id!==id)});toastFn(t('মুছে ফেলা হয়েছে','Removed'));};
 
-  // Parse Spoken Text for both Native & Web Voice
   const applyVoiceText = (txt) => {
     if (!txt) return;
     const m = txt.match(/(\d+(?:\.\d+)?\s*(?:কেজি|গ্রাম|পিস|প্যাকেট|লিটার|ডজন|kg|gm|pc|pcs|pack|ltr))/i);
-    if (m) {
-      setIQty(m[1]);
-      setIName(txt.replace(m[1], '').trim() || txt);
-    } else {
-      setIName(txt);
-    }
+    if (m) { setIQty(m[1]); setIName(txt.replace(m[1], '').trim() || txt); }
+    else { setIName(txt); }
   };
 
-  // Native Cordova Microphone Permission + Web Speech Fallback
   const onVoice = () => {
     const voiceLang = lang === 'bn' ? 'bn-BD' : 'en-US';
-
-    // 1. Check if Cordova Native Speech Recognition Plugin is available (Inside APK)
     if (window.plugins && window.plugins.speechRecognition) {
       window.plugins.speechRecognition.hasPermission((hasPerm) => {
         const startNativeListen = () => {
           setListening(true);
           toastFn(t('🎤 কথা বলুন...','🎤 Speak now...'));
-          window.plugins.speechRecognition.startListening(
-            (matches) => {
-              setListening(false);
-              if (matches && matches.length > 0) {
-                applyVoiceText(matches[0].trim());
-              }
-            },
-            (err) => {
-              setListening(false);
-              toastFn(t('আবার চেষ্টা করুন','Please try again'));
-            },
-            { language: voiceLang, matches: 1, showPopup: true }
-          );
+          window.plugins.speechRecognition.startListening((matches)=>{
+            setListening(false);
+            if (matches && matches.length > 0) applyVoiceText(matches[0].trim());
+          }, (err)=>{ setListening(false); toastFn(t('আবার চেষ্টা করুন','Try again')); }, { language: voiceLang, matches: 1, showPopup: true });
         };
-
         if (!hasPerm) {
-          // Triggers Android Native Microphone Permission Popup!
-          window.plugins.speechRecognition.requestPermission(
-            () => startNativeListen(),
-            () => toastFn(t('মাইক্রোফোন পারমিশন প্রয়োজন!','Microphone permission denied!'))
-          );
-        } else {
-          startNativeListen();
-        }
+          window.plugins.speechRecognition.requestPermission(() => startNativeListen(), () => toastFn(t('মাইক্রোফোন পারমিশন প্রয়োজন!','Mic permission needed!')));
+        } else { startNativeListen(); }
       }, (err) => console.error(err));
       return;
     }
-
-    // 2. Web Speech API Fallback (For Browser)
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) {
-      toastFn(t('ভয়েস টাইপিংের জন্য কীবোর্ডের মাইক ব্যবহার করুন','Use keyboard mic for voice typing'));
-      return;
-    }
+    if (!SR) { toastFn(t('ভয়েস টাইপিং সমর্থিত নয়','Voice not supported')); return; }
     try {
-      const r = new SR();
-      r.lang = voiceLang;
-      r.interimResults = false;
-      setListening(true);
-      toastFn(t('🎤 বলুন...','🎤 Speak...'));
-      r.onresult = (e) => {
-        const txt = e.results[0][0].transcript.trim();
-        applyVoiceText(txt);
-        setListening(false);
-      };
-      r.onerror = () => {
-        setListening(false);
-        toastFn(t('মাইক্রোফোন পারমিশন দিন','Allow mic permission'));
-      };
-      r.onend = () => setListening(false);
-      r.start();
-    } catch (e) {
-      setListening(false);
-    }
+      const r = new SR(); r.lang = voiceLang; r.interimResults = false;
+      setListening(true); toastFn(t('🎤 বলুন...','🎤 Speak...'));
+      r.onresult = (e) => { applyVoiceText(e.results[0][0].transcript.trim()); setListening(false); };
+      r.onerror = () => { setListening(false); toastFn(t('পারমিশন দিন','Allow mic')); };
+      r.onend = () => setListening(false); r.start();
+    } catch(e) { setListening(false); }
   };
 
   const genShareText=()=>{const items=data.todayItems||[];const unb=items.filter(i=>!i.bought);let s=`🛒 *${t('বাজার লিস্ট','Bazar List')}*\n📅 ${data.notification?.dateStr||'Today'} • 👤 ${myName}\n━━━━━━━━━━━━━━\n`;if(items.length===0)s+=t('(খালি)','(empty)')+'\n';else items.forEach((it,idx)=>{s+=`${it.bought?'✅':'⬜'} ${idx+1}. ${it.name}${it.size?` [${it.size}]`:''} — ${it.quantity}`;if(it.note)s+=` _(${it.note})_`;s+='\n';});s+=`━━━━━━━━━━━━━━\n📦 ${t('মোট','Total')}: ${items.length} • ${t('বাকি','Left')}: ${unb.length}\n🔑 ${t('কোড','Code')}: ${familyCode}\n— ${t('বউ বলছে','Bou Bolche')}`;return s;};
@@ -583,26 +471,36 @@ function App(){
             <div id="fallback-logo" className="w-24 h-24 bg-[#159947] rounded-2xl hidden items-center justify-center text-4xl mx-auto mb-3 shadow-md">🧺</div>
             
             <h1 className="text-xl font-extrabold">{t('বউ বলছে-এ স্বাগতম','Welcome to Bou Bolche')}</h1>
-            <p className="text-xs text-gray-400 mt-1">{t('রিয়েল-টাইম কানেক্ট করতে ফ্যামিলি কোড দিন','Enter family code to connect in real-time')}</p>
+            <p className="text-xs text-gray-400 mt-1">{t('স্থায়ী অ্যাকাউন্টে লগইন করুন বা ফ্যামিলি কোড দিয়ে যুক্ত হোন','Login or connect with Family Code')}</p>
           </div>
           
           <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-3 text-xs text-amber-800 dark:text-amber-300">
-            ⚠️ {t('এক ফোনে নতুন কোড তৈরি করুন, অন্য ফোনগুলোতে সেই একই কোডটি লিখে কানেক্ট করুন।','Generate code on one phone, enter the same code on others.')}
+            ⚠️ {t('আনইনস্টল করলেও এই কোড ও পিন দিয়ে আপনার সব ডাটা সাথে সাথে ফেরত পাবেন!','Uninstalling won\'t lose data if you use same ID & PIN!')}
           </div>
 
-          <form onSubmit={onJoinFamily} className="space-y-3">
-            <input type="text" placeholder={t('আপনার নাম (যেমন: Shakil)','Your Name (e.g. Shakil)')} value={joinNameInput} onChange={e=>setJoinNameInput(e.target.value)} className={`${inputCls} text-sm font-bold`} />
-            <input type="text" placeholder={t('ফ্যামিলি কোড (যেমন: M3KK3F)','Family Code (e.g. M3KK3F)')} value={joinCodeInput} onChange={e=>setJoinCodeInput(e.target.value.toUpperCase())} className={`${inputCls} text-center text-lg font-mono uppercase tracking-widest font-bold`} maxLength={6} />
-            <button type="submit" className="w-full bg-[#159947] text-white font-bold py-3 rounded-xl shadow-md text-sm">🔗 {t('কানেক্ট করুন','Connect')}</button>
+          <form onSubmit={handleLogin} className="space-y-3">
+            <div>
+              <label className="text-[11px] font-bold text-gray-400 block mb-1">{t('আপনার নাম','Your Name')}</label>
+              <input type="text" placeholder="Hamonto Shakil" value={inputName} onChange={e=>setInputName(e.target.value)} className={`${inputCls} text-sm font-bold`} />
+            </div>
+            <div>
+              <label className="text-[11px] font-bold text-gray-400 block mb-1">{t('ফ্যামিলি কোড / আইডি (যেমন: M3KK3F)','Family ID / Code (e.g. M3KK3F)')}</label>
+              <input type="text" placeholder="M3KK3F" value={inputCode} onChange={e=>setInputCode(e.target.value.toUpperCase())} className={`${inputCls} text-center text-lg font-mono uppercase tracking-widest font-bold`} maxLength={6} />
+            </div>
+            <div>
+              <label className="text-[11px] font-bold text-gray-400 block mb-1">{t('৪ সংখ্যার গোপন পিন (PIN)','4-digit PIN')}</label>
+              <input type="password" placeholder="1234" value={inputPin} onChange={e=>setInputPin(e.target.value)} className={`${inputCls} text-center text-lg font-mono tracking-widest font-bold`} maxLength={4} />
+            </div>
+            <button type="submit" className="w-full bg-[#159947] text-white font-bold py-3 rounded-xl shadow-md text-sm">🔓 {t('লগইন / কানেক্ট করুন','Login & Connect')}</button>
           </form>
           
-          <div className="relative flex py-2 items-center">
+          <div className="relative flex py-1 items-center">
             <div className="flex-grow border-t border-gray-200 dark:border-slate-700"></div>
             <span className="flex-shrink-0 mx-4 text-gray-400 text-xs">{t('অথবা','OR')}</span>
             <div className="flex-grow border-t border-gray-200 dark:border-slate-700"></div>
           </div>
 
-          <button onClick={onGenerateCode} className={`w-full border-2 border-[#159947] text-[#159947] dark:text-green-400 font-bold py-3 rounded-xl text-sm`}>✨ {t('নতুন ফ্যামিলি কোড তৈরি করুন','Create New Family Code')}</button>
+          <button onClick={handleGenerateNewCode} className={`w-full border-2 border-[#159947] text-[#159947] dark:text-green-400 font-bold py-3 rounded-xl text-sm`}>✨ {t('নতুন ফ্যামিলি কোড তৈরি করুন','Create New Family Code')}</button>
         </div>
       </div>
     );
@@ -643,7 +541,7 @@ function App(){
           
           {syncError && (
              <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 p-3 rounded-xl mb-4 text-xs font-bold text-red-700 dark:text-red-400">
-               ⚠️ {t(`ফায়ারবেস কানেক্ট হচ্ছে না (${syncError})। ইন্টারনেট চেক করুন।`, `Firebase connection error (${syncError}). Please check internet.`)}
+               ⚠️ {t(`ফায়ারবেস কানেক্ট হচ্ছে না (${syncError})। ইন্টারনেট চেক করুন।`, `Firebase connection error (${syncError}). Check internet.`)}
              </div>
           )}
 
@@ -669,16 +567,6 @@ function App(){
                 </div>
               )}
 
-              {stats.budgetPct >= 80 && (
-                <div className={`${stats.budgetPct >= 100 ? 'bg-red-50 border-red-200 text-red-700 dark:bg-red-950/40 dark:border-red-800 dark:text-red-400' : 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-400'} border p-3 rounded-xl flex items-center gap-3 shadow-xs animate-pulse`}>
-                   <span className="text-xl">{stats.budgetPct >= 100 ? '🚨' : '⚠️'}</span>
-                   <div>
-                     <p className="text-xs font-bold">{stats.budgetPct >= 100 ? t('বাজেট শেষ!','Budget Exceeded!') : t('সতর্কতা!','Warning!')}</p>
-                     <p className="text-[11px] font-medium">{t(`আপনার বাজেটের ${stats.budgetPct}% শেষ হয়ে গেছে।`, `You have used ${stats.budgetPct}% of your budget.`)}</p>
-                   </div>
-                </div>
-              )}
-
               <div className={`${cardCls} p-4 space-y-3.5`}>
                 <div className="flex items-end justify-between">
                   <div><p className="text-xs font-medium text-gray-400 mb-0.5">{t('আজকের খরচ (Spent)','Spent Today')}</p><div className="text-[30px] font-extrabold leading-none tracking-tight">৳{stats.spent.toLocaleString()}</div></div>
@@ -697,20 +585,22 @@ function App(){
                 <div className={`pt-3 border-t ${dark?'border-slate-700':'border-gray-100'} space-y-2.5`}>
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-semibold text-gray-400">{t('মাসিক বাজেট:','Monthly Budget:')} <strong className={dark?'text-white':'text-gray-800'}>৳{stats.budget.toLocaleString()}</strong></span>
-                    <button onClick={()=>{setTempBudget(String(data.monthlyBudget||15000));setShowBudget(true);}} className="text-[#159947] font-bold flex items-center gap-1 hover:underline">✏️ {t('এডিট','Edit')}</button>
+                    <button onClick={()=>{setTempBudget(String(data.monthlyBudget||0));setShowBudget(true);}} className="text-[#159947] font-bold flex items-center gap-1 hover:underline">✏️ {t('এডিট','Edit')}</button>
                   </div>
-                  <div className="w-full h-1.5 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden"><div className={`h-full rounded-full ${stats.budgetPct>=100?'bg-red-500':stats.budgetPct>=80?'bg-amber-500':'bg-emerald-500'}`} style={{width:`${Math.min(100,stats.budgetPct)}%`}}/></div>
+                  {stats.budget > 0 && (
+                    <div className="w-full h-1.5 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden"><div className={`h-full rounded-full ${stats.budgetPct>=100?'bg-red-500':stats.budgetPct>=80?'bg-amber-500':'bg-emerald-500'}`} style={{width:`${Math.min(100,stats.budgetPct)}%`}}/></div>
+                  )}
                   
                   <div className="grid grid-cols-2 gap-2 pt-1">
-                    <div className={`p-2.5 rounded-xl ${dark?'bg-slate-900/70':'bg-[#F6F7F3]'}`}><p className="text-[10px] text-gray-400">{t('এই মাসে (বিলসহ)','This Month (with bills)')}</p><p className="font-extrabold text-sm text-[#159947]">৳{stats.monthTotal.toLocaleString()}</p></div>
-                    <div className={`p-2.5 rounded-xl ${dark?'bg-slate-900/70':'bg-[#F6F7F3]'}`}><p className="text-[10px] text-gray-400">{t('গত মাসে','Last Month')}</p><p className="font-extrabold text-sm">৳{Number(data.lastMonthSpent||12450).toLocaleString()}</p></div>
+                    <div className={`p-2.5 rounded-xl ${dark?'bg-slate-900/70':'bg-[#F6F7F3]'}`}><p className="text-[10px] text-gray-400">{t('এই মাসে (বিলসহ)','This Month')}</p><p className="font-extrabold text-sm text-[#159947]">৳{stats.monthTotal.toLocaleString()}</p></div>
+                    <div className={`p-2.5 rounded-xl ${dark?'bg-slate-900/70':'bg-[#F6F7F3]'}`}><p className="text-[10px] text-gray-400">{t('গত মাসে','Last Month')}</p><p className="font-extrabold text-sm">৳{Number(data.lastMonthSpent||0).toLocaleString()}</p></div>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-4 pt-1">
                 {grouped.length===0 ? (
-                  <div className={`${cardCls} p-8 text-center border-dashed`}><div className="text-4xl mb-2">🧺</div><p className="font-bold">{t('লিস্ট খালি!','List is Empty!')}</p><p className="text-xs text-gray-400 mt-1">{t('নিচের + বাটনে চাপ দিন','Tap the + button below to add items')}</p></div>
+                  <div className={`${cardCls} p-8 text-center border-dashed`}><div className="text-4xl mb-2">🧺</div><p className="font-bold">{t('লিস্ট খালি!','List is Empty!')}</p><p className="text-xs text-gray-400 mt-1">{t('নিচের + বাটনে চাপ দিন','Tap the + button below')}</p></div>
                 ) : grouped.map(({cat,items,bought})=>(
                   <div key={cat.id} className="space-y-2">
                     <div className="flex items-center justify-between px-1">
@@ -732,7 +622,6 @@ function App(){
                                 <span className={dark?'text-slate-300 font-semibold':'text-gray-600 font-semibold'}>{item.quantity}</span>
                                 {item.size && <span className="bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 text-[10px] font-extrabold px-1.5 py-0.5 rounded">{item.size}</span>}
                                 <span>•</span><span className="inline-flex items-center gap-0.5">👤 {item.addedBy}</span>
-                                {item.addedAt && <span className="inline-flex items-center gap-0.5">🕐 {item.addedAt}</span>}
                               </div>
                               {(item.lastPrice>0||getPrevPrice(item.name)) && <div className="inline-block bg-blue-50 dark:bg-blue-950/70 text-blue-600 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-md">{t('গতবার:','Last:')} ৳{item.lastPrice||getPrevPrice(item.name)}</div>}
                             </div>
@@ -763,11 +652,10 @@ function App(){
                   <div className="flex items-center gap-2"><span className="text-lg">🧾</span><span className="font-bold text-[15px]">{t('বিল ও ইউটিলিটি','Bills & Utilities')}</span></div>
                   <button onClick={()=>{setShowAddBill(true); setBillName(''); setBillType('electricity');}} className="text-xs font-bold text-[#159947] bg-[#E8F3EB] dark:bg-green-950 px-2.5 py-1 rounded-lg">+ {t('যোগ','Add')}</button>
                 </div>
-                {(data.bills||[]).length === 0 ? <div className={`${cardCls} p-4 text-center border-dashed text-xs text-gray-400`}>{t('কোনো বিল নেই','No bills added')}</div> : (data.bills||[]).map(bill=>{
+                {(data.bills||[]).length === 0 ? <div className={`${cardCls} p-4 text-center border-dashed text-xs text-gray-400`}>{t('কোনো বিল নেই','No bills')}</div> : (data.bills||[]).map(bill=>{
                     const tp=BILL_TYPES.find(b=>b.id===bill.type)||BILL_TYPES[0];
-                    const over=bill.dueDate&&!bill.paid&&bill.dueDate<new Date().toISOString().split('T')[0];
                     return (
-                      <div key={bill.id} className={`${cardCls} p-3.5 relative ${over?'border-l-4 border-l-red-500':''}`}>
+                      <div key={bill.id} className={`${cardCls} p-3.5 relative`}>
                         <div className="flex items-center gap-3">
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 ${QC[bill.type]||QC.other}`}>{tp.icon}</div>
                           <div className="flex-1 min-w-0">
@@ -775,7 +663,7 @@ function App(){
                                 <p className={`font-bold text-sm truncate ${bill.paid?'line-through text-gray-400':''}`}>{bill.name}</p>
                                 {bill.recurring && <span className="text-[9px] bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded font-bold">🔄 {t('মাসিক','Monthly')}</span>}
                             </div>
-                            <div className="flex items-center gap-1.5 flex-wrap mt-0.5 text-[11px] text-gray-400"><span>📅 {bill.dueDate||'—'}</span>{over && <span className="text-red-500 font-bold">• {t('মেয়াদোত্তীর্ণ','Overdue')}</span>}</div>
+                            <div className="flex items-center gap-1.5 flex-wrap mt-0.5 text-[11px] text-gray-400"><span>📅 {bill.dueDate||'—'}</span></div>
                           </div>
                           <div className="text-right shrink-0">
                             <p className="font-extrabold text-sm">৳{Number(bill.amount).toLocaleString()}</p>
@@ -795,13 +683,12 @@ function App(){
               <div className="flex items-center justify-between"><div><h1 className="text-[24px] font-extrabold">{t('ধার-দেনা','Loans & Debts')}</h1></div><button onClick={()=>setShowAddLoan(true)} className="bg-[#159947] text-white px-3.5 py-2 rounded-full text-xs font-bold">+ {t('যোগ করুন','Add Loan')}</button></div>
               <div className="bg-gradient-to-br from-indigo-600 to-blue-700 text-white rounded-[24px] p-5 space-y-3 shadow-md">
                 <div className="grid grid-cols-2 gap-3">
-                  <div><p className="text-[11px] text-green-200 font-medium">💚 {t('পাওনা (Lent)','Lent (You will get)')}</p><div className="text-[22px] font-extrabold">৳{loansStats.lentTotal.toLocaleString()}</div></div>
-                  <div className="text-right"><p className="text-[11px] text-red-200 font-medium">💔 {t('দেনা (Borrowed)','Borrowed (You owe)')}</p><div className="text-[22px] font-extrabold">৳{loansStats.borrowedTotal.toLocaleString()}</div></div>
+                  <div><p className="text-[11px] text-green-200 font-medium">💚 {t('পাওনা (Lent)','Lent')}</p><div className="text-[22px] font-extrabold">৳{loansStats.lentTotal.toLocaleString()}</div></div>
+                  <div className="text-right"><p className="text-[11px] text-red-200 font-medium">💔 {t('দেনা (Borrowed)','Borrowed')}</p><div className="text-[22px] font-extrabold">৳{loansStats.borrowedTotal.toLocaleString()}</div></div>
                 </div>
                 <div className="pt-2 border-t border-white/20 flex items-center justify-between text-xs"><span className="text-blue-100">{loansStats.net>=0?t('💚 মোট পাওনা বেশি','Net Receivable'):t('💔 মোট দেনা বেশি','Net Payable')}</span><span className="font-extrabold text-base">৳{Math.abs(loansStats.net).toLocaleString()}</span></div>
               </div>
               
-              {/* 100% Translated Loan Filter Buttons */}
               <div className="flex items-center gap-2 flex-wrap">
                 {[
                   {id:'all', bn:'সব', en:'All'},
@@ -830,7 +717,6 @@ function App(){
                             <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${loan.settled?'bg-gray-100 dark:bg-slate-700 text-gray-500':'bg-blue-50 dark:bg-blue-950 text-blue-600'}`}>{loan.settled?t('পরিশোধিত','Settled'):t('চলমান','Active')}</span>
                           </div>
                           {loan.note && <p className="text-xs text-gray-500 mt-0.5">{loan.note}</p>}
-                          <div className="flex items-center gap-1.5 text-[11px] text-gray-400 mt-0.5 flex-wrap"><span>📅 {loan.date}</span>{loan.dueDate && <span>• ⏰ {loan.dueDate}</span>}</div>
                         </div>
                         <div className="text-right shrink-0">
                           <p className={`font-extrabold text-sm ${isL?'text-green-600 dark:text-green-400':'text-red-500'}`}>{isL?'+':'-'}৳{Number(loan.amount).toLocaleString()}</p>
@@ -853,22 +739,16 @@ function App(){
               <div className="bg-[#159947] text-white rounded-[24px] p-5 shadow-md space-y-1.5">
                 <p className="text-xs font-medium text-green-100">{t('এই মাসে মোট বাজার খরচ','This Month Total Spent')}</p>
                 <div className="text-[34px] font-extrabold leading-none">৳{stats.monthTotal.toLocaleString()}</div>
-                <div className="flex items-center justify-between pt-2 text-xs font-semibold"><span>🧺 {(data.history||[]).length} {t('দিন বাজার','bazar days')}</span><span>{t('গত মাস:','Last Month:')} ৳{Number(data.lastMonthSpent||12450).toLocaleString()}</span></div>
-              </div>
-              <div className="flex items-center gap-2">
-                {['all','received','sent'].map(f=>(
-                  <button key={f} onClick={()=>setHistFilter(f)} className={`px-4 py-2 rounded-full text-xs font-bold ${histFilter===f?'bg-[#E6F4EA] dark:bg-green-950 text-[#159947] dark:text-green-400 border border-[#159947]':dark?'bg-slate-800 text-slate-300 border border-slate-700':'bg-white text-[#5A6058] border border-gray-200'}`}>{f==='all'?t('সব (All)','All'):f==='received'?`📥 ${t('প্রাপ্ত','Received')}`:`📤 ${t('প্রেরিত','Sent')}`}</button>
-                ))}
+                <div className="flex items-center justify-between pt-2 text-xs font-semibold"><span>🧺 {(data.history||[]).length} {t('দিন বাজার','bazar days')}</span><span>{t('গত মাস:','Last Month:')} ৳{Number(data.lastMonthSpent||0).toLocaleString()}</span></div>
               </div>
               <div className="space-y-3">
-                {(data.history||[]).filter(h=>histFilter==='all'||h.type===histFilter).map(h=>(
+                {(data.history||[]).map(h=>(
                   <div key={h.id} onClick={()=>setSelectedHist(h)} className={`${cardCls} p-4 flex items-center justify-between cursor-pointer hover:border-green-400`}>
                     <div className="flex items-center gap-3.5">
                       <div className="w-10 h-10 rounded-full bg-[#E6F4EA] dark:bg-green-950 flex items-center justify-center"><span className="w-2.5 h-2.5 rounded-full bg-[#159947]"/></div>
                       <div className="space-y-1">
                         <div className="flex items-center gap-1.5"><span className="font-extrabold text-sm">{h.dateStr}</span>{h.isNew && <span className="text-[10px] font-extrabold text-red-500 bg-red-50 dark:bg-red-950 px-2 py-0.5 rounded-full">NEW</span>}</div>
                         <div className="text-xs text-gray-400">{h.boughtCount}/{h.totalCount} {t('টি কেনা হয়েছে','items bought')}</div>
-                        <div className="flex items-center gap-2 pt-0.5"><span className="bg-[#EEF5F0] dark:bg-slate-700 text-[#3B5944] dark:text-green-300 text-[11px] font-semibold px-2.5 py-0.5 rounded-full">📥 {h.sender}</span><span className="bg-[#FAF3DF] dark:bg-amber-950 text-[#856422] dark:text-amber-300 text-[11px] font-semibold px-2.5 py-0.5 rounded-full">{h.tag}</span></div>
                       </div>
                     </div>
                     <div className="flex items-center gap-1 font-extrabold text-sm"><span>৳{Number(h.totalSpent).toLocaleString()}</span><span className="text-gray-400">›</span></div>
@@ -885,7 +765,7 @@ function App(){
                     <div className="space-y-2 max-h-64 overflow-y-auto">
                       {(selectedHist.items||[]).map((it,idx)=>(
                         <div key={idx} className="flex items-center justify-between text-sm py-1.5 border-b border-gray-50 dark:border-slate-700/50">
-                          <div className="flex items-center gap-2"><span className={it.bought?'text-green-500':'text-gray-400'}>{it.bought?'✔':'○'}</span><span className="font-medium">{it.name}</span>{it.size && <span className="text-[10px] bg-purple-100 dark:bg-purple-950 text-purple-700 px-1.5 py-0.5 rounded font-bold">{it.size}</span>}<span className="text-xs text-gray-400">({it.quantity})</span></div>
+                          <div className="flex items-center gap-2"><span className={it.bought?'text-green-500':'text-gray-400'}>{it.bought?'✔':'○'}</span><span className="font-medium">{it.name}</span><span className="text-xs text-gray-400">({it.quantity})</span></div>
                           <span className="font-bold">৳{Number(it.price||0).toLocaleString()}</span>
                         </div>
                       ))}
@@ -914,20 +794,6 @@ function App(){
                   <div className={`${dark?'bg-slate-900':'bg-[#F6F7F4]'} rounded-2xl p-3`}><div className="font-extrabold text-sm">{reportData.items}</div><p className="text-[11px] text-gray-400 truncate mt-0.5">{t('আইটেম','Items')}</p></div>
                 </div>
               </div>
-
-              <div className="space-y-2.5">
-                <h3 className="text-xs font-semibold text-gray-400 px-1">{t('ক্যাটাগরি অনুযায়ী খরচ','Spending by Category')}</h3>
-                {reportData.breakdown.length===0 ? <div className={`${cardCls} p-5 text-center text-xs text-gray-400`}>{t('কোনো তথ্য নেই','No data available')}</div> : reportData.breakdown.map(c=>(
-                  <div key={c.id} className={`${cardCls} p-4 flex items-center gap-3.5`}>
-                    <div className={`w-11 h-11 rounded-2xl ${c.bg} flex items-center justify-center text-xl shrink-0`}>{c.icon}</div>
-                    <div className="flex-1 space-y-1.5">
-                      <div className="flex items-center justify-between"><span className="font-bold text-sm">{lang==='bn'?c.bnName:c.name}</span><span className="font-extrabold text-sm">৳{c.amount.toLocaleString()}</span></div>
-                      <div className="w-full h-2 bg-[#E7F0EA] dark:bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-[#179C49] rounded-full" style={{width:`${c.pct}%`}}/></div>
-                      <div className="text-[11px] text-gray-400">{c.pct}%</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
 
@@ -935,46 +801,21 @@ function App(){
             <div className="space-y-4">
               <h1 className="text-[24px] font-extrabold">{t('সেটিংস ও ফ্যামিলি কোড','Settings & Family Sync')}</h1>
               <div className={`${cardCls} p-4 space-y-3`}>
-                <div className="flex items-center justify-between"><span className="text-sm font-bold">{t('ভাষা (Language)','Language')}</span><button onClick={changeLang} className="px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-[#E8F3EB] text-[#159947]">{lang==='bn'?'বাংলা (Switch to EN)':'English (বাংলা করুন)'}</button></div>
+                <div className="flex items-center justify-between"><span className="text-sm font-bold">{t('ভাষা (Language)','Language')}</span><button onClick={changeLang} className="px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-[#E8F3EB] text-[#159947]">{lang==='bn'?'English':'বাংলা'}</button></div>
                 <div className="flex items-center justify-between pt-2 border-t dark:border-slate-700"><span className="text-sm font-bold">{t('ডার্ক মোড','Dark Mode')}</span><button onClick={changeDark} className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold ${dark?'bg-amber-400 text-slate-900':'bg-slate-900 text-white'}`}>{dark?'ON':'OFF'}</button></div>
-                <div className="flex items-center justify-between pt-2 border-t dark:border-slate-700"><span className="text-sm font-bold">{t('সাউন্ড','Sound Effects')}</span><button onClick={()=>{playSound();toastFn('🔔 Test!');}} className="bg-[#E8F3EB] dark:bg-green-950 text-[#159947] dark:text-green-400 text-xs font-bold px-3 py-1.5 rounded-xl">🔔 {t('টেস্ট','Test')}</button></div>
-              </div>
-
-              <div className={`${cardCls} p-4 space-y-3`}>
-                <div className="flex items-center justify-between pb-2 border-b dark:border-slate-700">
-                  <h3 className="font-bold text-xs">👥 {t('পরিবারের সদস্য','Family Members')}</h3>
-                  <span className="text-[10px] text-gray-400">{t('✏️ নাম পরিবর্তন','Tap ✏️ to edit')}</span>
-                </div>
-                {(data.members||[]).map(m=>(
-                  <div key={m.id} className="flex items-center justify-between py-1">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-[#EAF4EE] dark:bg-slate-700 flex items-center justify-center text-lg">{m.avatar}</div>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <p className="font-bold text-sm">{m.name}</p>
-                          {myName.toLowerCase()===m.name.toLowerCase() && <span className="text-[9px] bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded font-bold">YOU</span>}
-                        </div>
-                        <p className="text-[11px] text-gray-400">{m.role}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <button onClick={()=>{setEditNameId(m.id);setTempName(m.name);setShowEditName(true);}} className="text-xs bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-lg font-bold">✏️</button>
-                    </div>
-                  </div>
-                ))}
               </div>
 
               <div className={`${cardCls} p-5 space-y-4`}>
-                <div><p className="text-xs font-semibold text-gray-400 mb-1">{t('ফ্যামিলি কোড (Family Code)','Family Code')}</p><div className="flex items-center justify-between"><div className="text-[28px] font-black text-[#146C32] dark:text-green-400 tracking-[0.22em] font-mono">{familyCode}</div><button onClick={onGenerateCode} className="text-xs text-gray-400 flex items-center gap-1 bg-gray-50 dark:bg-slate-700 px-2.5 py-1.5 rounded-lg">🔄 {t('নতুন','New')}</button></div></div>
+                <div><p className="text-xs font-semibold text-gray-400 mb-1">{t('ফ্যামিলি কোড ও আইডি','Family Code & ID')}</p><div className="text-[28px] font-black text-[#146C32] dark:text-green-400 tracking-[0.22em] font-mono">{familyCode}</div></div>
                 <div className="flex justify-center py-2">
                   <div className="bg-white p-3 rounded-2xl border"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${familyCode}`} alt="QR" /></div>
                 </div>
-                <p className="text-xs text-gray-400 text-center leading-relaxed">{t(`অন্য ফোনে এই একই কোডটি (${familyCode}) দিয়ে কানেক্ট করলে দুটি ফোনে একসাথে রিয়েল-টাইম ডাটা আপডেট হবে।`, `Enter this code (${familyCode}) on another phone to sync data in real-time.`)}</p>
-                <button onClick={()=>{navigator.clipboard.writeText(familyCode);toastFn(t('কোড কপি হয়েছে!','Code Copied!'));}} className="w-full bg-[#159947] text-white font-bold py-3.5 rounded-2xl shadow-md text-sm">📤 {t('কোড কপি ও শেয়ার','Copy & Share Code')}</button>
+                <p className="text-xs text-gray-400 text-center leading-relaxed">{t(`অন্য ফোনে এই ফ্যামিলি কোডটি (${familyCode}) এবং আপনার পিন দিয়ে লগইন করলে রিয়েল-টাইম ডাটা সিংক হবে।`, `Login with this code (${familyCode}) and PIN on another phone to sync.`)}</p>
+                <button onClick={()=>{navigator.clipboard.writeText(familyCode);toastFn(t('কোড কপি হয়েছে!','Code Copied!'));}} className="w-full bg-[#159947] text-white font-bold py-3.5 rounded-2xl shadow-md text-sm">📤 {t('কোড কপি করুন','Copy Code')}</button>
               </div>
 
               <div className={`${cardCls} p-4`}>
-                <button onClick={()=>{localStorage.removeItem('bb_family_code'); localStorage.removeItem('bb_my_name'); window.location.reload();}} className="w-full text-red-500 font-bold text-sm bg-red-50 dark:bg-red-950/30 py-3 rounded-xl border border-red-200 dark:border-red-900">🚪 {t('ফ্যামিলি কোড পরিবর্তন / লগ আউট','Disconnect / Change Code')}</button>
+                <button onClick={()=>{localStorage.removeItem('bb_family_code'); localStorage.removeItem('bb_my_pin'); window.location.reload();}} className="w-full text-red-500 font-bold text-sm bg-red-50 dark:bg-red-950/30 py-3 rounded-xl border border-red-200 dark:border-red-900">🚪 {t('লগ আউট / একাউন্ট পরিবর্তন','Logout / Switch Account')}</button>
               </div>
             </div>
           )}
@@ -997,86 +838,25 @@ function App(){
           ))}
         </div>
 
-        {showEditName && (
-          <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={()=>setShowEditName(false)}>
-            <div className={`${modalBg} w-full max-w-xs rounded-3xl p-5 space-y-4`} onClick={e=>e.stopPropagation()}>
-              <h3 className="font-extrabold text-base">✏️ {t('নাম পরিবর্তন','Edit Name')}</h3>
-              <form onSubmit={onSaveName} className="space-y-3">
-                <input type="text" autoFocus value={tempName} onChange={e=>setTempName(e.target.value)} placeholder={t('নতুন নাম','New name')} className={`${inputCls} text-base font-bold`} />
-                <div className="flex gap-2">
-                  <button type="button" onClick={()=>setShowEditName(false)} className={`flex-1 py-2.5 rounded-xl font-bold text-xs ${dark?'bg-slate-700':'bg-gray-100'}`}>{t('বাতিল','Cancel')}</button>
-                  <button type="submit" className="flex-1 bg-[#159947] text-white font-bold py-2.5 rounded-xl text-xs">✓ {t('সেভ','Save')}</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
         {showAdd && (
           <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
             <div className={`${modalBg} w-full max-w-[420px] rounded-t-[28px] sm:rounded-[28px] p-5 space-y-3.5 shadow-2xl max-h-[90vh] overflow-y-auto`}>
               <div className="flex items-center justify-between"><h3 className="text-base font-extrabold">{t('নতুন আইটেম','Add New Item')}</h3><button onClick={()=>setShowAdd(false)} className="p-1.5 rounded-full bg-gray-100 dark:bg-slate-700">×</button></div>
               <div>
-                <div className="flex items-center justify-between mb-1.5"><p className="text-[11px] font-bold text-gray-400">⚡ {t('দ্রুত যোগ (Quick Add):','Quick Add:')}</p><button type="button" onClick={()=>setShowQaMgr(!showQaMgr)} className="text-[11px] font-bold text-[#159947]">{showQaMgr?`✓`:`✏️`} {t('ম্যানেজ','Manage')}</button></div>
-                {!showQaMgr ? (
-                  <div className="flex gap-1.5 overflow-x-auto pb-1">
-                    {(data.quickAddItems||[]).map(p=>(
-                      <button type="button" key={p.id} onClick={()=>onQuickSel(p)} className={`shrink-0 text-xs px-2.5 py-1.5 rounded-xl font-semibold border ${iName===p.name?'bg-[#159947] text-white border-[#159947]':dark?'bg-slate-900 border-slate-700 text-slate-200':'bg-[#F6F7F3] border-gray-200 text-gray-700'}`}>+ {p.name.split(' ')[0]}{p.size?` ${p.size}`:''}</button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap gap-1.5">
-                      {(data.quickAddItems||[]).map(p=>(
-                        <div key={p.id} className={`flex items-center gap-1 text-xs px-2 py-1 rounded-xl border ${dark?'bg-slate-900 border-slate-700':'bg-[#F6F7F3] border-gray-200'}`}><span className="font-semibold">{p.name.split(' ')[0]}{p.size?` ${p.size}`:''}</span><button type="button" onClick={()=>onDelQuick(p.id)} className="text-red-500 text-xs">×</button></div>
-                      ))}
-                    </div>
-                    <form onSubmit={onAddQuick} className={`space-y-1.5 ${dark?'bg-slate-900':'bg-[#F6F7F3]'} rounded-xl p-2 border ${dark?'border-slate-700':'border-gray-200'}`}>
-                      <input type="text" value={qaName} onChange={e=>setQaName(e.target.value)} placeholder={t('নাম','Name')} className={`${inputCls} text-xs`} />
-                      <div className="grid grid-cols-2 gap-1.5">
-                        <input type="text" value={qaQty} onChange={e=>setQaQty(e.target.value)} placeholder="Qty" className={`${inputCls} text-xs`} />
-                        <select value={qaCat} onChange={e=>setQaCat(e.target.value)} className={`${inputCls} text-xs`}>{CATS.map(c=><option key={c.id} value={c.id}>{lang==='bn'?c.bnName:c.name}</option>)}</select>
-                      </div>
-                      <div className="flex items-center gap-1 flex-wrap">
-                        {['',...SIZES].map(s=><button type="button" key={s||'n'} onClick={()=>setQaSize(s)} className={`text-[10px] px-2 py-1 rounded-lg font-bold border ${qaSize===s?'bg-[#159947] text-white border-[#159947]':dark?'bg-slate-800 border-slate-700':'bg-white border-gray-200'}`}>{s||t('নেই','None')}</button>)}
-                        <button type="submit" className="ml-auto bg-[#159947] text-white text-[10px] font-bold px-3 py-1 rounded-lg">+ {t('যোগ','Add')}</button>
-                      </div>
-                    </form>
-                  </div>
-                )}
+                <p className="text-[11px] font-bold text-gray-400 mb-1.5">⚡ {t('দ্রুত যোগ (Quick Add):','Quick Add:')}</p>
+                <div className="flex gap-1.5 overflow-x-auto pb-1">
+                  {(data.quickAddItems||[]).map(p=>(
+                    <button type="button" key={p.id} onClick={()=>onQuickSel(p)} className={`shrink-0 text-xs px-2.5 py-1.5 rounded-xl font-semibold border ${iName===p.name?'bg-[#159947] text-white border-[#159947]':dark?'bg-slate-900 border-slate-700 text-slate-200':'bg-[#F6F7F3] border-gray-200 text-gray-700'}`}>+ {p.name.split(' ')[0]}</button>
+                  ))}
+                </div>
               </div>
               <form onSubmit={onAddItem} className="space-y-3">
                 <div className="relative">
                   <label className="text-xs font-bold text-gray-400 block mb-1">{t('আইটেমের নাম (ভয়েস বা টাইপ)','Item Name (Voice or Type)')} *</label>
                   <div className="flex gap-2">
-                    <input 
-                      type="text" 
-                      required 
-                      value={iName} 
-                      onChange={e=>{setIName(e.target.value); setShowSuggestions(true);}} 
-                      onFocus={()=>setShowSuggestions(true)}
-                      onBlur={()=>setTimeout(()=>setShowSuggestions(false), 200)}
-                      placeholder={t('যেমন: আপেল ২ কেজি','e.g. Apple 2 kg')} 
-                      className={`flex-1 ${inputCls}`} 
-                    />
+                    <input type="text" required value={iName} onChange={e=>{setIName(e.target.value); setShowSuggestions(true);}} placeholder={t('যেমন: আপেল ২ কেজি','e.g. Apple 2 kg')} className={`flex-1 ${inputCls}`} />
                     <button type="button" onClick={onVoice} className={`px-4 rounded-xl flex items-center justify-center font-bold shadow-xs ${listening?'bg-red-500 text-white animate-pulse':'bg-[#159947] text-white'}`}>🎤</button>
                   </div>
-                  
-                  {showSuggestions && suggestions.length > 0 && (
-                    <div className={`absolute top-full left-0 right-0 mt-1 ${dark?'bg-slate-700 border-slate-600':'bg-white border-gray-200'} border rounded-xl shadow-lg z-30 max-h-40 overflow-y-auto`}>
-                      {suggestions.map((s, idx) => (
-                        <div 
-                          key={idx} 
-                          onClick={() => { setIName(s); setShowSuggestions(false); }} 
-                          className="px-3 py-2 text-sm font-semibold cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-600 flex justify-between items-center"
-                        >
-                          <span>{s}</span>
-                          <span className="text-xs text-gray-400">৳{getPrevPrice(s)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {prevPrice && <p className="text-[11px] text-blue-500 font-bold mt-1">💡 {t(`গতবার: ৳${prevPrice}`,`Last Price: ৳${prevPrice}`)}</p>}
                 </div>
                 <div className="grid grid-cols-2 gap-2.5">
                   <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('পরিমাণ','Quantity')}</label><input type="text" value={iQty} onChange={e=>setIQty(e.target.value)} className={inputCls} /></div>
@@ -1089,7 +869,7 @@ function App(){
                   </div>
                 </div>
                 <div className="flex gap-2 items-center">
-                  <input type="text" value={iNote} onChange={e=>setINote(e.target.value)} placeholder={t('নোট (যেমন: দেশি পেঁয়াজ)','Note (e.g. Fresh ones)')} className={`flex-1 ${inputCls} text-xs`} />
+                  <input type="text" value={iNote} onChange={e=>setINote(e.target.value)} placeholder={t('নোট','Note')} className={`flex-1 ${inputCls} text-xs`} />
                   <button type="button" onClick={()=>setIUrgent(!iUrgent)} className={`px-3 py-2 rounded-xl text-xs font-extrabold border shrink-0 ${iUrgent?'bg-red-500 text-white border-red-500':dark?'bg-slate-900 border-slate-700 text-gray-400':'bg-gray-100 border-gray-200 text-gray-600'}`}>🚨 {t('জরুরি','Urgent')}</button>
                 </div>
                 <div>
@@ -1110,13 +890,11 @@ function App(){
           <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={()=>setPriceItem(null)}>
             <div className={`${modalBg} w-full max-w-xs rounded-[26px] p-5 space-y-4`} onClick={e=>e.stopPropagation()}>
               <div className="flex items-center justify-between">
-                <div><span className="text-xs font-bold text-[#159947] uppercase">{t('কেনা সম্পন্ন!','Bought!')}</span><h3 className="font-extrabold text-base">{priceItem.name}</h3><p className="text-xs text-gray-400">{t('পরিমাণ:','Qty:')} {priceItem.quantity}{priceItem.size && ` • ${priceItem.size}`}</p></div>
+                <div><span className="text-xs font-bold text-[#159947] uppercase">{t('কেনা সম্পন্ন!','Bought!')}</span><h3 className="font-extrabold text-base">{priceItem.name}</h3><p className="text-xs text-gray-400">{t('পরিমাণ:','Qty:')} {priceItem.quantity}</p></div>
                 <button onClick={()=>setPriceItem(null)} className="p-1.5 rounded-full bg-gray-100 dark:bg-slate-700">×</button>
               </div>
-              {(priceItem.lastPrice>0||getPrevPrice(priceItem.name)) && <div className="bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-300 text-xs font-bold px-3 py-2 rounded-xl">💡 {t('গতবার:','Last:')} ৳{priceItem.lastPrice||getPrevPrice(priceItem.name)}</div>}
               <form onSubmit={onConfirmPrice} className="space-y-3">
                 <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('দাম (৳)','Price (৳)')}</label><input type="number" autoFocus value={tempPrice} onChange={e=>setTempPrice(e.target.value)} placeholder="400" className={`w-full ${dark?'bg-slate-900 text-white':'bg-[#F6F7F3] text-[#181D19]'} border-2 border-[#159947] rounded-xl px-3 py-2.5 text-xl font-extrabold focus:outline-none`} /></div>
-                <div className="flex gap-1.5 flex-wrap">{[100,200,400,550,950].map(a=><button type="button" key={a} onClick={()=>setTempPrice(String(a))} className="text-xs bg-gray-100 dark:bg-slate-700 font-bold px-2.5 py-1 rounded-lg">৳{a}</button>)}</div>
                 <button type="submit" className="w-full bg-[#159947] text-white font-bold py-3 rounded-xl text-sm">✓ {t('সেভ করুন','Confirm')}</button>
               </form>
             </div>
@@ -1166,23 +944,11 @@ function App(){
                   </div>
                 </div>
                 <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('বিলের নাম','Bill Name')} *</label><input required value={billName} onChange={e=>setBillName(e.target.value)} placeholder={t('বিদ্যুৎ বিল','Electricity Bill')} className={inputCls} /></div>
-                
                 <div className="grid grid-cols-2 gap-2.5">
                   <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('টাকার পরিমাণ (৳)','Amount (৳)')} *</label><input type="number" required value={billAmount} onChange={e=>setBillAmount(e.target.value)} className={`${inputCls} font-extrabold`} /></div>
                   <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('শেষ তারিখ','Due Date')}</label><input type="date" value={billDue} onChange={e=>setBillDue(e.target.value)} className={inputCls} /></div>
                 </div>
-                <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('নোট','Note')}</label><input value={billNote} onChange={e=>setBillNote(e.target.value)} className={`${inputCls} text-xs`} /></div>
-                
-                <div className={`flex items-center justify-between p-3 rounded-xl border ${dark?'bg-slate-900 border-slate-700':'bg-[#F6F7F3] border-gray-200'}`}>
-                  <div>
-                    <p className="text-sm font-bold">🔄 {t('মাসিক রিকারিং বিল','Monthly Recurring Bill')}</p>
-                    <p className="text-[10px] text-gray-400">{t('প্রতি মাসে অটোমেটিক ডেট আপডেট হবে','Auto updates date every month')}</p>
-                  </div>
-                  <button type="button" onClick={()=>setBillRecurring(!billRecurring)} className={`w-12 h-6 rounded-full transition-all relative ${billRecurring?'bg-[#159947]':'bg-gray-300 dark:bg-slate-600'}`}>
-                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${billRecurring?'left-7':'left-1'}`}></div>
-                  </button>
-                </div>
-
+                <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('নোট','Note')}</label><input value={billNote} onChange={e=>setINote(e.target.value)} className={`${inputCls} text-xs`} /></div>
                 <button type="submit" className="w-full bg-[#159947] text-white font-bold py-3 rounded-2xl text-sm">+ {t('বিল যোগ করুন','Add Bill')}</button>
               </form>
             </div>
@@ -1195,16 +961,11 @@ function App(){
               <div className="flex items-center justify-between"><h3 className="font-extrabold text-base">{t('নতুন ধার-দেনা','Add Loan / Debt')}</h3><button onClick={()=>setShowAddLoan(false)} className="p-1.5 rounded-full bg-gray-100 dark:bg-slate-700">×</button></div>
               <form onSubmit={onAddLoan} className="space-y-3">
                 <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('ধরন নির্বাচন করুন','Select Type')}</label><div className="grid grid-cols-2 gap-2">
-                  <button type="button" onClick={()=>setLoanType('lent')} className={`p-3 rounded-xl border flex flex-col items-center ${loanType==='lent'?'bg-green-50 dark:bg-green-950 border-[#159947] text-[#159947] dark:text-green-400':dark?'bg-slate-900 border-slate-700 text-gray-400':'bg-white border-gray-200 text-gray-700'}`}><span className="text-2xl">💚</span><span className="text-xs font-bold">{t('পাওনা (আমি পাবো)','Lent (I will get)')}</span></button>
-                  <button type="button" onClick={()=>setLoanType('borrowed')} className={`p-3 rounded-xl border flex flex-col items-center ${loanType==='borrowed'?'bg-red-50 dark:bg-red-950 border-red-500 text-red-600 dark:text-red-400':dark?'bg-slate-900 border-slate-700 text-gray-400':'bg-white border-gray-200 text-gray-700'}`}><span className="text-2xl">💔</span><span className="text-xs font-bold">{t('দেনা (আমার থেকে পাবে)','Borrowed (I owe)')}</span></button>
+                  <button type="button" onClick={()=>setLoanType('lent')} className={`p-3 rounded-xl border flex flex-col items-center ${loanType==='lent'?'bg-green-50 dark:bg-green-950 border-[#159947] text-[#159947] dark:text-green-400':dark?'bg-slate-900 border-slate-700 text-gray-400':'bg-white border-gray-200 text-gray-700'}`}><span className="text-2xl">💚</span><span className="text-xs font-bold">{t('পাওনা (আমি পাবো)','Lent')}</span></button>
+                  <button type="button" onClick={()=>setLoanType('borrowed')} className={`p-3 rounded-xl border flex flex-col items-center ${loanType==='borrowed'?'bg-red-50 dark:bg-red-950 border-red-500 text-red-600 dark:text-red-400':dark?'bg-slate-900 border-slate-700 text-gray-400':'bg-white border-gray-200 text-gray-700'}`}><span className="text-2xl">💔</span><span className="text-xs font-bold">{t('দেনা (আমার থেকে পাবে)','Borrowed')}</span></button>
                 </div></div>
-                <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('ব্যক্তি বা দোকানের নাম','Person or Shop Name')} *</label><input required value={loanPerson} onChange={e=>setLoanPerson(e.target.value)} placeholder={t('যেমন: করিম ভাই','e.g. Karim')} className={inputCls} /></div>
+                <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('ব্যক্তি বা দোকানের নাম','Person/Shop Name')} *</label><input required value={loanPerson} onChange={e=>setLoanPerson(e.target.value)} placeholder="Karim" className={inputCls} /></div>
                 <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('টাকার পরিমাণ (৳)','Amount (৳)')} *</label><input type="number" required value={loanAmount} onChange={e=>setLoanAmount(e.target.value)} className={`${inputCls} font-extrabold`} /></div>
-                <div className="grid grid-cols-2 gap-2.5">
-                  <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('তারিখ','Date')}</label><input type="date" value={loanDate} onChange={e=>setLoanDate(e.target.value)} className={`${inputCls} text-xs`} /></div>
-                  <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('ফেরত দেওয়ার তারিখ','Return Due Date')}</label><input type="date" value={loanDue} onChange={e=>setLoanDue(e.target.value)} className={`${inputCls} text-xs`} /></div>
-                </div>
-                <div><label className="text-xs font-bold text-gray-400 block mb-1">{t('নোট','Note')}</label><input value={loanNote} onChange={e=>setLoanNote(e.target.value)} className={`${inputCls} text-xs`} /></div>
                 <button type="submit" className={`w-full text-white font-bold py-3 rounded-2xl text-sm ${loanType==='lent'?'bg-[#159947]':'bg-red-500'}`}>{loanType==='lent'?`💚 ${t('পাওনা যোগ করুন','Add Lent')}`:`💔 ${t('দেনা যোগ করুন','Add Borrowed')}`}</button>
               </form>
             </div>
