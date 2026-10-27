@@ -58,7 +58,7 @@ tailwind.config = {
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24; }
   .icon-fill { font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24; }
-  .spinner { border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; }
+  .spinner { border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 </style>
 </head>
@@ -138,6 +138,7 @@ const INITIAL_DATA = {
   todayItems: []
 };
 
+// Dynamic Months Logic
 const getDynamicMonths = () => {
   const months = [];
   const d = new Date();
@@ -170,15 +171,16 @@ const playSound = () => {
 
 function App() {
   const [data, setData] = useState(INITIAL_DATA);
-  const [historyData, setHistoryData] = useState([]);
+  const [historyData, setHistoryData] = useState([]); 
 
-  // Auth & Login States
+  // Auth States
   const [user, setUser] = useState(null);
   const [familyCode, setFamilyCode] = useState(localStorage.getItem('bb_family_code') || '');
   const [myName, setMyName] = useState(localStorage.getItem('bb_my_name') || '');
   const [myPin, setMyPin] = useState(localStorage.getItem('bb_my_pin') || '');
   const [isGuest, setIsGuest] = useState(localStorage.getItem('bb_guest') === 'true');
 
+  // Login Screen States
   const [authMode, setAuthMode] = useState('signin');
   const [inputName, setInputName] = useState('');
   const [inputCode, setInputCode] = useState('');
@@ -186,7 +188,7 @@ function App() {
   const [authLoading, setAuthLoading] = useState(false);
   const pinRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
 
-  // Navigation & UI States
+  // Navigation & Preferences
   const [tab, setTab] = useState('home');
   const [bazarSubTab, setBazarSubTab] = useState('today');
   const [bazarFilter, setBazarFilter] = useState('all');
@@ -205,11 +207,16 @@ function App() {
   const [tempPrice, setTempPrice] = useState('');
   const [tempBudget, setTempBudget] = useState('0');
   const [selectedHist, setSelectedHist] = useState(null);
+  
+  // Edit History Price
   const [editHistItem, setEditHistItem] = useState(null);
   const [editHistPrice, setEditHistPrice] = useState('');
+
   const [showEditName, setShowEditName] = useState(false);
   const [editNameId, setEditNameId] = useState(null);
   const [tempName, setTempName] = useState('');
+  
+  // AI Budget Suggest
   const [aiBudgetSuggest, setAiBudgetSuggest] = useState('');
   const [isSuggesting, setIsSuggesting] = useState(false);
 
@@ -218,7 +225,7 @@ function App() {
   const [aiLoading, setAiLoading] = useState(false);
   const [ocrLoading, setOcrLoading] = useState(false);
   const [iName, setIName] = useState('');
-  const [iQty, setIQty] = useState('None');
+  const [iQty, setIQty] = useState('None'); // Default None
   const [iSize, setISize] = useState('None');
   const [iCat, setICat] = useState('grocery');
   const [iPrice, setIPrice] = useState('');
@@ -232,8 +239,10 @@ function App() {
   const [billName, setBillName] = useState('');
   const [billAmount, setBillAmount] = useState('');
   const [billDue, setBillDue] = useState(new Date().toISOString().split('T')[0]);
-  
-  // Loan States
+  const [billNote, setBillNote] = useState('');
+  const [billRecurring, setBillRecurring] = useState(true);
+
+  // Loan Ledger
   const [loanFilter, setLoanFilter] = useState('lent');
   const [loanPerson, setLoanPerson] = useState('');
   const [loanType, setLoanType] = useState('lent');
@@ -252,8 +261,8 @@ function App() {
   
   const MONTHS = useMemo(() => getDynamicMonths(), []);
   const currentMonthKey = useMemo(() => new Date().toISOString().slice(0, 7), []);
-  const [monthIdx, setMonthIdx] = useState(MONTHS.length - 1);
-  const activeMonth = MONTHS[monthIdx];
+  const [monthIdx, setMonthIdx] = useState(MONTHS.length - 1); 
+  const activeMonth = MONTHS[monthIdx] || MONTHS[5];
 
   useEffect(() => {
     if (auth) {
@@ -273,13 +282,12 @@ function App() {
 
   // Sync Main Data
   useEffect(() => {
-    if (!db || !familyCode || isGuest) {
-      if (isGuest) {
-        const localData = JSON.parse(localStorage.getItem('bb_guest_data') || 'null');
-        if (localData) setData(localData);
-      }
+    if (isGuest) {
+      const localData = JSON.parse(localStorage.getItem('bb_guest_data') || 'null');
+      if (localData) setData(localData);
       return;
     }
+    if (!db || !familyCode) return;
     const docRef = db.collection('families').doc(familyCode.trim().toUpperCase());
     const unsubscribe = docRef.onSnapshot((docSnap) => {
       if (docSnap.exists) {
@@ -348,7 +356,7 @@ function App() {
       if (pinClean.length < 4) return toastFn(t('৪ সংখ্যার পিন দিন', 'Enter 4-digit PIN'));
       localStorage.setItem('bb_family_code', codeClean); localStorage.setItem('bb_my_name', nameClean); localStorage.setItem('bb_my_pin', pinClean); localStorage.setItem('bb_guest', 'false');
       setMyName(nameClean); setMyPin(pinClean); setFamilyCode(codeClean); setIsGuest(false);
-      toastFn(t('ফ্যামিলি একাউন্ট তৈরি হয়েছে!', 'Family account created!'));
+      toastFn(t('ফ্যামিলি একাউন্ট তৈরি হয়েছে!', 'Account created!'));
     } else {
       const codeClean = inputCode.trim().toUpperCase();
       const pinClean = pinDigits.join('');
@@ -362,9 +370,9 @@ function App() {
             if (existing.pin && existing.pin !== pinClean) { setAuthLoading(false); return toastFn(t('❌ পিন সঠিক নয়!', '❌ Incorrect PIN!')); }
             localStorage.setItem('bb_family_code', codeClean); localStorage.setItem('bb_my_name', existing.owner || 'User'); localStorage.setItem('bb_my_pin', pinClean); localStorage.setItem('bb_guest', 'false');
             setMyName(existing.owner || 'User'); setMyPin(pinClean); setFamilyCode(codeClean); setIsGuest(false);
-            toastFn(t('লগইন সফল!', 'Logged in successfully!'));
+            toastFn(t('লগইন সফল!', 'Logged in!'));
           } else toastFn(t('এই কোডে কোনো একাউন্ট নেই!', 'No account found!'));
-        } catch (err) { toastFn(t('ইন্টারনেট চেক করুন', 'Check your internet')); }
+        } catch (err) { toastFn(t('ইন্টারনেট চেক করুন', 'Check internet')); }
         setAuthLoading(false);
       }
     }
@@ -388,7 +396,7 @@ function App() {
   const handleGuestLogin = () => {
     localStorage.setItem('bb_guest', 'true'); localStorage.setItem('bb_family_code', 'GUEST_' + Date.now()); localStorage.setItem('bb_my_name', 'Guest');
     setIsGuest(true); setFamilyCode('GUEST_' + Date.now()); setMyName('Guest'); setData(INITIAL_DATA);
-    toastFn(t('গেস্ট মোড চালু (ডাটা ক্লাউডে সেভ হবে না)', 'Guest Mode (Offline)'));
+    toastFn(t('গেস্ট মোড (ডাটা ক্লাউডে সেভ হবে না)', 'Guest Mode (Offline)'));
   };
 
   const getPrevPrice = (name) => {
@@ -399,6 +407,109 @@ function App() {
     return 0;
   };
 
+  // AI Logic
+  const getBudgetSuggestion = async () => {
+    if (!data.geminiApiKey) return toastFn(t('সেটিংসে Gemini API Key দিন', 'Add API Key'));
+    setIsSuggesting(true);
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${data.geminiApiKey}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: `I spend around ${stats.monthTotal} BDT monthly. Reply with a realistic budget number and 1-line reason.` }] }] })
+      });
+      const json = await res.json();
+      setAiBudgetSuggest(json.candidates[0].content.parts[0].text);
+    } catch (e) { toastFn('AI Failed'); }
+    setIsSuggesting(false);
+  };
+
+  const handleReceiptUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!data.geminiApiKey) return toastFn(t('সেটিংসে API Key দিন!', 'Add API Key!'));
+    setOcrLoading(true);
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const base64Data = ev.target.result.split(',')[1];
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${data.geminiApiKey}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: "Extract items and prices. Return JSON: [{'name': 'item', 'price': 100}]. No markdown." }, { inlineData: { mimeType: file.type, data: base64Data } }] }] })
+        });
+        const json = await res.json();
+        const text = json.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
+        const parsed = JSON.parse(text);
+        if (Array.isArray(parsed)) {
+          const newItems = parsed.map((item, idx) => ({ id: 'ocr_' + Date.now() + idx, name: item.name, quantity: 'None', size: '', category: 'grocery', addedBy: myName, addedAt: nowStr(), bought: true, price: Number(item.price) || 0, lastPrice: Number(item.price) || 0, urgent: false, note: '📸 Receipt OCR' }));
+          const u = [...newItems, ...(data.todayItems || [])];
+          save({ ...data, todayItems: u });
+          if (sound) playSound();
+          setShowAdd(false);
+          toastFn(`✅ ${parsed.length} items added from receipt!`);
+        }
+      } catch (err) { toastFn('❌ OCR Failed.'); }
+      setOcrLoading(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAiExtract = async () => {
+    if (!aiPrompt.trim()) return;
+    if (!data.geminiApiKey) return toastFn(t('সেটিংসে API Key দিন', 'Add API Key'));
+    setAiLoading(true);
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${data.geminiApiKey}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: `Extract items from: "${aiPrompt}". Return JSON: [{'name': 'name', 'quantity': '1 kg'}]. No markdown.` }] }] })
+      });
+      const json = await res.json();
+      const text = json.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
+      const parsed = JSON.parse(text);
+      if (Array.isArray(parsed)) {
+        const newItems = parsed.map((item, idx) => ({ id: 'ai_' + Date.now() + idx, name: item.name, quantity: item.quantity || 'None', size: '', category: 'grocery', addedBy: myName, addedAt: nowStr(), bought: false, price: 0, lastPrice: getPrevPrice(item.name), urgent: false, note: '✨ AI Add' }));
+        const u = [...newItems, ...(data.todayItems || [])];
+        save({ ...data, todayItems: u });
+        if (sound) playSound();
+        setAiPrompt(''); setShowAdd(false);
+        toastFn(`✨ ${newItems.length} items added!`);
+      }
+    } catch (e) { toastFn('AI Parsing Failed'); }
+    setAiLoading(false);
+  };
+
+  const applyVoiceText = (txt, isAiField = false) => {
+    if (!txt) return;
+    if (isAiField) { setAiPrompt(prev => prev ? `${prev}, ${txt}` : txt); return; }
+    const m = txt.match(/(\d+(?:\.\d+)?\s*(?:কেজি|গ্রাম|পিস|প্যাকেট|লিটার|ডজন|kg|gm|pc|pcs|pack|ltr))/i);
+    if (m) { setIQty(m[1]); setIName(txt.replace(m[1], '').trim() || txt); } else { setIName(txt); }
+  };
+
+  const onVoice = (isAiField = false) => {
+    const voiceLang = lang === 'bn' ? 'bn-BD' : 'en-US';
+    if (window.plugins && window.plugins.speechRecognition) {
+      window.plugins.speechRecognition.hasPermission((hasPerm) => {
+        const startNative = () => {
+          setListening(true);
+          window.plugins.speechRecognition.startListening(
+            (matches) => { setListening(false); if (matches && matches.length > 0) applyVoiceText(matches[0].trim(), isAiField); },
+            () => { setListening(false); toastFn('Try again'); },
+            { language: voiceLang, matches: 1, showPopup: true }
+          );
+        };
+        if (!hasPerm) window.plugins.speechRecognition.requestPermission(startNative, () => toastFn('Mic required!'));
+        else startNative();
+      }, () => {});
+      return;
+    }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return toastFn('Mic not supported');
+    try {
+      const r = new SR(); r.lang = voiceLang; r.interimResults = false;
+      setListening(true);
+      r.onresult = (e) => { applyVoiceText(e.results[0][0].transcript.trim(), isAiField); setListening(false); };
+      r.onerror = () => { setListening(false); toastFn('Allow mic'); };
+      r.onend = () => setListening(false);
+      r.start();
+    } catch (e) { setListening(false); }
+  };
+
+  // Item Actions
   const onAddItem = (e) => {
     e.preventDefault();
     if (!iName.trim()) return;
@@ -436,7 +547,6 @@ function App() {
     const bought = (data.todayItems || []).filter(i => i.bought);
     if (bought.length === 0) return toastFn(t('অন্তত ১টি আইটেম কিনুন!', 'Check at least 1 item!'));
     const total = bought.reduce((s, i) => s + (Number(i.price) || 0), 0);
-    
     const sess = { dateStr: `${todayDateDisplay()} (${nowStr()})`, monthKey: currentMonthKey, boughtCount: bought.length, totalCount: data.todayItems.length, totalSpent: total, sender: myName, tag: 'Completed', items: [...data.todayItems], timestamp: Date.now() };
 
     if (isGuest) {
@@ -475,116 +585,14 @@ function App() {
     setSelectedHist(updatedSess); setEditHistItem(null); toastFn('Price Updated ✔');
   };
 
-  // AI Integrations
-  const getBudgetSuggestion = async () => {
-    if (!data.geminiApiKey) return toastFn(t('সেটিংসে Gemini API Key দিন', 'Add Gemini API Key'));
-    setIsSuggesting(true);
-    try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${data.geminiApiKey}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: `I spend around ${stats.monthTotal} BDT monthly on groceries in Bangladesh. Reply with a realistic budget number and 1-line reason.` }] }] })
-      });
-      const json = await res.json();
-      setAiBudgetSuggest(json.candidates[0].content.parts[0].text);
-    } catch (e) { toastFn('AI Suggestion Failed'); }
-    setIsSuggesting(false);
-  };
-
-  const handleReceiptUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (!data.geminiApiKey) return toastFn(t('সেটিংসে Gemini API Key দিন!', 'Add API Key!'));
-    setOcrLoading(true);
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-      const base64Data = ev.target.result.split(',')[1];
-      try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${data.geminiApiKey}`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: "Extract items and prices. Return JSON: [{'name': 'item', 'price': 100}]. No markdown." }, { inlineData: { mimeType: file.type, data: base64Data } }] }] })
-        });
-        const json = await res.json();
-        const text = json.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
-        const parsed = JSON.parse(text);
-        if (Array.isArray(parsed)) {
-          const newItems = parsed.map((item, idx) => ({ id: 'ocr_' + Date.now() + idx, name: item.name, quantity: '', size: '', category: 'grocery', addedBy: myName, addedAt: nowStr(), bought: true, price: Number(item.price) || 0, lastPrice: Number(item.price) || 0, urgent: false, note: '📸 Receipt OCR' }));
-          const u = [...newItems, ...(data.todayItems || [])];
-          save({ ...data, todayItems: u });
-          if (sound) playSound();
-          setShowAdd(false);
-          toastFn(`✅ ${parsed.length} ${t('টি আইটেম রসিদ থেকে যোগ হয়েছে!', 'items added from receipt!')}`);
-        }
-      } catch (err) { toastFn('❌ OCR Failed.'); }
-      setOcrLoading(false);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleAiExtract = async () => {
-    if (!aiPrompt.trim()) return;
-    if (!data.geminiApiKey) return toastFn(t('সেটিংসে API Key দিন', 'Add API Key'));
-    setAiLoading(true);
-    try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${data.geminiApiKey}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: `Extract items from: "${aiPrompt}". Return JSON: [{'name': 'name', 'quantity': '1 kg'}]. No markdown.` }] }] })
-      });
-      const json = await res.json();
-      const text = json.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
-      const parsed = JSON.parse(text);
-      if (Array.isArray(parsed)) {
-        const newItems = parsed.map((item, idx) => ({ id: 'ai_' + Date.now() + idx, name: item.name, quantity: item.quantity || '', size: '', category: 'grocery', addedBy: myName, addedAt: nowStr(), bought: false, price: 0, lastPrice: getPrevPrice(item.name), urgent: false, note: '✨ AI Add' }));
-        const u = [...newItems, ...(data.todayItems || [])];
-        save({ ...data, todayItems: u });
-        if (sound) playSound();
-        setAiPrompt(''); setShowAdd(false);
-        toastFn(`✨ ${newItems.length} items added!`);
-      }
-    } catch (e) { toastFn('AI Parsing Failed'); }
-    setAiLoading(false);
-  };
-
-  const applyVoiceText = (txt, isAiField = false) => {
-    if (!txt) return;
-    if (isAiField) { setAiPrompt(prev => prev ? `${prev}, ${txt}` : txt); return; }
-    const m = txt.match(/(\d+(?:\.\d+)?\s*(?:কেজি|গ্রাম|পিস|প্যাকেট|লিটার|ডজন|kg|gm|pc|pcs|pack|ltr))/i);
-    if (m) { setIQty(m[1]); setIName(txt.replace(m[1], '').trim() || txt); } else { setIName(txt); }
-  };
-
-  const onVoice = (isAiField = false) => {
-    const voiceLang = lang === 'bn' ? 'bn-BD' : 'en-US';
-    if (window.plugins && window.plugins.speechRecognition) {
-      window.plugins.speechRecognition.hasPermission((hasPerm) => {
-        const startNative = () => {
-          setListening(true);
-          window.plugins.speechRecognition.startListening(
-            (matches) => { setListening(false); if (matches && matches.length > 0) applyVoiceText(matches[0].trim(), isAiField); },
-            () => { setListening(false); toastFn('Try again'); },
-            { language: voiceLang, matches: 1, showPopup: true }
-          );
-        };
-        if (!hasPerm) window.plugins.speechRecognition.requestPermission(startNative, () => toastFn('Mic permission required!'));
-        else startNative();
-      }, () => {});
-      return;
-    }
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) return toastFn('Mic not supported');
-    try {
-      const r = new SR(); r.lang = voiceLang; r.interimResults = false;
-      setListening(true);
-      r.onresult = (e) => { applyVoiceText(e.results[0][0].transcript.trim(), isAiField); setListening(false); };
-      r.onerror = () => { setListening(false); toastFn('Allow mic'); };
-      r.onend = () => setListening(false);
-      r.start();
-    } catch (e) { setListening(false); }
-  };
-
   // Bills & Loans
   const onAddBill = (e) => {
     e.preventDefault();
     if (!billName.trim() || !billAmount) return;
-    const newBill = { id: 'b' + Date.now(), name: billName.trim(), type: billType, amount: Number(billAmount) || 0, dueDate: billDue || '', paid: false, paidDate: null, note: '', recurring: true };
+    const newBill = { id: 'b' + Date.now(), name: billName.trim(), type: billType, amount: Number(billAmount) || 0, dueDate: billDue || '', paid: false, paidDate: null, note: billNote.trim(), recurring: billRecurring };
     save({ ...data, bills: [newBill, ...(data.bills || [])] });
     if (sound) playSound();
-    setBillName(''); setBillAmount(''); setShowAddBill(false); toastFn('Bill Added ✔');
+    setBillName(''); setBillAmount(''); setBillNote(''); setShowAddBill(false); toastFn('Bill Added ✔');
   };
 
   const onToggleBill = (bill) => {
@@ -601,8 +609,7 @@ function App() {
     const newLoan = { id: 'l' + Date.now(), person: loanPerson.trim(), type: loanType, amount: Number(loanAmount) || 0, date: loanDate, dueDate: loanDue, note: loanNote, settled: false };
     save({ ...data, loans: [newLoan, ...(data.loans || [])] });
     if (sound) playSound();
-    setLoanPerson(''); setLoanAmount(''); setLoanDue(''); setLoanNote(''); setShowAddLoan(false);
-    toastFn('Loan Added ✔');
+    setLoanPerson(''); setLoanAmount(''); setLoanDue(''); setLoanNote(''); setShowAddLoan(false); toastFn('Loan Added ✔');
   };
 
   const onToggleLoan = (loan) => {
@@ -611,7 +618,6 @@ function App() {
     if (sound) playSound();
   };
 
-  // Export & Share
   const exportCSV = () => {
     let csv = "Type,Name,Category,Amount,Status\n";
     (data.todayItems || []).forEach(i => { csv += `Bazar,"${i.name}","${i.category}",${i.price || 0},${i.bought ? 'Bought' : 'Pending'}\n`; });
@@ -628,7 +634,7 @@ function App() {
     return s;
   };
 
-  // Stats
+  // Metrics
   const stats = useMemo(() => {
     const items = data.todayItems || [];
     const bought = items.filter(i => i.bought);
@@ -636,14 +642,26 @@ function App() {
     const bazarSpentToday = bought.reduce((s, i) => s + (Number(i.price) || 0), 0);
     const remainingEst = unbought.reduce((s, i) => s + getPrevPrice(i.name), 0);
     const estTotal = bazarSpentToday + remainingEst;
+    
+    const todayISO = new Date().toISOString().split('T')[0];
+    const paidBills = (data.bills || []).filter(b => b.paid);
+    const billsPaidToday = paidBills.filter(b => b.paidDate === todayISO).reduce((s, b) => s + Number(b.amount || 0), 0);
+    const spentToday = bazarSpentToday + billsPaidToday;
+
     const monthHist = historyData.filter(h => h.monthKey === activeMonth.key);
     const histSpent = monthHist.reduce((s, h) => s + (Number(h.totalSpent) || 0), 0);
-    const monthBillsTotal = (data.bills || []).filter(b => b.paid && b.paidDate && b.paidDate.startsWith(activeMonth.key)).reduce((s, b) => s + Number(b.amount || 0), 0);
+    const monthBillsTotal = paidBills.filter(b => !b.paidDate || b.paidDate.startsWith(activeMonth.key)).reduce((s, b) => s + Number(b.amount || 0), 0);
+
     const isCurrentMonth = activeMonth.key === currentMonthKey;
     const monthTotal = histSpent + monthBillsTotal + (isCurrentMonth ? bazarSpentToday : 0);
+
     const budget = Number(data.monthlyBudget) || 0;
     const budgetPct = budget > 0 ? Math.round((monthTotal / budget) * 100) : 0;
-    return { total: items.length, boughtCount: bought.length, leftCount: unbought.length, bazarSpentToday, estTotal, monthTotal, budget, budgetPct, budgetRemaining: Math.max(0, budget - monthTotal) };
+    const budgetRemaining = Math.max(0, budget - monthTotal);
+    const trackedDays = Math.max(1, monthHist.length + (bazarSpentToday > 0 ? 1 : 0));
+    const dailyAvg = monthTotal > 0 ? Math.round(monthTotal / trackedDays) : 0;
+
+    return { total: items.length, boughtCount: bought.length, leftCount: unbought.length, urgentCount: items.filter(i => i.urgent && !i.bought).length, bazarSpentToday, remainingEst, estTotal, spentToday, cartProgress: items.length > 0 ? Math.round((bought.length / items.length) * 100) : 0, monthTotal, budget, budgetPct, budgetRemaining, dailyAvg };
   }, [data, activeMonth, historyData, currentMonthKey]);
 
   const loansStats = useMemo(() => {
@@ -658,6 +676,7 @@ function App() {
     return (
       <div className={`${dark ? 'dark bg-slate-950 text-white' : 'bg-slate-100 text-slate-900'} h-screen w-full flex flex-col items-center justify-center p-4`}>
         <div className="w-full max-w-[400px] bg-white dark:bg-slate-900 rounded-3xl shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800">
+          
           <div className="bg-primary/5 p-6 flex flex-col items-center border-b border-slate-100 dark:border-slate-800">
             <div className="w-20 h-20 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-3 overflow-hidden border border-slate-100">
                <img src="icon-192.png" alt="Logo" className="w-full h-full object-cover" onError={(e)=>e.target.style.display='none'} />
@@ -708,8 +727,8 @@ function App() {
 
   // ======================== MAIN APP ========================
   return (
-    <div className={`${dark ? 'dark bg-slate-950' : 'bg-slate-200/70'} h-screen w-full flex justify-center items-center overflow-hidden`}>
-      <div className={`w-full max-w-[435px] h-full sm:h-[880px] ${dark ? 'bg-slate-900 text-slate-100 sm:border-slate-800' : 'bg-[#F8FAFC] text-slate-900 sm:border-white'} sm:rounded-[36px] sm:shadow-2xl sm:border-[6px] flex flex-col relative overflow-hidden`}>
+    <div className={`${dark ? 'dark bg-slate-950' : 'bg-slate-200/70'} h-screen w-full flex justify-center items-center overflow-hidden select-none`}>
+      <div className={`w-full max-w-[435px] h-full sm:h-[880px] ${dark ? 'bg-slate-900 text-slate-100 sm:border-slate-800' : 'bg-[#F8FAFC] text-[#0F172A] sm:border-white'} sm:rounded-[36px] sm:shadow-2xl sm:border-[6px] flex flex-col relative overflow-hidden`}>
         
         {toast && (<div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white px-4 py-2.5 rounded-full shadow-xl text-xs font-semibold flex items-center gap-2 border border-emerald-500/40 backdrop-blur-md"><span className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold">✓</span><span>{toast}</span></div>)}
 
@@ -720,13 +739,13 @@ function App() {
             <div className="space-y-4">
               <div className="flex items-center justify-between px-0.5">
                 <div><div className="flex items-center gap-1 text-slate-500 text-xs font-medium"><span className="material-symbols-outlined text-[15px]">calendar_today</span> {todayDateDisplay()}</div><h1 className="text-2xl font-headline font-extrabold mt-0.5">{t('আজকের বাজার', "Today's Bazar")}</h1></div>
-                <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-[11px] font-bold text-emerald-700 border border-emerald-200 shadow-sm"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> {isGuest ? 'Offline Mode' : 'Live Sync'}</div>
+                <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-[11px] font-bold text-emerald-700 border border-emerald-200 shadow-sm"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> {isGuest ? 'Offline' : 'Live Sync'}</div>
               </div>
 
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#4338CA] via-[#4f46e5] to-[#6366F1] p-5 text-white shadow-xl">
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#4338CA] via-[#4f46e5] to-[#6366F1] p-5 text-white shadow-[0_12px_30px_rgba(79,70,229,0.28)] border border-white/15">
                 <div className="relative z-10 flex flex-col gap-4">
                   <div className="flex items-start justify-between">
-                    <div><span className="text-[11px] font-semibold text-indigo-200 uppercase">Spent Today</span><div className="flex items-baseline gap-2 mt-1"><span className="text-3xl font-headline font-extrabold">৳{stats.bazarSpentToday.toLocaleString()}</span><span className="text-[11px] font-semibold text-indigo-100 bg-white/15 px-2 py-0.5 rounded-full">{stats.leftCount} left</span></div></div>
+                    <div><span className="text-[11px] font-semibold text-indigo-200 uppercase">Spent Today</span><div className="flex items-baseline gap-2 mt-1"><span className="text-3xl font-headline font-extrabold">৳{stats.spentToday.toLocaleString()}</span><span className="text-[11px] font-semibold text-indigo-100 bg-white/15 px-2 py-0.5 rounded-full">{stats.leftCount} left</span></div></div>
                     <button onClick={() => { setTempBudget(String(data.monthlyBudget || 0)); setShowBudget(true); }} className="flex items-center gap-1 bg-white/15 border border-white/20 px-2.5 py-1.5 rounded-full text-xs font-semibold"><span className="text-indigo-100">Budget:</span> <span className="font-bold text-white">৳{stats.budget.toLocaleString()}</span><span className="material-symbols-outlined text-[14px]">edit</span></button>
                   </div>
                   <div className="space-y-1.5">
@@ -736,12 +755,12 @@ function App() {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 shadow-sm">
+              <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/70 shadow-sm">
                 <div className="flex justify-between items-center mb-3">
                   <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center text-primary"><span className="material-symbols-outlined text-[18px]">shopping_basket</span></div><h3 className="font-headline font-bold text-sm">Today's Smart Bazar</h3></div>
                   <button onClick={() => setTab('bazar')} className="text-xs font-bold text-primary flex items-center gap-0.5">View All <span className="material-symbols-outlined text-[15px]">arrow_forward</span></button>
                 </div>
-                {(data.todayItems || []).length === 0 ? (<div className="py-5 text-center border border-dashed border-slate-200 rounded-xl"><p className="text-xs text-slate-400">No items in list yet!</p></div>) : (
+                {(data.todayItems || []).length === 0 ? (<div className="py-5 text-center border border-dashed border-slate-200 rounded-xl"><p className="text-xs text-slate-400">No items in today’s list yet!</p></div>) : (
                   <div className="flex flex-col gap-2">
                     {(data.todayItems || []).slice(0, 3).map(item => (
                       <div key={item.id} onClick={() => onToggleItem(item)} className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer ${item.bought ? 'bg-slate-50 border-slate-100 opacity-70' : 'bg-white border-slate-200'}`}>
@@ -905,7 +924,7 @@ function App() {
           ))}
         </nav>
 
-        {/* MODAL: ADD ITEM (AI, OCR, VOICE, QUICK ADD) */}
+        {/* MODAL: ADD ITEM */}
         {showAdd && (
           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/60 backdrop-blur-sm" onClick={() => setShowAdd(false)}>
             <div className="w-full max-w-[435px] bg-[#182234] text-slate-100 rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden" onClick={e => e.stopPropagation()}>
