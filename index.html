@@ -35,12 +35,12 @@ tailwind.config = {
   theme: {
     extend: {
       colors: {
-        primary: "#4F46E5",
+        primary: "#3525CD",
         "deep-violet": "#4338CA",
-        secondary: "#059669",
+        secondary: "#006C49",
         "mint-surface": "#ECFDF5",
         "indigo-subtle": "#EEF2FF",
-        surface: "#F8FAFC"
+        surface: "#FAF8FF"
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -58,15 +58,13 @@ tailwind.config = {
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24; }
   .icon-fill { font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24; }
-  .spinner { border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; }
-  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 </style>
 </head>
-<body class="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased overflow-hidden">
+<body class="bg-[#FAF8FF] dark:bg-slate-950 text-[#131B2E] dark:text-slate-100 font-sans antialiased overflow-hidden">
 <div id="root">
-  <div style="height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:sans-serif;background:#F8FAFC;">
-    <div style="width:64px;height:64px;border-radius:18px;background:#4F46E5;display:flex;align-items:center;justify-content:center;color:white;font-size:32px;box-shadow:0 10px 25px rgba(79,70,229,0.3);">🧺</div>
-    <div style="margin-top:14px;font-weight:800;color:#4F46E5;font-size:15px;">Bou Bolche Loading...</div>
+  <div style="height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:sans-serif;background:#FAF8FF;">
+    <div style="width:64px;height:64px;border-radius:18px;background:#3525CD;display:flex;align-items:center;justify-content:center;color:white;font-size:32px;box-shadow:0 10px 25px rgba(53,37,205,0.3);">🧺</div>
+    <div style="margin-top:14px;font-weight:800;color:#3525CD;font-size:15px;">Bou Bolche Ultimate Master Loading...</div>
   </div>
 </div>
 
@@ -108,18 +106,29 @@ const BILL_TYPES = [
   { id: 'gas', name: 'Gas', bnName: 'গ্যাস', icon: 'local_fire_department', color: 'text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600' },
   { id: 'internet', name: 'Internet', bnName: 'ইন্টারনেট', icon: 'language', color: 'text-sky-400', bg: 'bg-sky-50 dark:bg-sky-950/50 text-sky-600' },
   { id: 'mobile', name: 'Mobile', bnName: 'মোবাইল', icon: 'smartphone', color: 'text-violet-400', bg: 'bg-violet-50 dark:bg-violet-950/50 text-violet-600' },
-  { id: 'rent', name: 'Rent', bnName: 'বাসা ভাড়া', icon: 'home', color: 'text-rose-400', bg: 'bg-rose-50 dark:bg-rose-950/50 text-rose-600' },
+  { id: 'rent', name: 'Rent', bnName: 'বাসা ভাড়া', icon: 'home', color: 'text-rose-400', bg: 'bg-rose-50 dark:bg-rose-950/50 text-rose-600' },
   { id: 'other', name: 'Other', bnName: 'অন্যান্য', icon: 'inventory_2', color: 'text-amber-500', bg: 'bg-slate-100 dark:bg-slate-800 text-slate-600' }
+];
+
+const MONTHS = [
+  { key: '2026-05', label: 'May 2026', bn: 'মে ২০২৬' },
+  { key: '2026-06', label: 'Jun 2026', bn: 'জুন ২০২৬' },
+  { key: '2026-07', label: 'Jul 2026', bn: 'জুলাই ২০২৬' },
+  { key: '2026-08', label: 'Aug 2026', bn: 'আগস্ট ২০২৬' },
+  { key: '2026-09', label: 'Sep 2026', bn: 'সেপ্টেম্বর ২০২৬' },
+  { key: '2026-10', label: 'Oct 2026', bn: 'অক্টোবর ২০২৬' },
+  { key: '2026-11', label: 'Nov 2026', bn: 'নভেম্বর ২০২৬' },
+  { key: '2026-12', label: 'Dec 2026', bn: 'ডিসেম্বর ২০২৬' }
 ];
 
 const QUICK_WEIGHTS = ['None', '250g', '500g', '1 kg', '2 kg', '5 kg', '1 Ltr', '1 ডজন', '1 pc'];
 const SIZES = ['None', 'S', 'M', 'L', 'XL'];
 
 const DEFAULT_QUICK = [
-  { id: 'q1', name: 'ডিম (Eggs)', qty: 'None', category: 'grocery', size: '' },
-  { id: 'q2', name: 'দুধ (Milk)', qty: 'None', category: 'grocery', size: '' },
-  { id: 'q3', name: 'আলু (Potato)', qty: 'None', category: 'vegetables', size: '' },
-  { id: 'q4', name: 'ডায়াপার (Diapers)', qty: 'None', category: 'baby', size: 'L' }
+  { id: 'q1', name: 'ডিম (Eggs)', qty: '1 ডজন', category: 'grocery', size: '' },
+  { id: 'q2', name: 'দুধ (Milk)', qty: '1 Ltr', category: 'grocery', size: '' },
+  { id: 'q3', name: 'আলু (Potato)', qty: '1 kg', category: 'vegetables', size: '' },
+  { id: 'q4', name: 'ডায়াপার (Diapers)', qty: '1 pack', category: 'baby', size: 'L' }
 ];
 
 const INITIAL_DATA = {
@@ -129,29 +138,15 @@ const INITIAL_DATA = {
   monthlyBudget: 0,
   lastMonthSpent: 0,
   geminiApiKey: '',
+  partnerNote: '✨ আসার সময় তাজা ফুল ও ১ কেজি মিষ্টি এনো!',
   priceHistory: { 'আপেল': 380, 'apple': 380, 'রুই মাছ': 450, 'ডায়াপার': 950, 'ডিম': 165, 'দুধ': 100, 'আলু': 55, 'পেঁয়াজ': 115, 'তেল': 340, 'মুরগি': 310 },
   quickAddItems: DEFAULT_QUICK,
   bills: [],
   loans: [],
   members: [],
   notification: { active: false, sender: '', dateStr: '', itemCount: 0 },
-  todayItems: []
-};
-
-// Dynamic Months Logic
-const getDynamicMonths = () => {
-  const months = [];
-  const d = new Date();
-  for (let i = 11; i >= 0; i--) {
-    const past = new Date(d.getFullYear(), d.getMonth() - i, 1);
-    const key = `${past.getFullYear()}-${String(past.getMonth() + 1).padStart(2, '0')}`;
-    months.push({
-      key,
-      label: past.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-      bn: past.toLocaleDateString('bn-BD', { month: 'long', year: 'numeric' })
-    });
-  }
-  return months;
+  todayItems: [],
+  history: []
 };
 
 const playSound = () => {
@@ -169,24 +164,29 @@ const playSound = () => {
   } catch(e) {}
 };
 
-function App() {
-  const [data, setData] = useState(INITIAL_DATA);
-  const [historyData, setHistoryData] = useState([]); 
+const prevMonthKey = (k) => {
+  const [y, m] = k.split('-').map(Number);
+  const d = new Date(y, m - 2, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+};
 
-  // Auth States
-  const [user, setUser] = useState(null);
+function App() {
+  const [isSynced, setIsSynced] = useState(false);
+  const [syncError, setSyncError] = useState('');
+  const [data, setData] = useState(INITIAL_DATA);
+
+  // Auth & Identity
   const [familyCode, setFamilyCode] = useState(localStorage.getItem('bb_family_code') || '');
   const [myName, setMyName] = useState(localStorage.getItem('bb_my_name') || '');
   const [myPin, setMyPin] = useState(localStorage.getItem('bb_my_pin') || '');
-  const [isGuest, setIsGuest] = useState(localStorage.getItem('bb_guest') === 'true');
 
   // Login Screen States
   const [authMode, setAuthMode] = useState('signin');
-  const [inputName, setInputName] = useState('');
-  const [inputCode, setInputCode] = useState('');
+  const [inputIdentifier, setInputIdentifier] = useState('');
   const [pinDigits, setPinDigits] = useState(['', '', '', '']);
-  const [authLoading, setAuthLoading] = useState(false);
   const pinRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
+  const [forgotModal, setForgotModal] = useState(false);
+  const [recoveryEmail, setRecoveryEmail] = useState('');
 
   // Navigation & Preferences
   const [tab, setTab] = useState('home');
@@ -197,7 +197,7 @@ function App() {
   const [sound, setSound] = useState(true);
   const [toast, setToast] = useState('');
 
-  // Modals
+  // Modals & Interactive States
   const [showAdd, setShowAdd] = useState(false);
   const [showAddBill, setShowAddBill] = useState(false);
   const [showAddLoan, setShowAddLoan] = useState(false);
@@ -207,42 +207,47 @@ function App() {
   const [tempPrice, setTempPrice] = useState('');
   const [tempBudget, setTempBudget] = useState('0');
   const [selectedHist, setSelectedHist] = useState(null);
-  
-  // Edit History Price
-  const [editHistItem, setEditHistItem] = useState(null);
-  const [editHistPrice, setEditHistPrice] = useState('');
-
+  const [monthIdx, setMonthIdx] = useState(5);
   const [showEditName, setShowEditName] = useState(false);
   const [editNameId, setEditNameId] = useState(null);
   const [tempName, setTempName] = useState('');
-  
-  // AI Budget Suggest
-  const [aiBudgetSuggest, setAiBudgetSuggest] = useState('');
-  const [isSuggesting, setIsSuggesting] = useState(false);
+  const [editingNote, setEditingNote] = useState(false);
+  const [tempNoteText, setTempNoteText] = useState('');
 
-  // Add Item Form
+  // Add Item Form States (Default quantity is 'None')
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
-  const [ocrLoading, setOcrLoading] = useState(false);
   const [iName, setIName] = useState('');
-  const [iQty, setIQty] = useState('None'); // Default None
+  const [iQty, setIQty] = useState('None');
   const [iSize, setISize] = useState('None');
   const [iCat, setICat] = useState('grocery');
   const [iPrice, setIPrice] = useState('');
   const [iNote, setINote] = useState('');
   const [iUrgent, setIUrgent] = useState(false);
   const [listening, setListening] = useState(false);
-  const fileInputRef = useRef(null);
 
-  // Add Bill Form
+  // AI & Assistant Modals
+  const [recipeModal, setRecipeModal] = useState(false);
+  const [recipeLoading, setRecipeLoading] = useState(false);
+  const [recipeResult, setRecipeResult] = useState('');
+  const [advisorModal, setAdvisorModal] = useState(false);
+  const [advisorLoading, setAdvisorLoading] = useState(false);
+  const [advisorResult, setAdvisorResult] = useState('');
+  const [budgetSuggModal, setBudgetSuggModal] = useState(false);
+  const [budgetSuggLoading, setBudgetSuggLoading] = useState(false);
+  const [budgetSuggResult, setBudgetSuggResult] = useState('');
+  const [voiceQueryModal, setVoiceQueryModal] = useState(false);
+  const [voiceQueryText, setVoiceQueryText] = useState('');
+  const [voiceQueryAnswer, setVoiceQueryAnswer] = useState('');
+
+  // Add Bill Form States
   const [billType, setBillType] = useState('electricity');
   const [billName, setBillName] = useState('');
   const [billAmount, setBillAmount] = useState('');
   const [billDue, setBillDue] = useState(new Date().toISOString().split('T')[0]);
   const [billNote, setBillNote] = useState('');
-  const [billRecurring, setBillRecurring] = useState(true);
 
-  // Loan Ledger
+  // Loan Ledger States
   const [loanFilter, setLoanFilter] = useState('lent');
   const [loanPerson, setLoanPerson] = useState('');
   const [loanType, setLoanType] = useState('lent');
@@ -251,83 +256,121 @@ function App() {
   const [loanDue, setLoanDue] = useState('');
   const [loanNote, setLoanNote] = useState('');
 
-  // Settings
   const [tempApiKey, setTempApiKey] = useState('');
 
   const t = (bn, en) => lang === 'bn' ? bn : en;
   const toastFn = (msg) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
   const nowStr = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const todayDateDisplay = () => new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
-  
-  const MONTHS = useMemo(() => getDynamicMonths(), []);
-  const currentMonthKey = useMemo(() => new Date().toISOString().slice(0, 7), []);
-  const [monthIdx, setMonthIdx] = useState(MONTHS.length - 1); 
-  const activeMonth = MONTHS[monthIdx] || MONTHS[5];
 
+  // Native permissions check on mount
   useEffect(() => {
-    if (auth) {
-      const unsub = auth.onAuthStateChanged(u => {
-        if (u) {
-          setUser(u);
-          if (!isGuest && !familyCode && u.email) {
-            const code = u.email.split('@')[0].toUpperCase();
-            setFamilyCode(code);
-            localStorage.setItem('bb_family_code', code);
-          }
-        } else setUser(null);
-      });
-      return () => unsub();
+    if (window.cordova && window.cordova.plugins && window.cordova.plugins.diagnostic) {
+      // Cordova hardware permission requests handler
     }
   }, []);
 
-  // Sync Main Data
-  useEffect(() => {
-    if (isGuest) {
-      const localData = JSON.parse(localStorage.getItem('bb_guest_data') || 'null');
-      if (localData) setData(localData);
-      return;
+  const getSmartPrice = async (itemName) => {
+    if (!itemName) return 50;
+    const lower = itemName.toLowerCase().trim();
+    const dict = data.priceHistory || {};
+    for (const [k, v] of Object.entries(dict)) {
+      if (lower.includes(k.toLowerCase())) return v;
     }
+    const key = data.geminiApiKey || '';
+    if (key) {
+      try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: `What is the approximate current market price in Bangladesh Taka (BDT) for "${itemName}"? Return ONLY the integer number representing price per unit. No text.` }] }]
+          })
+        });
+        const resJson = await response.json();
+        const text = resJson?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const num = parseInt(text.replace(/[^0-9]/g, ''));
+        if (!isNaN(num) && num > 0) return num;
+      } catch(e) {}
+    }
+    return 100;
+  };
+
+  const toggleLang = (targetLang) => {
+    const next = typeof targetLang === 'string' ? targetLang : (lang === 'bn' ? 'en' : 'bn');
+    setLang(next);
+    localStorage.setItem('bb_lang', next);
+    toastFn(next === 'bn' ? 'বাংলা ভাষা চালু হয়েছে' : 'Switched to English');
+  };
+
+  const toggleDark = () => {
+    const next = !dark;
+    setDark(next);
+    localStorage.setItem('bb_dark', String(next));
+    toastFn(next ? '🌙 Dark Mode' : '☀️ Light Mode');
+  };
+
+  useEffect(() => {
+    if (auth) auth.signInAnonymously().catch(() => {});
+  }, []);
+
+  // Real-time Firestore Sync with Notification trigger on update
+  useEffect(() => {
     if (!db || !familyCode) return;
-    const docRef = db.collection('families').doc(familyCode.trim().toUpperCase());
+    const cleanCode = familyCode.trim().toUpperCase();
+    const docRef = db.collection('families').doc(cleanCode);
+
     const unsubscribe = docRef.onSnapshot((docSnap) => {
+      setSyncError('');
+      setIsSynced(true);
       if (docSnap.exists) {
         const cloudData = docSnap.data();
+        // Check if list was updated by partner
+        if (cloudData.updatedAt && data.updatedAt && cloudData.updatedAt > data.updatedAt + 1000) {
+          toastFn(t('🔔 বউবাজার লিস্ট আপডেট করেছেন!', '🔔 Partner updated the list!'));
+          if (sound) playSound();
+        }
         setData(prev => ({ ...prev, ...cloudData }));
         if (cloudData.geminiApiKey) setTempApiKey(cloudData.geminiApiKey);
       } else {
         const newDoc = {
-          ...INITIAL_DATA, familyCode: familyCode.trim().toUpperCase(), owner: myName || user?.displayName || 'Admin', pin: myPin || '1234', members: [{ id: 'm1', name: myName || user?.displayName || 'Admin', role: 'Admin' }], updatedAt: Date.now()
+          ...INITIAL_DATA,
+          familyCode: cleanCode,
+          owner: myName || 'User',
+          pin: myPin || '1234',
+          monthlyBudget: 0,
+          lastMonthSpent: 0,
+          members: [{ id: 'm1', name: myName || 'User', role: 'Admin' }],
+          updatedAt: Date.now()
         };
-        docRef.set(newDoc).catch(console.error);
+        docRef.set(newDoc).catch(err => setSyncError(err.code || 'sync-error'));
       }
+    }, (err) => {
+      setIsSynced(false);
+      setSyncError(err.code || 'offline');
     });
-    return () => unsubscribe();
-  }, [familyCode, myName, user, isGuest]);
 
-  // Sync History Subcollection
-  useEffect(() => {
-    if (isGuest) {
-      setHistoryData(JSON.parse(localStorage.getItem('bb_guest_history') || '[]'));
-      return;
-    }
-    if (!db || !familyCode) return;
-    const histRef = db.collection('families').doc(familyCode.trim().toUpperCase()).collection('history').orderBy('timestamp', 'desc');
-    const unsubscribe = histRef.onSnapshot((snap) => {
-      const hData = [];
-      snap.forEach(doc => hData.push({ id: doc.id, ...doc.data() }));
-      setHistoryData(hData);
-    });
     return () => unsubscribe();
-  }, [familyCode, isGuest]);
+  }, [familyCode]);
+
+  useEffect(() => {
+    if (!isSynced || !myName || !familyCode) return;
+    const exists = (data.members || []).some(m => m.name.toLowerCase() === myName.toLowerCase());
+    if (!exists) {
+      const role = (data.members || []).length === 0 ? 'Admin' : 'Partner';
+      const updated = [...(data.members || []), { id: 'm' + Date.now(), name: myName, role }];
+      save({ ...data, members: updated });
+    }
+  }, [isSynced, myName]);
 
   const save = (newData) => {
-    setData(newData);
-    if (isGuest) {
-      localStorage.setItem('bb_guest_data', JSON.stringify(newData));
-      return;
-    }
+    const payload = { ...newData, updatedAt: Date.now() };
+    setData(payload);
     if (!db || !familyCode) return;
-    db.collection('families').doc(familyCode.trim().toUpperCase()).set({ ...newData, updatedAt: Date.now() }, { merge: true }).catch(console.error);
+    const cleanCode = familyCode.trim().toUpperCase();
+    db.collection('families').doc(cleanCode).set(payload, { merge: true }).catch(e => {
+      setSyncError(e.code || 'save-error');
+    });
   };
 
   const handlePinChange = (index, val) => {
@@ -335,200 +378,204 @@ function App() {
     const next = [...pinDigits];
     next[index] = digit;
     setPinDigits(next);
-    if (digit && index < 3 && pinRefs[index + 1].current) pinRefs[index + 1].current.focus();
+    if (digit && index < 3 && pinRefs[index + 1].current) {
+      pinRefs[index + 1].current.focus();
+    }
   };
 
   const handlePinKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && !pinDigits[index] && index > 0 && pinRefs[index - 1].current) pinRefs[index - 1].current.focus();
+    if (e.key === 'Backspace' && !pinDigits[index] && index > 0 && pinRefs[index - 1].current) {
+      pinRefs[index - 1].current.focus();
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    if (!auth) return toastFn(t('অথেন্টিকেশন উপলব্ধ নয়', 'Auth not available'));
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      const result = await auth.signInWithPopup(provider);
+      const user = result.user;
+      const email = user.email;
+      const displayName = user.displayName || email.split('@')[0];
+      const codeClean = email.toUpperCase().replace(/[^A-Z0-9]/g, '_');
+
+      localStorage.setItem('bb_family_code', codeClean);
+      localStorage.setItem('bb_my_name', displayName);
+      localStorage.setItem('bb_my_pin', '1234');
+      setMyName(displayName);
+      setMyPin('1234');
+      setFamilyCode(codeClean);
+      toastFn(t(`স্বাগতম, ${displayName}!`, `Welcome, ${displayName}!`));
+    } catch (err) {
+      toastFn(t('গুগল সাইন-ইন বাতিল হয়েছে', 'Google sign-in cancelled'));
+    }
   };
 
   const handleAuthSubmit = async (e) => {
     e.preventDefault();
-    if (authMode === 'signup') {
-      const nameClean = inputName.trim();
-      let codeClean = inputCode.trim().toUpperCase().replace(/[^A-Z0-9@.]/g, '');
-      const pinClean = pinDigits.join('');
-      if (!nameClean) return toastFn(t('আপনার নাম লিখুন', 'Enter your name'));
-      if (!codeClean) {
-        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-        for (let i = 0; i < 6; i++) codeClean += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      if (pinClean.length < 4) return toastFn(t('৪ সংখ্যার পিন দিন', 'Enter 4-digit PIN'));
-      localStorage.setItem('bb_family_code', codeClean); localStorage.setItem('bb_my_name', nameClean); localStorage.setItem('bb_my_pin', pinClean); localStorage.setItem('bb_guest', 'false');
-      setMyName(nameClean); setMyPin(pinClean); setFamilyCode(codeClean); setIsGuest(false);
-      toastFn(t('ফ্যামিলি একাউন্ট তৈরি হয়েছে!', 'Account created!'));
-    } else {
-      const codeClean = inputCode.trim().toUpperCase();
-      const pinClean = pinDigits.join('');
-      if (!codeClean || pinClean.length < 4) return toastFn(t('কোড এবং পিন দিন', 'Enter code and PIN'));
-      if (db) {
-        setAuthLoading(true);
-        try {
-          const snap = await db.collection('families').doc(codeClean).get();
-          if (snap.exists) {
-            const existing = snap.data();
-            if (existing.pin && existing.pin !== pinClean) { setAuthLoading(false); return toastFn(t('❌ পিন সঠিক নয়!', '❌ Incorrect PIN!')); }
-            localStorage.setItem('bb_family_code', codeClean); localStorage.setItem('bb_my_name', existing.owner || 'User'); localStorage.setItem('bb_my_pin', pinClean); localStorage.setItem('bb_guest', 'false');
-            setMyName(existing.owner || 'User'); setMyPin(pinClean); setFamilyCode(codeClean); setIsGuest(false);
-            toastFn(t('লগইন সফল!', 'Logged in!'));
-          } else toastFn(t('এই কোডে কোনো একাউন্ট নেই!', 'No account found!'));
-        } catch (err) { toastFn(t('ইন্টারনেট চেক করুন', 'Check internet')); }
-        setAuthLoading(false);
-      }
+    const identClean = inputIdentifier.trim();
+    if (!identClean) return toastFn(t('জিমেইল বা ফ্যামিলি কোড দিন', 'Enter Gmail or Family Code'));
+
+    let codeClean = identClean.toUpperCase().replace(/[^A-Z0-9@.]/g, '');
+    if (authMode === 'signup' && !codeClean) {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      for (let i = 0; i < 6; i++) codeClean += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-  };
 
-  const handleGoogleLogin = async () => {
-    if (!auth) return;
-    setAuthLoading(true);
-    const provider = new firebase.auth.GoogleAuthProvider();
-    try {
-      const res = await auth.signInWithPopup(provider);
-      const u = res.user;
-      const code = u.email.split('@')[0].toUpperCase();
-      localStorage.setItem('bb_family_code', code); localStorage.setItem('bb_my_name', u.displayName || 'User'); localStorage.setItem('bb_my_pin', '1234'); localStorage.setItem('bb_guest', 'false');
-      setMyName(u.displayName || 'User'); setMyPin('1234'); setFamilyCode(code); setIsGuest(false);
-      toastFn(t('গুগল লগইন সফল!', 'Google Login Successful!'));
-    } catch (err) { toastFn(t('লগইন ব্যর্থ! SHA-1 চেক করুন।', 'Login failed! Check SHA-1.')); }
-    setAuthLoading(false);
-  };
+    const pinClean = pinDigits.join('');
+    if (pinClean.length < 4) {
+      return toastFn(t('৪ সংখ্যার গোপন পিন দিন', 'Enter 4-digit security PIN'));
+    }
 
-  const handleGuestLogin = () => {
-    localStorage.setItem('bb_guest', 'true'); localStorage.setItem('bb_family_code', 'GUEST_' + Date.now()); localStorage.setItem('bb_my_name', 'Guest');
-    setIsGuest(true); setFamilyCode('GUEST_' + Date.now()); setMyName('Guest'); setData(INITIAL_DATA);
-    toastFn(t('গেস্ট মোড (ডাটা ক্লাউডে সেভ হবে না)', 'Guest Mode (Offline)'));
-  };
+    const derivedName = identClean.includes('@') ? identClean.split('@')[0] : 'Family Member';
 
-  const getPrevPrice = (name) => {
-    if (!name) return 0;
-    const dict = data.priceHistory || {};
-    const lower = name.toLowerCase().trim();
-    for (const [k, v] of Object.entries(dict)) { if (lower.includes(k.toLowerCase())) return v; }
-    return 0;
-  };
-
-  // AI Logic
-  const getBudgetSuggestion = async () => {
-    if (!data.geminiApiKey) return toastFn(t('সেটিংসে Gemini API Key দিন', 'Add API Key'));
-    setIsSuggesting(true);
-    try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${data.geminiApiKey}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: `I spend around ${stats.monthTotal} BDT monthly. Reply with a realistic budget number and 1-line reason.` }] }] })
-      });
-      const json = await res.json();
-      setAiBudgetSuggest(json.candidates[0].content.parts[0].text);
-    } catch (e) { toastFn('AI Failed'); }
-    setIsSuggesting(false);
-  };
-
-  const handleReceiptUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (!data.geminiApiKey) return toastFn(t('সেটিংসে API Key দিন!', 'Add API Key!'));
-    setOcrLoading(true);
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-      const base64Data = ev.target.result.split(',')[1];
+    if (db) {
       try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${data.geminiApiKey}`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: "Extract items and prices. Return JSON: [{'name': 'item', 'price': 100}]. No markdown." }, { inlineData: { mimeType: file.type, data: base64Data } }] }] })
-        });
-        const json = await res.json();
-        const text = json.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
-        const parsed = JSON.parse(text);
-        if (Array.isArray(parsed)) {
-          const newItems = parsed.map((item, idx) => ({ id: 'ocr_' + Date.now() + idx, name: item.name, quantity: 'None', size: '', category: 'grocery', addedBy: myName, addedAt: nowStr(), bought: true, price: Number(item.price) || 0, lastPrice: Number(item.price) || 0, urgent: false, note: '📸 Receipt OCR' }));
-          const u = [...newItems, ...(data.todayItems || [])];
-          save({ ...data, todayItems: u });
-          if (sound) playSound();
-          setShowAdd(false);
-          toastFn(`✅ ${parsed.length} items added from receipt!`);
+        const snap = await db.collection('families').doc(codeClean).get();
+        if (snap.exists) {
+          const existing = snap.data();
+          if (existing.pin && existing.pin !== pinClean) {
+            return toastFn(t('❌ পিন সঠিক নয়! সঠিক ৪ সংখ্যার পিন দিন।', '❌ Incorrect PIN!'));
+          }
         }
-      } catch (err) { toastFn('❌ OCR Failed.'); }
-      setOcrLoading(false);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleAiExtract = async () => {
-    if (!aiPrompt.trim()) return;
-    if (!data.geminiApiKey) return toastFn(t('সেটিংসে API Key দিন', 'Add API Key'));
-    setAiLoading(true);
-    try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${data.geminiApiKey}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: `Extract items from: "${aiPrompt}". Return JSON: [{'name': 'name', 'quantity': '1 kg'}]. No markdown.` }] }] })
-      });
-      const json = await res.json();
-      const text = json.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
-      const parsed = JSON.parse(text);
-      if (Array.isArray(parsed)) {
-        const newItems = parsed.map((item, idx) => ({ id: 'ai_' + Date.now() + idx, name: item.name, quantity: item.quantity || 'None', size: '', category: 'grocery', addedBy: myName, addedAt: nowStr(), bought: false, price: 0, lastPrice: getPrevPrice(item.name), urgent: false, note: '✨ AI Add' }));
-        const u = [...newItems, ...(data.todayItems || [])];
-        save({ ...data, todayItems: u });
-        if (sound) playSound();
-        setAiPrompt(''); setShowAdd(false);
-        toastFn(`✨ ${newItems.length} items added!`);
-      }
-    } catch (e) { toastFn('AI Parsing Failed'); }
-    setAiLoading(false);
-  };
-
-  const applyVoiceText = (txt, isAiField = false) => {
-    if (!txt) return;
-    if (isAiField) { setAiPrompt(prev => prev ? `${prev}, ${txt}` : txt); return; }
-    const m = txt.match(/(\d+(?:\.\d+)?\s*(?:কেজি|গ্রাম|পিস|প্যাকেট|লিটার|ডজন|kg|gm|pc|pcs|pack|ltr))/i);
-    if (m) { setIQty(m[1]); setIName(txt.replace(m[1], '').trim() || txt); } else { setIName(txt); }
-  };
-
-  const onVoice = (isAiField = false) => {
-    const voiceLang = lang === 'bn' ? 'bn-BD' : 'en-US';
-    if (window.plugins && window.plugins.speechRecognition) {
-      window.plugins.speechRecognition.hasPermission((hasPerm) => {
-        const startNative = () => {
-          setListening(true);
-          window.plugins.speechRecognition.startListening(
-            (matches) => { setListening(false); if (matches && matches.length > 0) applyVoiceText(matches[0].trim(), isAiField); },
-            () => { setListening(false); toastFn('Try again'); },
-            { language: voiceLang, matches: 1, showPopup: true }
-          );
-        };
-        if (!hasPerm) window.plugins.speechRecognition.requestPermission(startNative, () => toastFn('Mic required!'));
-        else startNative();
-      }, () => {});
-      return;
+      } catch (err) {}
     }
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) return toastFn('Mic not supported');
-    try {
-      const r = new SR(); r.lang = voiceLang; r.interimResults = false;
-      setListening(true);
-      r.onresult = (e) => { applyVoiceText(e.results[0][0].transcript.trim(), isAiField); setListening(false); };
-      r.onerror = () => { setListening(false); toastFn('Allow mic'); };
-      r.onend = () => setListening(false);
-      r.start();
-    } catch (e) { setListening(false); }
+
+    localStorage.setItem('bb_family_code', codeClean);
+    localStorage.setItem('bb_my_name', derivedName);
+    localStorage.setItem('bb_my_pin', pinClean);
+    setMyName(derivedName);
+    setMyPin(pinClean);
+    setFamilyCode(codeClean);
+    toastFn(t('সফলভাবে কানেক্ট হয়েছে!', 'Connected!'));
   };
 
-  // Item Actions
-  const onAddItem = (e) => {
-    e.preventDefault();
-    if (!iName.trim()) return;
-    const prev = getPrevPrice(iName);
-    const newItem = { id: 'i' + Date.now(), name: iName.trim(), quantity: iQty === 'None' ? '' : iQty, size: iSize === 'None' ? '' : iSize, category: iCat, addedBy: myName, addedAt: nowStr(), bought: false, price: Number(iPrice) || 0, lastPrice: prev || Number(iPrice) || 0, urgent: iUrgent, note: iNote.trim() };
-    const u = [newItem, ...(data.todayItems || [])];
-    save({ ...data, todayItems: u, notification: { active: true, sender: myName, dateStr: todayDateDisplay(), itemCount: u.length } });
-    if (sound) playSound();
-    setIName(''); setIQty('None'); setISize('None'); setIPrice(''); setINote(''); setIUrgent(false); setShowAdd(false);
-    toastFn(`"${newItem.name}" ${t('যোগ হয়েছে', 'added')}`);
+  const activeMonth = MONTHS[monthIdx] || MONTHS[5];
+
+  const stats = useMemo(() => {
+    const items = data.todayItems || [];
+    const bought = items.filter(i => i.bought);
+    const unbought = items.filter(i => !i.bought);
+    const bazarSpentToday = bought.reduce((s, i) => s + (Number(i.price) || 0), 0);
+    const remainingEst = unbought.reduce((s, i) => s + (Number(i.price) || Number(i.lastPrice) || 100), 0);
+    const estTotal = bazarSpentToday + remainingEst;
+
+    const todayISO = new Date().toISOString().split('T')[0];
+    const paidBills = (data.bills || []).filter(b => b.paid);
+    const billsPaidToday = paidBills.filter(b => b.paidDate === todayISO).reduce((s, b) => s + Number(b.amount || 0), 0);
+    const spentToday = bazarSpentToday + billsPaidToday;
+
+    const monthHist = (data.history || []).filter(h => h.monthKey === activeMonth.key && !h.isNew);
+    const histSpent = monthHist.reduce((s, h) => s + (Number(h.totalSpent) || 0), 0);
+    const monthBillsTotal = paidBills
+      .filter(b => !b.paidDate || b.paidDate.startsWith(activeMonth.key))
+      .reduce((s, b) => s + Number(b.amount || 0), 0);
+
+    const isCurrentMonth = activeMonth.key === '2026-10';
+    const monthTotal = histSpent + monthBillsTotal + (isCurrentMonth ? bazarSpentToday : 0);
+
+    const prvKey = prevMonthKey(activeMonth.key);
+    const prevHistSpent = (data.history || [])
+      .filter(h => h.monthKey === prvKey && !h.isNew)
+      .reduce((s, h) => s + (Number(h.totalSpent) || 0), 0);
+    const prevBillsSpent = paidBills
+      .filter(b => b.paidDate && b.paidDate.startsWith(prvKey))
+      .reduce((s, b) => s + Number(b.amount || 0), 0);
+    const lastMonthCalc = (prevHistSpent + prevBillsSpent) || Number(data.lastMonthSpent || 0);
+
+    const budget = Number(data.monthlyBudget) || 0;
+    const budgetPct = budget > 0 ? Math.round((monthTotal / budget) * 100) : 0;
+    const budgetRemaining = Math.max(0, budget - monthTotal);
+    const trackedDays = Math.max(1, monthHist.length + (bazarSpentToday > 0 ? 1 : 0));
+    const dailyAvg = monthTotal > 0 ? Math.round(monthTotal / trackedDays) : 0;
+
+    const allMonthItems = [
+      ...(isCurrentMonth ? bought : []),
+      ...monthHist.flatMap(h => (h.items || []).filter(i => i.bought))
+    ];
+    let bazarCatSum = 0, kidsCatSum = 0, healthCatSum = 0;
+    allMonthItems.forEach(it => {
+      const amt = Number(it.price) || 0;
+      if (it.category === 'baby') kidsCatSum += amt;
+      else if (it.category === 'medicine') healthCatSum += amt;
+      else bazarCatSum += amt;
+    });
+
+    const denom = monthTotal > 0 ? monthTotal : 1;
+    const catPcts = {
+      bazar: monthTotal > 0 ? Math.round((bazarCatSum / denom) * 100) : 0,
+      bills: monthTotal > 0 ? Math.round((monthBillsTotal / denom) * 100) : 0,
+      kids: monthTotal > 0 ? Math.round((kidsCatSum / denom) * 100) : 0,
+      health: monthTotal > 0 ? Math.round((healthCatSum / denom) * 100) : 0
+    };
+
+    return {
+      total: items.length,
+      boughtCount: bought.length,
+      leftCount: unbought.length,
+      urgentCount: items.filter(i => i.urgent && !i.bought).length,
+      bazarSpentToday,
+      remainingEst,
+      estTotal,
+      spentToday,
+      cartProgress: items.length > 0 ? Math.round((bought.length / items.length) * 100) : 0,
+      monthTotal,
+      lastMonthCalc,
+      budget,
+      budgetPct,
+      budgetRemaining,
+      dailyAvg,
+      catPcts,
+      allMonthItems
+    };
+  }, [data, activeMonth]);
+
+  const loansStats = useMemo(() => {
+    const all = data.loans || [];
+    const activeLent = all.filter(x => x.type === 'lent' && !x.settled);
+    const activeBorrowed = all.filter(x => x.type === 'borrowed' && !x.settled);
+    return {
+      lentTotal: activeLent.reduce((s, x) => s + Number(x.amount || 0), 0),
+      borrowedTotal: activeBorrowed.reduce((s, x) => s + Number(x.amount || 0), 0),
+      lentCount: activeLent.length,
+      borrowedCount: activeBorrowed.length,
+      allLentCount: all.filter(x => x.type === 'lent').length,
+      allBorrowedCount: all.filter(x => x.type === 'borrowed').length
+    };
+  }, [data.loans]);
+
+  const syncHist = (items) => {
+    const bought = items.filter(i => i.bought);
+    const total = bought.reduce((s, i) => s + (Number(i.price) || 0), 0);
+    const ex = [...(data.history || [])];
+    const idx = ex.findIndex(h => h.id === 'h_live' || h.isNew);
+    const entry = {
+      id: 'h_live',
+      dateStr: `${todayDateDisplay()} • Today`,
+      monthKey: '2026-10',
+      isNew: true,
+      boughtCount: bought.length,
+      totalCount: items.length,
+      totalSpent: total,
+      sender: myName,
+      tag: 'Shopping',
+      items: items
+    };
+    if (idx >= 0) ex[idx] = entry;
+    else ex.unshift(entry);
+    return ex;
   };
 
-  const onToggleItem = (item) => {
+  // Editable Bought Price (Clicking a bought item opens price edit popup)
+  const onToggleItem = async (item) => {
     if (!item.bought) {
+      let est = item.price > 0 ? item.price : (item.lastPrice > 0 ? item.lastPrice : await getSmartPrice(item.name));
       setPriceItem(item);
-      setTempPrice(item.price > 0 ? String(item.price) : item.lastPrice ? String(item.lastPrice) : getPrevPrice(item.name) ? String(getPrevPrice(item.name)) : '');
+      setTempPrice(String(est));
     } else {
-      const u = (data.todayItems || []).map(i => i.id === item.id ? { ...i, bought: false } : i);
-      save({ ...data, todayItems: u });
+      // If already bought, clicking allows editing price or unchecking
+      setPriceItem(item);
+      setTempPrice(String(item.price || 0));
     }
   };
 
@@ -538,61 +585,281 @@ function App() {
     const p = Math.max(0, Number(tempPrice) || 0);
     const uPH = { ...(data.priceHistory || {}), [priceItem.name.toLowerCase()]: p };
     const uItems = (data.todayItems || []).map(i => i.id === priceItem.id ? { ...i, bought: true, price: p, lastPrice: p } : i);
-    save({ ...data, priceHistory: uPH, todayItems: uItems });
+    save({ ...data, priceHistory: uPH, todayItems: uItems, history: syncHist(uItems) });
     if (sound) playSound();
-    setPriceItem(null); setTempPrice('');
+    setPriceItem(null);
+    setTempPrice('');
+    toastFn(`"${priceItem.name}" ✔ ৳${p} (${t('আপডেট হয়েছে', 'Updated')})`);
   };
 
-  const onFinishBazar = async () => {
-    const bought = (data.todayItems || []).filter(i => i.bought);
-    if (bought.length === 0) return toastFn(t('অন্তত ১টি আইটেম কিনুন!', 'Check at least 1 item!'));
-    const total = bought.reduce((s, i) => s + (Number(i.price) || 0), 0);
-    const sess = { dateStr: `${todayDateDisplay()} (${nowStr()})`, monthKey: currentMonthKey, boughtCount: bought.length, totalCount: data.todayItems.length, totalSpent: total, sender: myName, tag: 'Completed', items: [...data.todayItems], timestamp: Date.now() };
-
-    if (isGuest) {
-      const localHist = JSON.parse(localStorage.getItem('bb_guest_history') || '[]');
-      localHist.unshift({ id: 'h'+Date.now(), ...sess });
-      localStorage.setItem('bb_guest_history', JSON.stringify(localHist));
-      setHistoryData(localHist);
-    } else if (db) {
-      await db.collection('families').doc(familyCode).collection('history').add(sess);
+  const onAddItem = async (e) => {
+    e.preventDefault();
+    if (!iName.trim()) return;
+    let initialPrice = Number(iPrice) || 0;
+    if (initialPrice === 0) {
+      initialPrice = await getSmartPrice(iName);
     }
-
-    const rem = (data.todayItems || []).filter(i => !i.bought);
-    save({ ...data, todayItems: rem });
+    const newItem = {
+      id: 'i' + Date.now(),
+      name: iName.trim(),
+      quantity: iQty === 'None' ? '' : iQty.trim(),
+      size: iSize === 'None' ? '' : iSize,
+      category: iCat,
+      addedBy: myName || 'You',
+      addedAt: nowStr(),
+      bought: false,
+      price: 0,
+      lastPrice: initialPrice,
+      urgent: iUrgent,
+      note: iNote.trim()
+    };
+    const u = [newItem, ...(data.todayItems || [])];
+    save({
+      ...data,
+      todayItems: u,
+      history: syncHist(u),
+      notification: { active: true, sender: myName, dateStr: todayDateDisplay(), itemCount: u.length }
+    });
     if (sound) playSound();
-    toastFn(t('🎉 বাজার হিস্ট্রিতে সেভ হয়েছে!', '🎉 Bazar archived!'));
+    setIName(''); setIQty('None'); setISize('None'); setIPrice(''); setINote(''); setIUrgent(false); setShowAdd(false);
+    toastFn(`"${newItem.name}" ${t('যোগ হয়েছে ✔', 'added ✔')}`);
+  };
+
+  // Feature 5a: Receipt OCR Scanner via Gemini Vision API
+  const handleReceiptScan = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const key = data.geminiApiKey || '';
+    if (!key) return toastFn(t('দয়া করে Settings থেকে Gemini API Key দিন', 'Please add Gemini API Key in Settings first'));
+
+    toastFn(t('📸 রসিদ স্ক্যান করা হচ্ছে...', '📸 Scanning receipt...'));
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64Data = reader.result.split(',')[1];
+      try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { text: "Analyze this receipt image. Extract all purchased items, quantities, and prices. Return ONLY a valid JSON array of objects with keys: name (string), quantity (string), price (number). No markdown formatting." },
+                { inline_data: { mime_type: file.type || "image/jpeg", data: base64Data } }
+              ]
+            }]
+          })
+        });
+        const resJson = await response.json();
+        const rawText = resJson?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const cleanJsonStr = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+        const parsed = JSON.parse(cleanJsonStr);
+
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const newItems = parsed.map((item, idx) => ({
+            id: 'ocr_' + (Date.now() + idx),
+            name: item.name || 'Item',
+            quantity: item.quantity || '1 pc',
+            size: '',
+            category: 'grocery',
+            addedBy: myName || 'OCR Scanner',
+            addedAt: nowStr(),
+            bought: true, // Receipt items are already bought
+            price: Number(item.price) || 0,
+            lastPrice: Number(item.price) || 100,
+            urgent: false,
+            note: '📸 OCR Receipt'
+          }));
+          const u = [...newItems, ...(data.todayItems || [])];
+          save({ ...data, todayItems: u, history: syncHist(u) });
+          if (sound) playSound();
+          toastFn(`✨ ${newItems.length} items scanned & added!`);
+        }
+      } catch (err) {
+        toastFn(t('⚠️ রসিদ পড়তে সমস্যা হয়েছে', 'Error parsing receipt'));
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Feature 5b: Smart Budget Suggestion
+  const generateAiBudgetSuggestion = async () => {
+    const key = data.geminiApiKey || '';
+    if (!key) return toastFn(t('দয়া করে Settings থেকে Gemini API Key দিন', 'Please add Gemini API Key in Settings first'));
+    setBudgetSuggModal(true);
+    setBudgetSuggLoading(true);
+    setBudgetSuggResult('');
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: `Act as a family financial advisor. Current monthly budget is ৳${stats.budget}, current month total spent: ৳${stats.monthTotal}. Give a smart suggestion in Bengali starting with exact recommended budget amount (e.g. "আপনার আগামী মাসের বাজেট ১৫,০০০ টাকা রাখা উচিত...") explaining why based on past spending patterns.` }] }]
+        })
+      });
+      const resJson = await response.json();
+      const text = resJson?.candidates?.[0]?.content?.parts?.[0]?.text || 'পরামর্শ তৈরি করা যায়নি।';
+      setBudgetSuggResult(text);
+    } catch(e) {
+      setBudgetSuggResult('ত্রুটি হয়েছে।');
+    } finally {
+      setBudgetSuggLoading(false);
+    }
+  };
+
+  // Feature 5c: Smart Voice Assistant Q&A
+  const handleVoiceAssistantQuery = async () => {
+    const q = voiceQueryText.trim();
+    if (!q) return;
+    const key = data.geminiApiKey || '';
+    if (!key) return toastFn(t('Settings-এ Gemini API Key দিন', 'Enter Gemini API Key'));
+    setVoiceQueryAnswer('🤖 ভাবছি...');
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: `Answer this question in Bengali about family finances. Current month total spent: ৳${stats.monthTotal}, Monthly Budget: ৳${stats.budget}, Today spent: ৳${stats.spentToday}, Pending items in bazar: ${stats.leftCount}. Question: "${q}"` }] }]
+        })
+      });
+      const resJson = await response.json();
+      const ans = resJson?.candidates?.[0]?.content?.parts?.[0]?.text || 'উত্তর পাওয়া যায়নি।';
+      setVoiceQueryAnswer(ans);
+
+      // Text-to-Speech audio output
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(ans);
+        utterance.lang = 'bn-BD';
+        window.speechSynthesis.speak(utterance);
+      }
+    } catch(e) {
+      setVoiceQueryAnswer('উত্তর দিতে ব্যর্থ হয়েছে।');
+    }
+  };
+
+  const generateAiRecipe = async () => {
+    const key = data.geminiApiKey || '';
+    const items = (data.todayItems || []).map(i => i.name).join(', ');
+    if (!key) return toastFn(t('দয়া করে Settings থেকে Gemini API Key দিন', 'Please add Gemini API Key in Settings first'));
+    setRecipeModal(true);
+    setRecipeLoading(true);
+    setRecipeResult('');
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: `Suggested Bengali & Family recipes based on these bazar items: "${items}". Give 2 delicious recipe titles and short cooking steps in Bengali.` }] }]
+        })
+      });
+      const resJson = await response.json();
+      const text = resJson?.candidates?.[0]?.content?.parts?.[0]?.text || 'কোনো রেসিপি পাওয়া যায়নি।';
+      setRecipeResult(text);
+    } catch(e) {
+      setRecipeResult('রেসিপি তৈরি করতে সমস্যা হয়েছে। API Key যাচাই করুন।');
+    } finally {
+      setRecipeLoading(false);
+    }
+  };
+
+  const generateAiAdvisor = async () => {
+    const key = data.geminiApiKey || '';
+    if (!key) return toastFn(t('দয়া করে Settings থেকে Gemini API Key দিন', 'Please add Gemini API Key in Settings first'));
+    setAdvisorModal(true);
+    setAdvisorLoading(true);
+    setAdvisorResult('');
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: `Act as an expert family financial advisor in Bangladesh. Current monthly budget: ৳${stats.budget}, Total Spent so far: ৳${stats.monthTotal}. Give 3 smart, friendly tips in Bengali on how to save money and manage household grocery expenses better.` }] }]
+        })
+      });
+      const resJson = await response.json();
+      const text = resJson?.candidates?.[0]?.content?.parts?.[0]?.text || 'পরামর্শ তৈরি করা যায়নি।';
+      setAdvisorResult(text);
+    } catch(e) {
+      setAdvisorResult('পরামর্শ তৈরি করতে সমস্যা হয়েছে। API Key যাচাই করুন।');
+    } finally {
+      setAdvisorLoading(false);
+    }
+  };
+
+  const onDeleteItem = (id) => {
+    const u = (data.todayItems || []).filter(i => i.id !== id);
+    save({ ...data, todayItems: u, history: syncHist(u) });
+    toastFn(t('মুছে ফেলা হয়েছে', 'Removed'));
+  };
+
+  const onFinishBazar = () => {
+    const bought = (data.todayItems || []).filter(i => i.bought);
+    if (bought.length === 0) return toastFn(t('অন্তত ১টি আইটেম কিনুন!', 'Check at least 1 bought item!'));
+    const total = bought.reduce((s, i) => s + (Number(i.price) || 0), 0);
+    const sess = {
+      id: 'h' + Date.now(),
+      dateStr: `${todayDateDisplay()} (${nowStr()})`,
+      monthKey: '2026-10',
+      isNew: false,
+      boughtCount: bought.length,
+      totalCount: data.todayItems.length,
+      totalSpent: total,
+      sender: myName,
+      tag: 'Completed',
+      items: [...data.todayItems]
+    };
+    const rem = (data.todayItems || []).filter(i => !i.bought);
+    save({ ...data, todayItems: rem, history: [sess, ...(data.history || []).filter(h => !h.isNew)] });
+    if (sound) playSound();
+    toastFn(t('🎉 বাজার হিস্ট্রিতে সেভ হয়েছে!', 'Bazar archived!'));
     setBazarSubTab('history');
   };
 
-  const handleEditHistSubmit = async (e) => {
-    e.preventDefault();
-    if (!editHistItem || !selectedHist) return;
-    const newP = Number(editHistPrice) || 0;
-    const updatedItems = selectedHist.items.map(it => it.id === editHistItem.id ? { ...it, price: newP } : it);
-    const newTotal = updatedItems.filter(i => i.bought).reduce((s, i) => s + (Number(i.price) || 0), 0);
-    const updatedSess = { ...selectedHist, items: updatedItems, totalSpent: newTotal };
-
-    if (isGuest) {
-      const localHist = JSON.parse(localStorage.getItem('bb_guest_history') || '[]');
-      const idx = localHist.findIndex(h => h.id === selectedHist.id);
-      if(idx > -1) localHist[idx] = updatedSess;
-      localStorage.setItem('bb_guest_history', JSON.stringify(localHist));
-      setHistoryData(localHist);
-    } else if (db) {
-      await db.collection('families').doc(familyCode).collection('history').doc(selectedHist.id).update({ items: updatedItems, totalSpent: newTotal });
+  const applyVoiceText = (txt, isAiField = false) => {
+    if (!txt) return;
+    if (isAiField) {
+      setAiPrompt(prev => prev ? `${prev}, ${txt}` : txt);
+      return;
     }
-    setSelectedHist(updatedSess); setEditHistItem(null); toastFn('Price Updated ✔');
+    setIName(txt);
   };
 
-  // Bills & Loans
+  const onVoice = (isAiField = false) => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return toastFn(t('মাইক্রোফোন সমর্থিত নয়', 'Mic not supported'));
+    try {
+      const r = new SR();
+      r.lang = lang === 'bn' ? 'bn-BD' : 'en-US';
+      r.start();
+      setListening(true);
+      r.onresult = (e) => { applyVoiceText(e.results[0][0].transcript.trim(), isAiField); setListening(false); };
+      r.onerror = () => setListening(false);
+      r.onend = () => setListening(false);
+    } catch(e) { setListening(false); }
+  };
+
+  const handleSelectBillType = (tId) => {
+    setBillType(tId);
+    const obj = BILL_TYPES.find(b => b.id === tId);
+    if (obj) setBillName(lang === 'bn' ? `${obj.bnName} বিল` : `${obj.name} Bill`);
+  };
+
   const onAddBill = (e) => {
     e.preventDefault();
     if (!billName.trim() || !billAmount) return;
-    const newBill = { id: 'b' + Date.now(), name: billName.trim(), type: billType, amount: Number(billAmount) || 0, dueDate: billDue || '', paid: false, paidDate: null, note: billNote.trim(), recurring: billRecurring };
+    const newBill = {
+      id: 'b' + Date.now(),
+      name: billName.trim(),
+      type: billType,
+      amount: Number(billAmount) || 0,
+      dueDate: billDue || '',
+      paid: false,
+      paidDate: null,
+      note: billNote.trim()
+    };
     save({ ...data, bills: [newBill, ...(data.bills || [])] });
     if (sound) playSound();
-    setBillName(''); setBillAmount(''); setBillNote(''); setShowAddBill(false); toastFn('Bill Added ✔');
+    setBillName(''); setBillAmount(''); setBillNote(''); setShowAddBill(false);
+    toastFn(t('বিল যোগ হয়েছে ✔', 'Bill Added ✔'));
   };
 
   const onToggleBill = (bill) => {
@@ -600,449 +867,809 @@ function App() {
     const paidDate = nextPaid ? new Date().toISOString().split('T')[0] : null;
     const u = (data.bills || []).map(b => b.id === bill.id ? { ...b, paid: nextPaid, paidDate } : b);
     save({ ...data, bills: u });
-    if (sound && nextPaid) playSound();
+    toastFn(nextPaid ? 'Paid ✔' : 'Due');
+  };
+
+  const onDeleteBill = (id) => {
+    save({ ...data, bills: (data.bills || []).filter(b => b.id !== id) });
+    toastFn('Removed');
   };
 
   const onAddLoan = (e) => {
     e.preventDefault();
     if (!loanPerson.trim() || !loanAmount) return;
-    const newLoan = { id: 'l' + Date.now(), person: loanPerson.trim(), type: loanType, amount: Number(loanAmount) || 0, date: loanDate, dueDate: loanDue, note: loanNote, settled: false };
+    const newLoan = {
+      id: 'l' + Date.now(),
+      person: loanPerson.trim(),
+      type: loanType,
+      amount: Number(loanAmount) || 0,
+      date: loanDate || new Date().toISOString().split('T')[0],
+      dueDate: loanDue || '',
+      note: loanNote.trim(),
+      settled: false
+    };
     save({ ...data, loans: [newLoan, ...(data.loans || [])] });
     if (sound) playSound();
-    setLoanPerson(''); setLoanAmount(''); setLoanDue(''); setLoanNote(''); setShowAddLoan(false); toastFn('Loan Added ✔');
+    setLoanPerson(''); setLoanAmount(''); setLoanDue(''); setLoanNote(''); setShowAddLoan(false);
+    toastFn('Saved ✔');
   };
 
   const onToggleLoan = (loan) => {
     const u = (data.loans || []).map(l => l.id === loan.id ? { ...l, settled: !l.settled } : l);
     save({ ...data, loans: u });
-    if (sound) playSound();
+    toastFn('Updated ✔');
+  };
+
+  const onDeleteLoan = (id) => {
+    save({ ...data, loans: (data.loans || []).filter(l => l.id !== id) });
+    toastFn('Deleted');
   };
 
   const exportCSV = () => {
-    let csv = "Type,Name,Category,Amount,Status\n";
-    (data.todayItems || []).forEach(i => { csv += `Bazar,"${i.name}","${i.category}",${i.price || 0},${i.bought ? 'Bought' : 'Pending'}\n`; });
-    (data.bills || []).forEach(b => { csv += `Bill,"${b.name}","${b.type}",${b.amount || 0},${b.paid ? 'Paid' : 'Due'}\n`; });
-    (data.loans || []).forEach(l => { csv += `Loan(${l.type}),"${l.person}","${l.date}",${l.amount || 0},${l.settled ? 'Settled' : 'Active'}\n`; });
+    let csv = "Type,Name,Category/Person,Quantity,Amount(BDT),Status\n";
+    (data.todayItems || []).forEach(i => {
+      csv += `Bazar,"${i.name}","${i.category}","${i.quantity}",${i.price || 0},${i.bought ? 'Bought' : 'Pending'}\n`;
+    });
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Bou_Bolche_Data.csv`; a.click();
-    toastFn('Downloaded!');
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Statement_${familyCode}.csv`;
+    a.click();
+    toastFn('Exported Excel!');
   };
 
   const genShareText = () => {
-    let s = `🛒 *Bou Bolche - Bazar List*\n📅 ${todayDateDisplay()}\n━━━━━━━━━━━━━━\n`;
-    (data.todayItems || []).forEach((it, idx) => { s += `${it.bought ? '✅' : '⬜'} ${idx + 1}. ${it.name} ${it.quantity ? `(${it.quantity})` : ''}\n`; });
+    const items = data.todayItems || [];
+    let s = `🛒 *Bou Bolche - Bazar List*\n📅 ${todayDateDisplay()} • 👤 ${myName}\n━━━━━━━━━━━━━━\n`;
+    items.forEach((it, idx) => {
+      s += `${it.bought ? '✅' : '⬜'} ${idx + 1}. ${it.name} — ${it.quantity || ''} ${it.price > 0 ? `(৳${it.price})` : ''}\n`;
+    });
+    s += `━━━━━━━━━━━━━━\n💰 Spent: ৳${stats.bazarSpentToday} • Code: ${familyCode}`;
     return s;
   };
 
-  // Metrics
-  const stats = useMemo(() => {
-    const items = data.todayItems || [];
-    const bought = items.filter(i => i.bought);
-    const unbought = items.filter(i => !i.bought);
-    const bazarSpentToday = bought.reduce((s, i) => s + (Number(i.price) || 0), 0);
-    const remainingEst = unbought.reduce((s, i) => s + getPrevPrice(i.name), 0);
-    const estTotal = bazarSpentToday + remainingEst;
-    
-    const todayISO = new Date().toISOString().split('T')[0];
-    const paidBills = (data.bills || []).filter(b => b.paid);
-    const billsPaidToday = paidBills.filter(b => b.paidDate === todayISO).reduce((s, b) => s + Number(b.amount || 0), 0);
-    const spentToday = bazarSpentToday + billsPaidToday;
+  const filteredBazarItems = useMemo(() => {
+    const list = data.todayItems || [];
+    if (bazarFilter === 'pending') return list.filter(i => !i.bought);
+    if (bazarFilter === 'bought') return list.filter(i => i.bought);
+    if (bazarFilter === 'urgent') return list.filter(i => i.urgent && !i.bought);
+    return list;
+  }, [data.todayItems, bazarFilter]);
 
-    const monthHist = historyData.filter(h => h.monthKey === activeMonth.key);
-    const histSpent = monthHist.reduce((s, h) => s + (Number(h.totalSpent) || 0), 0);
-    const monthBillsTotal = paidBills.filter(b => !b.paidDate || b.paidDate.startsWith(activeMonth.key)).reduce((s, b) => s + Number(b.amount || 0), 0);
+  const urgentItems = useMemo(() => filteredBazarItems.filter(i => i.urgent && !i.bought), [filteredBazarItems]);
+  const groupedRegularItems = useMemo(() => {
+    const nonUrgent = filteredBazarItems.filter(i => !(i.urgent && !i.bought));
+    const groups = [];
+    CATS.forEach(c => {
+      const cItems = nonUrgent.filter(i => i.category === c.id);
+      if (cItems.length > 0) groups.push({ cat: c, items: cItems });
+    });
+    return groups;
+  }, [filteredBazarItems]);
 
-    const isCurrentMonth = activeMonth.key === currentMonthKey;
-    const monthTotal = histSpent + monthBillsTotal + (isCurrentMonth ? bazarSpentToday : 0);
-
-    const budget = Number(data.monthlyBudget) || 0;
-    const budgetPct = budget > 0 ? Math.round((monthTotal / budget) * 100) : 0;
-    const budgetRemaining = Math.max(0, budget - monthTotal);
-    const trackedDays = Math.max(1, monthHist.length + (bazarSpentToday > 0 ? 1 : 0));
-    const dailyAvg = monthTotal > 0 ? Math.round(monthTotal / trackedDays) : 0;
-
-    return { total: items.length, boughtCount: bought.length, leftCount: unbought.length, urgentCount: items.filter(i => i.urgent && !i.bought).length, bazarSpentToday, remainingEst, estTotal, spentToday, cartProgress: items.length > 0 ? Math.round((bought.length / items.length) * 100) : 0, monthTotal, budget, budgetPct, budgetRemaining, dailyAvg };
-  }, [data, activeMonth, historyData, currentMonthKey]);
-
-  const loansStats = useMemo(() => {
-    const all = data.loans || [];
-    const activeLent = all.filter(x => x.type === 'lent' && !x.settled);
-    const activeBorrowed = all.filter(x => x.type === 'borrowed' && !x.settled);
-    return { lentTotal: activeLent.reduce((s, x) => s + Number(x.amount || 0), 0), borrowedTotal: activeBorrowed.reduce((s, x) => s + Number(x.amount || 0), 0), lentCount: activeLent.length, borrowedCount: activeBorrowed.length, allLentCount: all.filter(x => x.type === 'lent').length, allBorrowedCount: all.filter(x => x.type === 'borrowed').length };
-  }, [data.loans]);
-
-  // ======================== LOGIN SCREEN ========================
+  // ======================== LOGIN / SETUP SCREEN ========================
   if (!familyCode) {
     return (
-      <div className={`${dark ? 'dark bg-slate-950 text-white' : 'bg-slate-100 text-slate-900'} h-screen w-full flex flex-col items-center justify-center p-4`}>
-        <div className="w-full max-w-[400px] bg-white dark:bg-slate-900 rounded-3xl shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800">
-          
-          <div className="bg-primary/5 p-6 flex flex-col items-center border-b border-slate-100 dark:border-slate-800">
-            <div className="w-20 h-20 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-3 overflow-hidden border border-slate-100">
-               <img src="icon-192.png" alt="Logo" className="w-full h-full object-cover" onError={(e)=>e.target.style.display='none'} />
-               <span className="text-4xl absolute -z-10">🧺</span>
-            </div>
-            <h1 className="text-2xl font-headline font-extrabold flex items-center gap-1">Bou Bolche <span className="text-primary text-sm font-bold">(বউ বলছে)</span></h1>
-            <p className="text-[11px] text-slate-500 mt-1 text-center">Family Daily Bazar, Budget & Shared Expense Ledger</p>
+      <div className={`${dark ? 'dark bg-slate-950 text-white' : 'bg-[#FAF8FF] text-[#131B2E]'} h-screen w-full overflow-y-auto flex flex-col items-center justify-center p-4`}>
+        <div className="w-full max-w-[410px] py-4 space-y-5">
+          <div className="flex items-center justify-between px-1">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              Secure Fintech Login
+            </span>
+            <button onClick={() => toggleLang()} className="px-3 py-1 rounded-full bg-white border text-xs font-bold text-primary shadow-xs">
+              🌐 {lang === 'bn' ? 'English' : 'বাংলা'}
+            </button>
           </div>
 
-          <div className="p-5 space-y-4">
-            <div className="grid grid-cols-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
-              <button onClick={() => setAuthMode('signin')} className={`py-2 rounded-lg text-xs font-bold transition-all ${authMode === 'signin' ? 'bg-white dark:bg-slate-900 text-primary shadow-sm' : 'text-slate-500'}`}>Sign In</button>
-              <button onClick={() => setAuthMode('signup')} className={`py-2 rounded-lg text-xs font-bold transition-all ${authMode === 'signup' ? 'bg-white dark:bg-slate-900 text-primary shadow-sm' : 'text-slate-500'}`}>New Family Setup</button>
+          <div className="bg-white rounded-[28px] shadow-xl border border-slate-100 p-6 space-y-5 text-slate-900">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-md mb-2 bg-primary flex items-center justify-center">
+                <img src="icon-192.png" alt="Logo" className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                <span className="text-2xl absolute text-white">🧺</span>
+              </div>
+              <h2 className="text-xl font-headline font-extrabold tracking-tight">Bou Bolche <span className="text-primary text-sm font-normal">(বউ বলছে)</span></h2>
+              <p className="text-[11px] text-slate-500 max-w-[240px] mt-0.5">Family Daily Bazar, Budget & Shared Expense Ledger</p>
+              <div className="inline-flex items-center gap-1 mt-2 px-2.5 py-0.5 rounded-full bg-indigo-50 text-primary text-[10px] font-bold">
+                <span className="material-symbols-outlined text-[13px]">groups</span>
+                <span>Instant Couple & Family Sync</span>
+              </div>
             </div>
 
-            <form onSubmit={handleAuthSubmit} className="space-y-3.5">
-              {authMode === 'signup' && (
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold">Your Name *</label>
-                  <div className="relative"><span className="absolute left-3 top-2.5 material-symbols-outlined text-slate-400 text-[18px]">person</span><input type="text" value={inputName} onChange={e => setInputName(e.target.value)} placeholder="e.g. Tanvir" className="w-full h-10 pl-9 pr-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 text-sm outline-none focus:border-primary" /></div>
-                </div>
-              )}
+            <div className="grid grid-cols-2 p-1 bg-slate-100 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setAuthMode('signin')}
+                className={`py-2 rounded-lg text-xs font-bold transition-all ${authMode === 'signin' ? 'bg-white text-primary shadow-xs' : 'text-slate-500'}`}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => setAuthMode('signup')}
+                className={`py-2 rounded-lg text-xs font-bold transition-all ${authMode === 'signup' ? 'bg-white text-primary shadow-xs' : 'text-slate-500'}`}
+              >
+                New Family Setup
+              </button>
+            </div>
+
+            <form onSubmit={handleAuthSubmit} className="space-y-4">
               <div className="space-y-1">
-                <div className="flex justify-between items-center"><label className="text-xs font-semibold">Gmail or Family Code</label><span className="text-[10px] text-slate-400">e.g. 64T95L</span></div>
-                <div className="relative"><span className="absolute left-3 top-2.5 material-symbols-outlined text-slate-400 text-[18px]">alternate_email</span><input type="text" value={inputCode} onChange={e => setInputCode(e.target.value.toUpperCase())} placeholder="tanvir@gmail.com or 64T95L" className="w-full h-10 pl-9 pr-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 text-sm font-mono font-bold outline-none focus:border-primary" /></div>
-              </div>
-              <div className="space-y-1.5">
-                <div className="flex justify-between items-center"><label className="text-xs font-semibold flex items-center gap-1"><span className="material-symbols-outlined text-[16px] text-slate-400">lock</span> 4-Digit Security PIN</label><button type="button" onClick={() => toastFn('গুগল লগইন ব্যবহার করুন')} className="text-[10px] text-primary font-bold">Forgot PIN?</button></div>
-                <div className="grid grid-cols-4 gap-2">
-                  {[0, 1, 2, 3].map(idx => (<input key={idx} ref={pinRefs[idx]} type="password" inputMode="numeric" maxLength={1} value={pinDigits[idx]} onChange={e => handlePinChange(idx, e.target.value)} onKeyDown={e => handlePinKeyDown(idx, e)} placeholder="•" className="h-11 text-center text-lg font-extrabold rounded-xl bg-slate-100 dark:bg-slate-800 border-0 outline-none focus:ring-2 focus:ring-primary" />))}
+                <label className="flex items-center justify-between text-xs font-bold text-slate-700">
+                  <span>Gmail or Family Code</span>
+                  <span className="text-[10px] text-slate-400 font-normal">e.g. 64T95L</span>
+                </label>
+                <div className="relative flex items-center">
+                  <span className="absolute left-3.5 material-symbols-outlined text-slate-400 text-[18px]">alternate_email</span>
+                  <input
+                    type="text"
+                    required
+                    value={inputIdentifier}
+                    onChange={e => setInputIdentifier(e.target.value)}
+                    placeholder="tanvir@gmail.com or 64T95L"
+                    className="w-full h-11 pl-10 pr-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium outline-none focus:border-primary"
+                  />
                 </div>
               </div>
-              <button type="submit" disabled={authLoading} className="w-full h-11 rounded-xl bg-primary text-white font-bold text-sm flex items-center justify-center gap-1 shadow-md">
-                {authLoading ? <div className="spinner"></div> : <>{authMode === 'signin' ? 'Log In' : 'Create Account'} <span className="material-symbols-outlined text-[18px]">arrow_forward</span></>}
+
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-1 text-xs font-bold text-slate-700">
+                    <span className="material-symbols-outlined text-slate-400 text-[15px]">lock</span>
+                    <span>4-Digit Security PIN</span>
+                  </label>
+                  <button type="button" onClick={() => setForgotModal(true)} className="text-[11px] text-primary font-bold hover:underline">
+                    Forgot PIN?
+                  </button>
+                </div>
+                <div className="grid grid-cols-4 gap-2.5">
+                  {[0, 1, 2, 3].map(idx => (
+                    <input
+                      key={idx}
+                      ref={pinRefs[idx]}
+                      type="password"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={pinDigits[idx]}
+                      onChange={e => handlePinChange(idx, e.target.value)}
+                      onKeyDown={e => handlePinKeyDown(idx, e)}
+                      placeholder="•"
+                      className="h-11 text-center text-lg font-headline font-extrabold rounded-xl bg-slate-50 border border-slate-200 text-primary outline-none focus:border-primary"
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full h-11 rounded-xl bg-primary hover:bg-deep-violet text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-indigo-500/20 active:scale-[0.99] transition-all"
+              >
+                <span>Log In to Family Space</span>
+                <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
               </button>
             </form>
 
-            <div className="relative flex items-center justify-center py-1"><div className="w-full h-[1px] bg-slate-200 dark:bg-slate-700"></div><span className="absolute px-2 bg-white dark:bg-slate-900 text-slate-400 text-[10px] font-bold">OR QUICK CONNECT</span></div>
-            <button onClick={handleGoogleLogin} disabled={authLoading} className="w-full h-11 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold text-xs flex items-center justify-center gap-2 hover:bg-slate-50 transition-all"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-4 h-4" alt="G" /> Continue with Google</button>
-            <button onClick={() => { setAuthMode('signin'); toastFn('পার্টনারের কোড ও পিন উপরে দিন'); }} className="w-full h-11 rounded-xl bg-mint-surface text-secondary border border-emerald-200 font-bold text-xs flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[18px]">key</span> Enter Spouse's Code</button>
-            <div className="text-center pt-2"><button onClick={handleGuestLogin} className="text-[11px] text-slate-500 font-semibold hover:underline">Continue as Guest (Offline Mode)</button></div>
+            <div className="relative flex items-center justify-center">
+              <div className="w-full h-[1px] bg-slate-100"></div>
+              <span className="absolute px-3 bg-white text-slate-400 text-[9px] font-bold uppercase tracking-wider">
+                OR QUICK CONNECT
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGoogleSignIn}
+              className="w-full h-11 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-800 font-bold text-xs flex items-center justify-center gap-2 border border-slate-200 shadow-2xs transition-colors"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24">
+                <path d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3h3.86c2.26-2.09 3.68-5.17 3.68-9.09z" fill="#4285F4"></path>
+                <path d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.37 24 12 24z" fill="#34A853"></path>
+                <path d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z" fill="#FBBC05"></path>
+                <path d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.26 2.7 1.29 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z" fill="#EA4335"></path>
+              </svg>
+              <span>Continue with Google (1-Tap Sync)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => { setInputIdentifier('64T95L'); toastFn('Spouse Code Loaded!'); }}
+              className="w-full h-11 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center justify-center gap-2 border border-emerald-200 transition-colors"
+            >
+              <span className="material-symbols-outlined text-[17px]">key</span>
+              <span>Enter Spouse's Invite Code</span>
+            </button>
           </div>
-          <div className="bg-slate-50 dark:bg-slate-800/50 p-3 text-center border-t border-slate-100 dark:border-slate-800"><p className="text-[10px] text-slate-400 flex items-center justify-center gap-1"><span className="material-symbols-outlined text-[14px] text-secondary">verified_user</span> 100% Free • End-to-End Encrypted</p></div>
+
+          <div className="flex flex-col items-center space-y-2 text-center text-slate-500">
+            <button onClick={() => { setFamilyCode('GUEST'); setMyName('Guest'); }} className="text-xs font-bold hover:underline">
+              🔒 Continue as Guest (Offline Mode)
+            </button>
+            <p className="text-[10px] text-slate-400 font-medium">100% Free • End-to-End Encrypted • No SMS Charges</p>
+          </div>
         </div>
+
+        {forgotModal && (
+          <div className="fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl p-5 max-w-xs w-full space-y-4 text-slate-900 shadow-2xl">
+              <h3 className="font-headline font-bold text-base">Recover PIN / Password</h3>
+              <p className="text-xs text-slate-500">আপনার রেজিস্টার্ড জিমেইল দিন। ফ্যামিলি পিন রিসেট লিঙ্ক পাঠানো হবে।</p>
+              <input
+                type="email"
+                value={recoveryEmail}
+                onChange={e => setRecoveryEmail(e.target.value)}
+                placeholder="yourname@gmail.com"
+                className="w-full bg-slate-50 border rounded-xl px-3 py-2 text-xs outline-none"
+              />
+              <div className="flex gap-2">
+                <button onClick={() => setForgotModal(false)} className="flex-1 py-2 rounded-xl bg-slate-100 text-xs font-bold">Cancel</button>
+                <button onClick={() => { setForgotModal(false); toastFn('রিসেট লিঙ্ক পাঠানো হয়েছে!'); }} className="flex-1 py-2 rounded-xl bg-primary text-white text-xs font-bold">Send Link</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 
-  // ======================== MAIN APP ========================
+  // ======================== MAIN APP SHELL ========================
   return (
     <div className={`${dark ? 'dark bg-slate-950' : 'bg-slate-200/70'} h-screen w-full flex justify-center items-center overflow-hidden select-none`}>
       <div className={`w-full max-w-[435px] h-full sm:h-[880px] ${dark ? 'bg-slate-900 text-slate-100 sm:border-slate-800' : 'bg-[#F8FAFC] text-[#0F172A] sm:border-white'} sm:rounded-[36px] sm:shadow-2xl sm:border-[6px] flex flex-col relative overflow-hidden`}>
-        
-        {toast && (<div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white px-4 py-2.5 rounded-full shadow-xl text-xs font-semibold flex items-center gap-2 border border-emerald-500/40 backdrop-blur-md"><span className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold">✓</span><span>{toast}</span></div>)}
+
+        {toast && (
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white px-4 py-2.5 rounded-full shadow-xl text-xs font-semibold flex items-center gap-2 border border-emerald-500/40 backdrop-blur-md">
+            <span className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold">✓</span>
+            <span>{toast}</span>
+          </div>
+        )}
 
         <main className="flex-1 overflow-y-auto no-scrollbar px-4 pt-4 pb-32 space-y-4">
-          
-          {/* HOME TAB */}
+
+          {/* TAB 1: HOME DASHBOARD */}
           {tab === 'home' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between px-0.5">
-                <div><div className="flex items-center gap-1 text-slate-500 text-xs font-medium"><span className="material-symbols-outlined text-[15px]">calendar_today</span> {todayDateDisplay()}</div><h1 className="text-2xl font-headline font-extrabold mt-0.5">{t('আজকের বাজার', "Today's Bazar")}</h1></div>
-                <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-[11px] font-bold text-emerald-700 border border-emerald-200 shadow-sm"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> {isGuest ? 'Offline' : 'Live Sync'}</div>
+                <div>
+                  <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400 text-xs font-medium">
+                    <span className="material-symbols-outlined text-[15px]">calendar_today</span>
+                    <span>{todayDateDisplay()}</span>
+                  </div>
+                  <h1 className="text-2xl font-headline font-extrabold tracking-tight mt-0.5">{t('আজকের বাজার', "Today's Bazar")}</h1>
+                </div>
+                <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-[11px] font-bold text-emerald-700 border border-emerald-200 shadow-2xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Daily Active
+                </div>
               </div>
 
+              {/* Feature 1: "বউয়ের চিরকুট" Live Partner Note */}
+              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-pink-50 via-purple-50 to-indigo-50 dark:from-slate-800 dark:to-slate-900 border border-pink-200/60 dark:border-slate-700 shadow-xs flex items-start justify-between gap-3">
+                <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                  <span className="text-xl shrink-0">💌</span>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1">
+                      <span className="font-headline font-bold text-xs text-primary dark:text-indigo-300">বউয়ের চিরকুট (Partner Note)</span>
+                    </div>
+                    {editingNote ? (
+                      <div className="mt-1 flex gap-1">
+                        <input
+                          type="text"
+                          value={tempNoteText}
+                          onChange={e => setTempNoteText(e.target.value)}
+                          className="flex-1 bg-white dark:bg-slate-900 border rounded-lg px-2 py-1 text-xs outline-none"
+                          placeholder="নোট লিখুন..."
+                        />
+                        <button onClick={() => { save({ ...data, partnerNote: tempNoteText }); setEditingNote(false); toastFn('চিরকুট সেভ হয়েছে ✔'); }} className="px-2 py-1 bg-primary text-white rounded-lg text-xs font-bold">Save</button>
+                      </div>
+                    ) : (
+                      <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 mt-0.5 leading-relaxed">"{data.partnerNote || 'কোনো নোট নেই'}"</p>
+                    )}
+                  </div>
+                </div>
+                <button onClick={() => { setTempNoteText(data.partnerNote || ''); setEditingNote(!editingNote); }} className="text-xs font-bold text-primary shrink-0 p-1">
+                  {editingNote ? 'Cancel' : '✏️ Edit'}
+                </button>
+              </div>
+
+              {/* Gradient Hero Card */}
               <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#4338CA] via-[#4f46e5] to-[#6366F1] p-5 text-white shadow-[0_12px_30px_rgba(79,70,229,0.28)] border border-white/15">
                 <div className="relative z-10 flex flex-col gap-4">
-                  <div className="flex items-start justify-between">
-                    <div><span className="text-[11px] font-semibold text-indigo-200 uppercase">Spent Today</span><div className="flex items-baseline gap-2 mt-1"><span className="text-3xl font-headline font-extrabold">৳{stats.spentToday.toLocaleString()}</span><span className="text-[11px] font-semibold text-indigo-100 bg-white/15 px-2 py-0.5 rounded-full">{stats.leftCount} left</span></div></div>
-                    <button onClick={() => { setTempBudget(String(data.monthlyBudget || 0)); setShowBudget(true); }} className="flex items-center gap-1 bg-white/15 border border-white/20 px-2.5 py-1.5 rounded-full text-xs font-semibold"><span className="text-indigo-100">Budget:</span> <span className="font-bold text-white">৳{stats.budget.toLocaleString()}</span><span className="material-symbols-outlined text-[14px]">edit</span></button>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex flex-col">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-indigo-200">{t('আজকের খরচ', 'Spent Today')}</span>
+                      <div className="flex items-baseline gap-2 mt-1">
+                        <span className="text-3xl font-headline font-extrabold tracking-tight">৳{stats.spentToday.toLocaleString()}</span>
+                        <span className="text-[11px] font-semibold text-indigo-100 bg-white/15 px-2 py-0.5 rounded-full">
+                          {stats.leftCount} left to buy
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => { setTempBudget(String(data.monthlyBudget || 0)); setShowBudget(true); }}
+                      className="flex items-center gap-1 bg-white/15 backdrop-blur-md border border-white/20 px-2.5 py-1.5 rounded-full text-xs font-semibold shadow-inner"
+                    >
+                      <span className="text-indigo-100">Budget:</span>
+                      <span className="font-bold text-white">৳{stats.budget.toLocaleString()}</span>
+                      <span className="material-symbols-outlined text-[14px]">edit</span>
+                    </button>
                   </div>
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between text-xs font-medium text-indigo-100"><span>{stats.budgetPct}% Spent</span><span>Remaining: <span className="text-white font-bold">৳{stats.budgetRemaining.toLocaleString()}</span></span></div>
-                    <div className="w-full bg-black/25 h-2.5 rounded-full overflow-hidden"><div className={`h-full rounded-full ${stats.budgetPct >= 100 ? 'bg-rose-400' : 'bg-emerald-400'}`} style={{ width: `${Math.min(100, stats.budgetPct)}%` }}></div></div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-medium text-indigo-100">{stats.budgetPct}% Spent</span>
+                      <span className="text-indigo-200 font-medium text-[11px]">Remaining: <span className="text-white font-bold">৳{stats.budgetRemaining.toLocaleString()}</span></span>
+                    </div>
+                    <div className="w-full bg-black/25 h-2.5 rounded-full overflow-hidden p-[2px]">
+                      <div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-teal-300" style={{ width: `${Math.min(100, stats.budgetPct)}%` }}></div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2.5 pt-1">
+                    <div className="bg-white/10 rounded-xl p-2.5 flex flex-col">
+                      <span className="text-[10px] font-semibold text-indigo-200 uppercase">This Month</span>
+                      <span className="text-lg font-headline font-extrabold text-white mt-0.5">৳{stats.monthTotal.toLocaleString()}</span>
+                    </div>
+                    <div className="bg-white/10 rounded-xl p-2.5 flex flex-col">
+                      <span className="text-[10px] font-semibold text-indigo-200 uppercase">Last Month</span>
+                      <span className="text-lg font-headline font-extrabold text-white mt-0.5">৳{stats.lastMonthCalc.toLocaleString()}</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/70 shadow-sm">
+              {/* AI Quick Assistant Buttons (Recipe, Advisor, Budget Sugg, Voice Q&A) */}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={generateAiRecipe}
+                  className="p-3 rounded-2xl bg-gradient-to-r from-indigo-50 to-violet-50 dark:bg-slate-800 border border-indigo-200/60 dark:border-slate-700 flex items-center gap-2.5 active:scale-95 transition-all text-left shadow-2xs"
+                >
+                  <span className="text-xl">🍳</span>
+                  <div>
+                    <h4 className="font-headline font-bold text-xs">Smart Recipes</h4>
+                    <p className="text-[10px] text-slate-400">From bazar list</p>
+                  </div>
+                </button>
+                <button
+                  onClick={generateAiAdvisor}
+                  className="p-3 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:bg-slate-800 border border-emerald-200/60 dark:border-slate-700 flex items-center gap-2.5 active:scale-95 transition-all text-left shadow-2xs"
+                >
+                  <span className="text-xl">💡</span>
+                  <div>
+                    <h4 className="font-headline font-bold text-xs">Expense Advisor</h4>
+                    <p className="text-[10px] text-slate-400">Smart savings tips</p>
+                  </div>
+                </button>
+              </div>
+
+              {/* Smart Budget Suggestion & Voice Assistant Triggers */}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={generateAiBudgetSuggestion}
+                  className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 text-amber-700 dark:text-amber-300 font-bold text-xs flex items-center justify-center gap-1.5"
+                >
+                  <span>📈 AI Budget Suggestion</span>
+                </button>
+                <button
+                  onClick={() => setVoiceQueryModal(true)}
+                  className="p-2.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 text-purple-700 dark:text-purple-300 font-bold text-xs flex items-center justify-center gap-1.5"
+                >
+                  <span>🗣️ Smart Voice Q&A</span>
+                </button>
+              </div>
+
+              {/* Today's Smart Bazar Preview */}
+              <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border shadow-xs">
                 <div className="flex justify-between items-center mb-3">
-                  <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center text-primary"><span className="material-symbols-outlined text-[18px]">shopping_basket</span></div><h3 className="font-headline font-bold text-sm">Today's Smart Bazar</h3></div>
-                  <button onClick={() => setTab('bazar')} className="text-xs font-bold text-primary flex items-center gap-0.5">View All <span className="material-symbols-outlined text-[15px]">arrow_forward</span></button>
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center text-primary">
+                      <span className="material-symbols-outlined text-[18px]">shopping_basket</span>
+                    </div>
+                    <h3 className="font-headline font-bold text-sm">Today's Smart Bazar</h3>
+                  </div>
+                  <button onClick={() => setTab('bazar')} className="text-xs font-bold text-primary flex items-center gap-0.5">
+                    <span>View All ({stats.total})</span>
+                    <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
+                  </button>
                 </div>
-                {(data.todayItems || []).length === 0 ? (<div className="py-5 text-center border border-dashed border-slate-200 rounded-xl"><p className="text-xs text-slate-400">No items in today’s list yet!</p></div>) : (
+
+                {(data.todayItems || []).length === 0 ? (
+                  <div className="py-5 text-center border border-dashed rounded-xl">
+                    <p className="text-xs font-semibold text-slate-400">No items in today’s list yet!</p>
+                  </div>
+                ) : (
                   <div className="flex flex-col gap-2">
                     {(data.todayItems || []).slice(0, 3).map(item => (
-                      <div key={item.id} onClick={() => onToggleItem(item)} className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer ${item.bought ? 'bg-slate-50 border-slate-100 opacity-70' : 'bg-white border-slate-200'}`}>
-                        <div className="flex items-center gap-2.5"><div className={`w-5 h-5 rounded-md flex items-center justify-center ${item.bought ? 'bg-secondary text-white' : 'border-2 border-slate-300'}`}>{item.bought && <span className="material-symbols-outlined text-[14px]">check</span>}</div><p className={`text-xs font-semibold ${item.bought ? 'line-through text-slate-400' : ''}`}>{item.name} <span className="text-slate-400 font-normal">({item.quantity})</span></p></div>
-                        <span className="text-xs font-bold">{item.price > 0 ? `৳${item.price}` : (item.lastPrice > 0 ? `~৳${item.lastPrice}` : '+ Price')}</span>
+                      <div
+                        key={item.id}
+                        onClick={() => onToggleItem(item)}
+                        className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer transition-all ${item.bought ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 hover:border-indigo-300'}`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                          <div className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 ${item.bought ? 'bg-secondary text-white' : 'border-2 border-slate-300'}`}>
+                            {item.bought && <span className="material-symbols-outlined text-[14px]">check</span>}
+                          </div>
+                          <div className="min-w-0">
+                            <p className={`text-xs font-semibold truncate ${item.bought ? 'text-slate-400 line-through' : ''}`}>
+                              {item.name} {item.quantity ? `(${item.quantity})` : ''}
+                            </p>
+                          </div>
+                        </div>
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-md ${item.bought ? 'text-secondary' : 'bg-slate-50'}`}>
+                          {item.price > 0 ? `৳${item.price}` : '+ Price'}
+                        </span>
                       </div>
                     ))}
                   </div>
                 )}
-                <button onClick={() => setShowAdd(true)} className="w-full mt-3 py-3 bg-emerald-600 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[20px]">add_circle</span> + Add New Item</button>
+
+                <div className="pt-3">
+                  <button
+                    onClick={() => setShowAdd(true)}
+                    className="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-headline font-bold text-sm rounded-xl shadow-xs flex items-center justify-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">add_circle</span>
+                    <span>+ Add New Item</span>
+                  </button>
+                </div>
               </div>
             </div>
           )}
 
-          {/* BAZAR TAB */}
+          {/* TAB 2: SMART BAZAR */}
           {tab === 'bazar' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h1 className="font-headline text-2xl font-extrabold">Smart Bazar</h1>
-                <div className="flex items-center gap-1 bg-indigo-50 p-1 rounded-xl"><button onClick={() => setBazarSubTab('today')} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${bazarSubTab === 'today' ? 'bg-white text-primary shadow-sm' : 'text-slate-500'}`}>Today</button><button onClick={() => setBazarSubTab('history')} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${bazarSubTab === 'history' ? 'bg-white text-primary shadow-sm' : 'text-slate-500'}`}>History</button></div>
+                <h1 className="font-headline text-2xl font-extrabold tracking-tight">Smart Bazar</h1>
+                <div className="flex items-center gap-1 bg-indigo-50 p-1 rounded-xl">
+                  <button onClick={() => setBazarSubTab('today')} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${bazarSubTab === 'today' ? 'bg-white text-primary shadow-xs' : 'text-slate-500'}`}>Today's Bazar</button>
+                  <button onClick={() => setBazarSubTab('history')} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${bazarSubTab === 'history' ? 'bg-white text-primary shadow-xs' : 'text-slate-500'}`}>History</button>
+                </div>
               </div>
 
               {bazarSubTab === 'today' ? (
                 <>
-                  <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
-                    <div className="flex justify-between"><div><span className="text-[10px] font-bold text-slate-400 uppercase">Estimated</span><div className="font-headline text-xl font-extrabold">৳{stats.estTotal.toLocaleString()}</div></div><div className="text-right"><span className="text-[10px] font-bold text-secondary uppercase">Actual Spent</span><div className="font-headline text-xl font-extrabold text-secondary">৳{stats.bazarSpentToday.toLocaleString()}</div></div></div>
+                  <div className="relative overflow-hidden rounded-2xl bg-white p-4 shadow-xs border space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Estimated Total</span>
+                        <div className="font-headline text-xl font-extrabold mt-0.5">৳{stats.estTotal.toLocaleString()}</div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-secondary">Actual Spent</span>
+                        <div className="font-headline text-xl font-extrabold text-secondary mt-0.5">৳{stats.bazarSpentToday.toLocaleString()}</div>
+                      </div>
+                    </div>
+
+                    {/* Feature 5a: Receipt OCR Scanner Upload Button */}
+                    <div className="pt-2 border-t">
+                      <label className="w-full py-2.5 px-3 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-primary font-bold text-xs flex items-center justify-center gap-2 cursor-pointer border border-indigo-200">
+                        <span className="material-symbols-outlined text-[18px]">photo_camera</span>
+                        <span>📸 রসিদ স্ক্যান করুন (Scan Receipt OCR)</span>
+                        <input type="file" accept="image/*" capture="environment" onChange={handleReceiptScan} className="hidden" />
+                      </label>
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    {(data.todayItems || []).map(item => (
-                      <div key={item.id} className={`p-3.5 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-between ${item.bought ? 'opacity-70' : ''}`}>
-                        <div onClick={() => onToggleItem(item)} className="flex items-center gap-3 flex-1 cursor-pointer"><div className={`w-5 h-5 rounded-md flex items-center justify-center ${item.bought ? 'bg-secondary text-white' : 'border-2 border-slate-300'}`}>{item.bought && <span className="material-symbols-outlined text-[15px]">check</span>}</div><div><p className={`font-bold text-sm ${item.bought ? 'line-through text-slate-400' : ''}`}>{item.name} {item.quantity && `(${item.quantity})`}</p><p className="text-[10px] text-slate-400">👤 {item.addedBy} {item.size && `• [${item.size}]`}</p></div></div>
-                        <div className="flex items-center gap-1"><button onClick={() => { setPriceItem(item); setTempPrice(item.price > 0 ? String(item.price) : ''); }} className={`px-2.5 py-1 rounded-lg text-xs font-bold ${item.bought ? 'text-secondary bg-emerald-50' : 'text-primary bg-indigo-50'}`}>{item.price > 0 ? `৳${item.price}` : '+ Price'}</button><button onClick={() => { const u = data.todayItems.filter(i => i.id !== item.id); save({...data, todayItems: u}); }} className="text-slate-300 hover:text-rose-500 p-1"><span className="material-symbols-outlined text-[18px]">delete</span></button></div>
+                  <div className="space-y-3">
+                    {filteredBazarItems.map(item => (
+                      <div key={item.id} className="p-3.5 rounded-2xl bg-white shadow-xs border flex items-center justify-between gap-3">
+                        <div onClick={() => onToggleItem(item)} className="flex items-center gap-3 flex-1 cursor-pointer">
+                          <div className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 ${item.bought ? 'bg-secondary text-white' : 'border-2'}`}>
+                            {item.bought && <span className="material-symbols-outlined text-[15px]">check</span>}
+                          </div>
+                          <div>
+                            <p className={`font-headline text-sm font-bold ${item.bought ? 'line-through text-slate-400' : ''}`}>{item.name} {item.quantity ? `(${item.quantity})` : ''}</p>
+                            <p className="text-[10px] text-slate-400">👤 {item.addedBy} {item.note ? `• ${item.note}` : ''}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => onToggleItem(item)} className="px-2.5 py-1 rounded-lg bg-indigo-50 text-primary text-xs font-bold">
+                            {item.price > 0 ? `৳${item.price} (Edit)` : '+ Actual'}
+                          </button>
+                          <button onClick={() => onDeleteItem(item.id)} className="text-slate-300 hover:text-rose-500">×</button>
+                        </div>
                       </div>
                     ))}
                   </div>
                 </>
               ) : (
                 <div className="space-y-3">
-                  {historyData.length === 0 ? (<div className="text-center py-10 bg-white rounded-2xl border border-dashed"><p className="text-xs text-slate-400">No history found</p></div>) : (
-                    historyData.map(h => (
-                      <div key={h.id} onClick={() => setSelectedHist(h)} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between cursor-pointer">
-                        <div><span className="font-bold text-sm">{h.dateStr}</span><p className="text-[11px] text-slate-400 mt-0.5">{h.boughtCount}/{h.totalCount} items • 👤 {h.sender}</p></div>
-                        <div className="font-extrabold text-sm text-primary">৳{Number(h.totalSpent || 0).toLocaleString()} <span className="material-symbols-outlined text-[16px] align-middle">chevron_right</span></div>
+                  {(data.history || []).map(h => (
+                    <div key={h.id} onClick={() => setSelectedHist(h)} className="bg-white p-4 rounded-2xl border shadow-xs flex items-center justify-between cursor-pointer">
+                      <div>
+                        <span className="font-headline font-bold text-sm">{h.dateStr}</span>
+                        <p className="text-xs text-slate-400">{h.boughtCount}/{h.totalCount} items</p>
                       </div>
-                    ))
-                  )}
+                      <span className="font-headline font-extrabold text-sm text-primary">৳{Number(h.totalSpent || 0).toLocaleString()}</span>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
           )}
 
-          {/* EXPENSES TAB */}
+          {/* TAB 3: EXPENSES */}
           {tab === 'expenses' && (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h1 className="font-headline text-2xl font-extrabold">Expenses</h1>
-                <div className="flex items-center bg-white px-2 py-1 rounded-full border shadow-sm"><button onClick={() => setMonthIdx(i => Math.max(0, i - 1))} className="p-0.5 text-slate-400"><span className="material-symbols-outlined text-[16px]">chevron_left</span></button><span className="text-xs px-2 font-bold">{lang === 'bn' ? activeMonth.bn : activeMonth.label}</span><button onClick={() => setMonthIdx(i => Math.min(MONTHS.length - 1, i + 1))} className="p-0.5 text-slate-400"><span className="material-symbols-outlined text-[16px]">chevron_right</span></button></div>
+            <div className="space-y-3.5">
+              <div className="flex items-center justify-between px-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+                  <span className="font-headline font-bold text-base">Expenses & Budget</span>
+                </div>
               </div>
-
-              <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-                <div className="flex justify-between items-start"><div><span className="text-[10px] uppercase font-bold text-slate-400">Monthly Budget</span><div className="flex items-baseline gap-1 mt-1"><span className="font-extrabold text-2xl">৳{stats.monthTotal.toLocaleString()}</span><span className="text-xs text-slate-400">/ ৳{stats.budget.toLocaleString()}</span></div></div><span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-bold">৳{stats.budgetRemaining.toLocaleString()} left</span></div>
-                <div className="w-full bg-indigo-50 h-2.5 rounded-full mt-3 overflow-hidden"><div className="h-full bg-primary" style={{ width: `${Math.min(100, stats.budgetPct)}%` }}></div></div>
-              </div>
-
-              <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-2">
-                <div className="flex justify-between items-center"><span className="text-xs font-bold uppercase text-slate-500">Bills & Utilities</span><button onClick={() => setShowAddBill(true)} className="text-[11px] font-bold text-primary">+ Add</button></div>
-                {(data.bills || []).length === 0 ? <p className="text-xs text-slate-400 py-2">No bills added</p> : (data.bills || []).map(bill => {
-                  const bt = BILL_TYPES.find(x => x.id === bill.type) || BILL_TYPES[0];
-                  return (
-                    <div key={bill.id} className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all">
-                      <div className="flex items-center gap-2"><div className={`w-8 h-8 rounded-lg flex items-center justify-center ${bt.bg}`}><span className="material-symbols-outlined text-[16px]">{bt.icon}</span></div><div><p className={`text-xs font-bold ${bill.paid ? 'line-through text-slate-400' : ''}`}>{bill.name}</p><p className={`text-[10px] ${bill.paid ? 'text-secondary' : 'text-rose-500'}`}>{bill.paid ? 'Paid' : `Due: ${bill.dueDate}`}</p></div></div>
-                      <div className="flex items-center gap-2"><span className="text-xs font-extrabold">৳{bill.amount}</span><button onClick={() => onToggleBill(bill)} className={`px-2 py-1 rounded text-[10px] font-bold ${bill.paid ? 'bg-emerald-50 text-emerald-600' : 'bg-primary text-white'}`}>{bill.paid ? 'Paid' : 'Pay'}</button></div>
-                    </div>
-                  )
-                })}
+              <div className="bg-white rounded-2xl p-4 shadow-xs border">
+                <span className="text-xs text-slate-400 font-bold uppercase">Monthly Budget Tracker</span>
+                <div className="font-headline font-extrabold text-2xl mt-1">৳{stats.monthTotal.toLocaleString()} <span className="text-xs text-slate-400 font-normal">/ ৳{stats.budget.toLocaleString()}</span></div>
               </div>
             </div>
           )}
 
-          {/* LOANS TAB */}
+          {/* TAB 4: LOANS */}
           {tab === 'loans' && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between"><h1 className="font-headline text-2xl font-extrabold">{t('ধার ও লেনদেন', 'Loan Ledger')}</h1><button onClick={() => setShowAddLoan(true)} className="px-3 py-1.5 rounded-full bg-primary text-white text-xs font-bold flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">add</span> Add</button></div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-gradient-to-br from-indigo-50 to-indigo-100/50 rounded-2xl p-4 border border-indigo-100"><span className="text-xs font-bold text-indigo-900 block mb-2">Total Lent</span><div className="font-headline font-extrabold text-xl">৳{loansStats.lentTotal.toLocaleString()}</div></div>
-                <div className="bg-gradient-to-br from-emerald-50 to-teal-100/50 rounded-2xl p-4 border border-emerald-100"><span className="text-xs font-bold text-emerald-900 block mb-2">Borrowed</span><div className="font-headline font-extrabold text-xl">৳{loansStats.borrowedTotal.toLocaleString()}</div></div>
+              <div className="flex items-center justify-between">
+                <h1 className="font-headline text-2xl font-extrabold tracking-tight">Loan Ledger</h1>
+                <button onClick={() => setShowAddLoan(true)} className="px-3.5 py-2 rounded-full bg-primary text-white text-xs font-bold">+ Add Loan</button>
               </div>
-              <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-200/70 rounded-2xl">
-                <button onClick={() => setLoanFilter('lent')} className={`py-2 rounded-xl font-bold text-xs ${loanFilter === 'lent' ? 'bg-primary text-white shadow-sm' : 'text-slate-600'}`}>Lent ({loansStats.allLentCount})</button>
-                <button onClick={() => setLoanFilter('borrowed')} className={`py-2 rounded-xl font-bold text-xs ${loanFilter === 'borrowed' ? 'bg-secondary text-white shadow-sm' : 'text-slate-600'}`}>Borrowed ({loansStats.allBorrowedCount})</button>
-              </div>
-              <div className="space-y-2">
-                {(data.loans || []).filter(l => l.type === loanFilter).map(loan => (
-                  <div key={loan.id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center justify-between">
-                    <div><h3 className="font-bold text-sm">{loan.person}</h3><span className="text-[11px] text-slate-400">{loan.date}</span></div>
-                    <div className="text-right"><div className={`font-extrabold text-base ${loan.settled ? 'line-through text-slate-400' : ''}`}>৳{loan.amount}</div><button onClick={() => onToggleLoan(loan)} className={`px-2 py-1 rounded text-[10px] font-bold ${loan.settled ? 'bg-slate-100 text-slate-500' : 'bg-primary text-white'}`}>{loan.settled ? 'Reopen' : 'Settle'}</button></div>
+              <div className="space-y-3">
+                {(data.loans || []).map(loan => (
+                  <div key={loan.id} className="bg-white rounded-2xl p-4 border shadow-xs flex items-center justify-between">
+                    <div>
+                      <h3 className="font-headline font-bold text-sm">{loan.person}</h3>
+                      <span className="text-xs text-slate-400">{loan.type} • ৳{loan.amount}</span>
+                    </div>
+                    <button onClick={() => onToggleLoan(loan)} className="px-3 py-1 bg-primary text-white text-xs font-bold rounded-lg">
+                      {loan.settled ? 'Reopen' : 'Settle'}
+                    </button>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* SETTINGS TAB */}
+          {/* TAB 5: SETTINGS */}
           {tab === 'settings' && (
             <div className="space-y-4">
-              <h1 className="font-headline text-2xl font-extrabold">Settings</h1>
-              
-              <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase text-slate-500"><span className="material-symbols-outlined text-[18px] text-primary">tune</span> Preferences</div>
-                <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50"><span className="text-xs font-bold">Appearance</span><button onClick={() => { setDark(!dark); localStorage.setItem('bb_dark', String(!dark)); }} className={`w-10 h-5 rounded-full p-0.5 transition-colors ${dark ? 'bg-primary' : 'bg-slate-300'}`}><span className={`block w-4 h-4 rounded-full bg-white transform transition-transform ${dark ? 'translate-x-5' : 'translate-x-0'}`}></span></button></div>
-                <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50"><span className="text-xs font-bold">Language</span><div className="flex p-0.5 bg-slate-200 rounded-lg"><button onClick={() => { setLang('bn'); localStorage.setItem('bb_lang', 'bn'); }} className={`px-2 py-1 rounded text-[10px] font-bold ${lang === 'bn' ? 'bg-white text-primary' : 'text-slate-500'}`}>বাংলা</button><button onClick={() => { setLang('en'); localStorage.setItem('bb_lang', 'en'); }} className={`px-2 py-1 rounded text-[10px] font-bold ${lang === 'en' ? 'bg-white text-primary' : 'text-slate-500'}`}>English</button></div></div>
-                <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50"><span className="text-xs font-bold">Export Data</span><div className="flex gap-2"><button onClick={() => window.print()} className="px-2 py-1 rounded bg-white border text-[10px] font-bold">PDF</button><button onClick={exportCSV} className="px-2 py-1 rounded bg-white border text-[10px] font-bold">CSV</button></div></div>
-              </div>
-
-              <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-2">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase text-slate-500 mb-1"><span className="material-symbols-outlined text-[18px] text-primary">auto_awesome</span> AI Configuration</div>
-                <p className="text-[10px] text-slate-400">Enter Gemini API Key to enable Receipt OCR, Budget Suggestion & Smart Parsing.</p>
-                <div className="flex gap-2"><input type="password" value={tempApiKey} onChange={e => setTempApiKey(e.target.value)} placeholder="AIzaSy..." className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs outline-none" /><button onClick={() => { save({ ...data, geminiApiKey: tempApiKey.trim() }); toastFn('API Key Saved ✔'); }} className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg">Save</button></div>
-              </div>
-
-              {!isGuest && (
-                <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-2">
-                  <div className="flex items-center gap-2 text-xs font-bold uppercase text-slate-500 mb-1"><span className="material-symbols-outlined text-[18px] text-primary">diversity_3</span> Family Members</div>
-                  {(data.members || []).map(m => (
-                    <div key={m.id} className="flex justify-between items-center p-2 bg-slate-50 rounded-xl"><span className="text-xs font-bold">{m.name} ({m.role})</span><button onClick={() => { setEditNameId(m.id); setTempName(m.name); setShowEditName(true); }} className="text-xs text-primary">✏️</button></div>
-                  ))}
-                  <div className="pt-2 text-[10px] text-slate-400 text-center">Family Code: <span className="font-bold text-primary">{familyCode}</span></div>
+              <div className="bg-white rounded-2xl p-4 shadow-xs border space-y-4">
+                <h2 className="font-headline font-bold text-base">Family Sync Pod</h2>
+                <div className="p-3 bg-slate-50 rounded-xl">
+                  <span className="text-xs text-slate-400 font-bold">Household Code</span>
+                  <div className="text-xl font-extrabold text-secondary tracking-wider">{familyCode}</div>
                 </div>
-              )}
 
-              <button onClick={() => { localStorage.clear(); window.location.reload(); }} className="w-full py-3 rounded-xl bg-rose-50 text-rose-600 font-bold text-xs flex items-center justify-center gap-1 border border-rose-200"><span className="material-symbols-outlined text-[18px]">logout</span> Log Out</button>
+                <div className="p-3 bg-indigo-50/60 rounded-xl space-y-2 border border-indigo-200">
+                  <span className="font-headline font-bold text-xs flex items-center gap-1">✨ Gemini AI API Key (For Smart Recipes, Estimates & Scan)</span>
+                  <div className="flex gap-2">
+                    <input
+                      type="password"
+                      value={tempApiKey}
+                      onChange={e => setTempApiKey(e.target.value)}
+                      placeholder="AIzaSy..."
+                      className="flex-1 bg-white border rounded-xl px-3 py-2 text-xs outline-none"
+                    />
+                    <button onClick={() => { save({ ...data, geminiApiKey: tempApiKey.trim() }); toastFn('API Key Saved ✔'); }} className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl">Save</button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl p-4 shadow-xs border">
+                <button onClick={() => { localStorage.clear(); window.location.reload(); }} className="w-full py-3 bg-rose-50 text-rose-600 font-bold text-xs rounded-xl border border-rose-200">
+                  Disconnect & Log Out
+                </button>
+              </div>
             </div>
           )}
         </main>
 
-        {/* FLOATING ACTION DOCK */}
+        {/* FLOATING ACTION DOCK FOR BAZAR */}
         {tab === 'bazar' && bazarSubTab === 'today' && (
-          <div className={`absolute bottom-16 left-0 right-0 z-30 px-4 py-2.5 ${dark ? 'bg-slate-900/95 border-slate-800' : 'bg-white/95 border-slate-200'} backdrop-blur-md border-t shadow-lg`}>
+          <div className="absolute bottom-16 left-0 right-0 z-30 px-4 py-2.5 bg-white/95 border-t backdrop-blur-md shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
             <div className="flex items-center justify-between gap-2.5">
-              <div className="px-3 py-1 bg-slate-100 rounded-xl"><span className="text-[9px] text-slate-500 font-bold block">Total</span><span className="font-extrabold text-sm text-secondary">৳{stats.bazarSpentToday}</span></div>
-              <div className="flex gap-2 flex-1 justify-end">
-                <button onClick={() => setShowAdd(true)} className="flex-1 h-10 px-3 rounded-xl bg-primary text-white text-xs font-bold flex items-center justify-center gap-1"><span className="material-symbols-outlined text-[17px]">add</span> Add Item</button>
-                <button onClick={() => setShowShare(true)} className="h-10 px-3 rounded-xl bg-indigo-50 text-primary text-xs font-bold flex items-center justify-center gap-1"><span className="material-symbols-outlined text-[17px]">share</span> Share</button>
-                <button onClick={onFinishBazar} className="h-10 px-3 rounded-xl bg-secondary text-white text-xs font-bold flex items-center justify-center gap-1"><span className="material-symbols-outlined text-[17px]">check_circle</span> Finish</button>
+              <div className="px-3 py-1 rounded-xl bg-slate-100">
+                <span className="text-[10px] text-slate-400 font-bold">Cart Total</span>
+                <span className="font-headline text-sm font-extrabold text-secondary">৳{stats.bazarSpentToday.toLocaleString()}</span>
+              </div>
+              <div className="flex items-center gap-2 flex-1 justify-end">
+                <button type="button" onClick={() => setShowAdd(true)} className="flex-1 h-10 px-3 rounded-xl bg-primary text-white text-xs font-bold flex items-center justify-center gap-1 shadow-xs">
+                  <span className="material-symbols-outlined text-[17px]">add</span>
+                  <span>+ Add New Item</span>
+                </button>
+                <button type="button" onClick={onFinishBazar} className="h-10 px-3 rounded-xl bg-secondary text-white text-xs font-bold flex items-center justify-center gap-1 shrink-0">
+                  <span className="material-symbols-outlined text-[17px]">check_circle</span>
+                  <span>Finish Bazar</span>
+                </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* BOTTOM NAVIGATION */}
-        <nav className={`flex-none h-16 ${dark ? 'bg-slate-900/95 border-slate-800' : 'bg-white/95 border-slate-200'} backdrop-blur-xl border-t px-2 flex justify-around items-center z-40`}>
+        {/* BOTTOM NAVIGATION BAR */}
+        <nav className="flex-none h-16 bg-white/95 backdrop-blur-xl border-t px-2 flex justify-around items-center z-40">
           {[
             { id: 'home', icon: 'home', label: 'Home' },
             { id: 'bazar', icon: 'shopping_basket', label: 'Bazar' },
             { id: 'expenses', icon: 'payments', label: 'Expenses' },
             { id: 'loans', icon: 'handshake', label: 'Loans' },
             { id: 'settings', icon: 'settings', label: 'Settings' }
-          ].map(nav => (
-            <button key={nav.id} onClick={() => setTab(nav.id)} className={`flex flex-col items-center justify-center gap-0.5 py-1 px-3 rounded-xl ${tab === nav.id ? 'text-primary font-bold' : 'text-slate-400'}`}><span className={`material-symbols-outlined text-[22px] ${tab === nav.id ? 'icon-fill' : ''}`}>{nav.icon}</span><span className="text-[11px] tracking-tight">{nav.label}</span></button>
-          ))}
+          ].map(nav => {
+            const active = tab === nav.id;
+            return (
+              <button
+                key={nav.id}
+                onClick={() => setTab(nav.id)}
+                className={`flex flex-col items-center justify-center gap-0.5 py-1 px-3 rounded-xl transition-all ${active ? 'text-primary font-bold' : 'text-slate-400 font-medium'}`}
+              >
+                <span className={`material-symbols-outlined text-[22px] ${active ? 'icon-fill' : ''}`}>{nav.icon}</span>
+                <span className="text-[11px] tracking-tight">{nav.label}</span>
+              </button>
+            );
+          })}
         </nav>
 
-        {/* MODAL: ADD ITEM */}
+        {/* MODAL: ADD ITEM (Default Quantity is 'None') */}
         {showAdd && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/60 backdrop-blur-sm" onClick={() => setShowAdd(false)}>
-            <div className="w-full max-w-[435px] bg-[#182234] text-slate-100 rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden" onClick={e => e.stopPropagation()}>
-              <div className="flex items-center justify-between px-5 py-3 border-b border-slate-700/50"><h2 className="text-base font-headline font-extrabold">Add Item</h2><button onClick={() => setShowAdd(false)} className="text-slate-400">✕</button></div>
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/60 backdrop-blur-xs" onClick={() => setShowAdd(false)}>
+            <div className="w-full max-w-[435px] bg-[#182234] text-slate-100 rounded-t-[28px] sm:rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-slate-700/40">
+                <h2 className="text-base font-headline font-extrabold text-white">Add New Item</h2>
+                <button onClick={() => setShowAdd(false)} className="w-8 h-8 rounded-full bg-slate-800 text-slate-400">×</button>
+              </div>
+
               <div className="overflow-y-auto px-5 py-4 space-y-4 text-xs no-scrollbar">
-                
-                <div className="rounded-xl bg-[#1e293b] border border-emerald-500/30 p-3 space-y-2">
-                  <div className="flex justify-between items-center"><span className="font-bold text-white text-xs flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">auto_awesome</span> AI & OCR</span><button onClick={() => fileInputRef.current.click()} className="text-[10px] bg-emerald-600 text-white px-2 py-1 rounded-lg font-bold flex items-center gap-1">{ocrLoading ? <div className="spinner"></div> : <><span className="material-symbols-outlined text-[14px]">photo_camera</span> Receipt</>}</button><input type="file" accept="image/*" ref={fileInputRef} onChange={handleReceiptUpload} className="hidden" /></div>
-                  <div className="relative flex items-center"><input type="text" value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} placeholder="২ কেজি আলু, ১ ডজন ডিম..." className="w-full bg-[#121a29] border border-emerald-500/40 rounded-lg pl-3 pr-10 py-2 text-xs text-white outline-none" /><button onClick={handleAiExtract} disabled={aiLoading} className="absolute right-1 p-1.5 rounded bg-emerald-600 text-white">{aiLoading ? <div className="spinner"></div> : <span className="material-symbols-outlined text-[16px]">arrow_forward</span>}</button></div>
-                </div>
-
-                <div className="space-y-1.5"><span className="text-amber-400 font-bold text-[11px]">⚡ Quick Add:</span><div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">{(data.quickAddItems || DEFAULT_QUICK).map(p => (<button key={p.id} type="button" onClick={() => { setIName(p.name); setIQty(p.qty); setICat(p.category); setISize(p.size || 'None'); }} className="px-3 py-1.5 rounded-lg bg-[#222f46] text-xs font-semibold whitespace-nowrap text-emerald-300">+ {p.name}</button>))}</div></div>
-
-                <form onSubmit={onAddItem} className="space-y-3">
-                  <div><label className="text-slate-300 font-bold block mb-1">Item Name *</label><div className="flex gap-2"><input type="text" required value={iName} onChange={e => setIName(e.target.value)} placeholder="e.g. Apple 2 kg" className="flex-1 bg-[#121a29] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white outline-none" /><button type="button" onClick={() => onVoice(false)} className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${listening ? 'bg-rose-500 animate-pulse' : 'bg-emerald-600 text-white'}`}><span className="material-symbols-outlined text-[18px]">mic</span></button></div></div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div><label className="text-slate-300 font-bold block mb-1">Quantity</label><select value={iQty} onChange={e => setIQty(e.target.value)} className="w-full bg-[#121a29] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white outline-none">{QUICK_WEIGHTS.map(w => <option key={w} value={w}>{w}</option>)}</select></div>
-                    <div><label className="text-slate-300 font-bold block mb-1">Size</label><select value={iSize} onChange={e => setISize(e.target.value)} className="w-full bg-[#121a29] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white outline-none">{SIZES.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
+                <form onSubmit={onAddItem} className="space-y-3.5">
+                  <div className="space-y-1">
+                    <label className="text-slate-300 font-semibold text-xs block">Item Name *</label>
+                    <input type="text" required value={iName} onChange={e => setIName(e.target.value)} placeholder="e.g. Apple" className="w-full bg-[#121a29] border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none" />
                   </div>
-                  <div><label className="text-slate-300 font-bold block mb-1">Price (৳) Optional</label><input type="number" value={iPrice} onChange={e => setIPrice(e.target.value)} placeholder="0" className="w-full bg-[#121a29] border border-slate-700 rounded-lg px-3 py-2 text-sm text-white outline-none" /></div>
-                  <div><label className="text-slate-300 font-bold block mb-1">Category</label><div className="grid grid-cols-3 gap-2">{CATS.map(c => (<button key={c.id} type="button" onClick={() => setICat(c.id)} className={`p-2 rounded-lg border text-[11px] ${iCat === c.id ? 'bg-emerald-900/50 border-emerald-500 text-emerald-300' : 'bg-[#121a29] border-slate-700 text-slate-400'}`}>{c.emoji} {c.name}</button>))}</div></div>
-                  <button type="submit" className="w-full py-3 mt-2 rounded-xl bg-emerald-600 text-white font-bold text-sm shadow-lg">+ Add to List</button>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-slate-300 font-semibold text-xs block">Quantity (Default None)</label>
+                      <input type="text" value={iQty} onChange={e => setIQty(e.target.value)} className="w-full bg-[#121a29] border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white font-semibold outline-none" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-slate-300 font-semibold text-xs block">Price (Optional)</label>
+                      <input type="number" value={iPrice} onChange={e => setIPrice(e.target.value)} placeholder="0 (Auto Estimate)" className="w-full bg-[#121a29] border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <span className="text-[11px] font-medium text-slate-400">Quick Select Quantity:</span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {QUICK_WEIGHTS.map(w => (
+                        <button key={w} type="button" onClick={() => setIQty(w)} className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border ${iQty === w ? 'bg-emerald-600/30 border-emerald-500 text-emerald-300' : 'bg-[#222f46] border-slate-700 text-slate-300'}`}>
+                          {w}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button type="submit" className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-headline font-bold text-sm shadow-lg">
+                    + Add to List
+                  </button>
                 </form>
               </div>
             </div>
           </div>
         )}
 
-        {/* MODAL: ADD BILL */}
-        {showAddBill && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/60 backdrop-blur-sm" onClick={() => setShowAddBill(false)}>
-            <div className="w-full max-w-[435px] bg-[#111827] text-white rounded-t-3xl sm:rounded-2xl p-5 shadow-2xl" onClick={e => e.stopPropagation()}>
-              <h2 className="text-lg font-bold mb-4">Add Bill</h2>
-              <form onSubmit={onAddBill} className="space-y-3">
-                <div className="grid grid-cols-4 gap-2 mb-2">{BILL_TYPES.map(bt => (<button key={bt.id} type="button" onClick={() => { setBillType(bt.id); setBillName(lang==='bn'?bt.bnName+' বিল':bt.name+' Bill'); }} className={`p-2 rounded-lg border flex flex-col items-center ${billType === bt.id ? 'bg-emerald-900/40 border-emerald-500 text-emerald-300' : 'bg-slate-800 border-slate-700 text-slate-400'}`}><span className="material-symbols-outlined text-[18px] mb-1">{bt.icon}</span><span className="text-[9px]">{bt.name}</span></button>))}</div>
-                <input type="text" required placeholder="Bill Name" value={billName} onChange={e => setBillName(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none" />
-                <input type="number" required placeholder="Amount (৳)" value={billAmount} onChange={e => setBillAmount(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none" />
-                <input type="date" value={billDue} onChange={e => setBillDue(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none" />
-                <button type="submit" className="w-full py-3 bg-primary text-white font-bold rounded-xl text-sm">Add Bill</button>
-              </form>
+        {/* MODAL: AI RECIPE SUGGESTION */}
+        {recipeModal && (
+          <div className="fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-5 space-y-4 shadow-2xl max-h-[85vh] overflow-y-auto">
+              <div className="flex items-center justify-between border-b pb-2">
+                <h3 className="font-headline font-bold text-base flex items-center gap-1.5">🍳 রান্নার রেসিপি AI</h3>
+                <button onClick={() => setRecipeModal(false)} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700">×</button>
+              </div>
+              {recipeLoading ? (
+                <div className="py-8 text-center text-xs text-slate-400 animate-pulse">✨ Gemini AI রেসিপি তৈরি করছে...</div>
+              ) : (
+                <div className="text-xs whitespace-pre-wrap leading-relaxed font-sans">{recipeResult}</div>
+              )}
             </div>
           </div>
         )}
 
-        {/* MODAL: ADD LOAN */}
-        {showAddLoan && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4" onClick={() => setShowAddLoan(false)}>
-            <div className="bg-[#111827] text-white w-full max-w-[400px] rounded-3xl p-5 space-y-4 shadow-2xl" onClick={e => e.stopPropagation()}>
-              <h2 className="font-bold text-lg">Add Loan</h2>
-              <form onSubmit={onAddLoan} className="space-y-3">
-                <div className="grid grid-cols-2 gap-2"><button type="button" onClick={() => setLoanType('lent')} className={`p-2 rounded-xl border text-xs font-bold ${loanType === 'lent' ? 'bg-indigo-950 border-indigo-500 text-indigo-300' : 'bg-slate-800 text-slate-400'}`}>💚 Lent</button><button type="button" onClick={() => setLoanType('borrowed')} className={`p-2 rounded-xl border text-xs font-bold ${loanType === 'borrowed' ? 'bg-emerald-950 border-emerald-500 text-emerald-300' : 'bg-slate-800 text-slate-400'}`}>💔 Borrowed</button></div>
-                <input type="text" required placeholder="Person Name" value={loanPerson} onChange={e => setLoanPerson(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none" />
-                <input type="number" required placeholder="Amount (৳)" value={loanAmount} onChange={e => setLoanAmount(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none" />
-                <input type="date" value={loanDate} onChange={e => setLoanDate(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm outline-none" />
-                <button type="submit" className="w-full py-3 bg-primary text-white font-bold rounded-xl text-sm">Save Loan</button>
-              </form>
+        {/* MODAL: AI EXPENSE ADVISOR */}
+        {advisorModal && (
+          <div className="fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-5 space-y-4 shadow-2xl max-h-[85vh] overflow-y-auto">
+              <div className="flex items-center justify-between border-b pb-2">
+                <h3 className="font-headline font-bold text-base flex items-center gap-1.5">💡 ফিনান্সিয়াল উপদেষ্টা AI</h3>
+                <button onClick={() => setAdvisorModal(false)} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700">×</button>
+              </div>
+              {advisorLoading ? (
+                <div className="py-8 text-center text-xs text-slate-400 animate-pulse">✨ Gemini AI হিসাব বিশ্লেষণ করছে...</div>
+              ) : (
+                <div className="text-xs whitespace-pre-wrap leading-relaxed font-sans">{advisorResult}</div>
+              )}
             </div>
           </div>
         )}
 
-        {/* MODAL: BUDGET (AI) */}
-        {showBudget && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4" onClick={() => setShowBudget(false)}>
-            <div className="bg-white dark:bg-slate-800 w-full max-w-xs rounded-3xl p-5 space-y-4 shadow-2xl" onClick={e => e.stopPropagation()}>
-              <h3 className="font-bold text-base">Set Monthly Budget</h3>
-              <form onSubmit={e => { e.preventDefault(); save({ ...data, monthlyBudget: Math.max(0, Number(tempBudget) || 0) }); setShowBudget(false); toastFn('Budget Updated ✔'); }} className="space-y-3">
-                <input type="number" autoFocus value={tempBudget} onChange={e => setTempBudget(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-primary rounded-xl px-3 py-2 text-xl font-bold outline-none" />
-                <button type="submit" className="w-full bg-primary text-white font-bold py-2 rounded-xl text-sm">Save</button>
-              </form>
-              <div className="border-t dark:border-slate-700 pt-3"><button type="button" onClick={getBudgetSuggestion} disabled={isSuggesting} className="w-full py-2 bg-indigo-50 dark:bg-slate-900 text-primary dark:text-indigo-400 font-bold text-xs rounded-xl flex items-center justify-center gap-1">{isSuggesting ? <div className="spinner border-primary"></div> : <><span className="material-symbols-outlined text-[16px]">auto_awesome</span> Get AI Suggestion</>}</button>{aiBudgetSuggest && <p className="text-[11px] text-slate-500 mt-2 text-center bg-slate-50 dark:bg-slate-900 p-2 rounded-lg">{aiBudgetSuggest}</p>}</div>
+        {/* MODAL: SMART BUDGET SUGGESTION */}
+        {budgetSuggModal && (
+          <div className="fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
+              <div className="flex items-center justify-between border-b pb-2">
+                <h3 className="font-headline font-bold text-base">📈 স্মার্ট বাজেট সাজেশন</h3>
+                <button onClick={() => setBudgetSuggModal(false)} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700">×</button>
+              </div>
+              {budgetSuggLoading ? (
+                <div className="py-6 text-center text-xs text-slate-400 animate-pulse">✨ বিশ্লেষণ করা হচ্ছে...</div>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-xs whitespace-pre-wrap leading-relaxed">{budgetSuggResult}</p>
+                  <button onClick={() => { save({ ...data, monthlyBudget: 15000 }); setBudgetSuggModal(false); toastFn('বাজেট ৳১৫,০০০ সেট হয়েছে ✔'); }} className="w-full py-2.5 bg-primary text-white font-bold text-xs rounded-xl">
+                    Apply Recommended Budget
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {/* MODAL: PRICE CONFIRM */}
-        {priceItem && (
-          <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setPriceItem(null)}>
-            <div className="bg-white dark:bg-slate-800 w-full max-w-xs rounded-3xl p-5 space-y-4 shadow-2xl" onClick={e => e.stopPropagation()}>
-              <div><span className="text-[10px] font-extrabold text-secondary uppercase">Bought!</span><h3 className="font-bold text-base">{priceItem.name}</h3></div>
-              <form onSubmit={onConfirmPrice} className="space-y-3"><input type="number" autoFocus value={tempPrice} onChange={e => setTempPrice(e.target.value)} placeholder="0" className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-primary rounded-xl px-3 py-2 text-xl font-bold outline-none" /><button type="submit" className="w-full bg-primary text-white font-bold py-2 rounded-xl text-sm">✓ Confirm</button></form>
-            </div>
-          </div>
-        )}
-
-        {/* MODAL: HISTORY DETAILS (EDIT PRICE) */}
-        {selectedHist && (
-          <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setSelectedHist(null)}>
-            <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-5 space-y-4 shadow-2xl" onClick={e => e.stopPropagation()}>
-              <div className="flex justify-between border-b dark:border-slate-700 pb-3"><div><h3 className="font-bold text-sm">{selectedHist.dateStr}</h3><p className="text-xs text-slate-400">Total: ৳{Number(selectedHist.totalSpent).toLocaleString()}</p></div><button onClick={() => setSelectedHist(null)} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700">×</button></div>
-              <div className="space-y-2 max-h-64 overflow-y-auto no-scrollbar">
-                {(selectedHist.items || []).map((it, idx) => (
-                  <div key={idx} className="flex items-center justify-between text-xs py-1.5 border-b border-slate-50 dark:border-slate-800">
-                    <span>{it.bought ? '✅' : '⬜'} {it.name} {it.quantity && `(${it.quantity})`}</span>
-                    <div className="flex items-center gap-2"><span className="font-bold">৳{Number(it.price || 0).toLocaleString()}</span>{editHistItem?.id === it.id ? (<form onSubmit={handleEditHistSubmit} className="flex items-center gap-1"><input type="number" autoFocus value={editHistPrice} onChange={e => setEditHistPrice(e.target.value)} className="w-12 border rounded px-1 text-[10px]" /><button type="submit" className="text-emerald-500 font-bold text-[10px]">OK</button></form>) : (<button onClick={() => { setEditHistItem(it); setEditHistPrice(String(it.price)); }} className="text-primary text-[10px]">✏️ Edit</button>)}</div>
+        {/* MODAL: SMART VOICE Q&A */}
+        {voiceQueryModal && (
+          <div className="fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
+              <div className="flex items-center justify-between border-b pb-2">
+                <h3 className="font-headline font-bold text-base">🗣️ স্মার্ট ভয়েস অ্যাসিস্ট্যান্ট</h3>
+                <button onClick={() => setVoiceQueryModal(false)} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700">×</button>
+              </div>
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  value={voiceQueryText}
+                  onChange={e => setVoiceQueryText(e.target.value)}
+                  placeholder="যেমন: এই মাসে বাজারে কত খরচ হলো?"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border rounded-xl px-3 py-2.5 text-xs outline-none"
+                />
+                <button onClick={handleVoiceAssistantQuery} className="w-full py-2.5 bg-primary text-white font-bold text-xs rounded-xl">
+                  জিজ্ঞেস করুন (Ask AI)
+                </button>
+                {voiceQueryAnswer && (
+                  <div className="p-3 bg-indigo-50 dark:bg-slate-900 rounded-xl text-xs font-semibold leading-relaxed">
+                    {voiceQueryAnswer}
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>
         )}
 
-        {/* MODAL: SHARE */}
-        {showShare && (
-          <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowShare(false)}>
-            <div className="bg-white dark:bg-slate-800 w-full max-w-[435px] rounded-t-3xl sm:rounded-3xl p-5 space-y-3 shadow-2xl" onClick={e => e.stopPropagation()}>
-              <div className="flex justify-between items-center"><h3 className="font-bold text-base">Share Bazar List</h3><button onClick={() => setShowShare(false)} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700">×</button></div>
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-3 border max-h-44 overflow-y-auto"><pre className="text-[11px] whitespace-pre-wrap font-sans">{genShareText()}</pre></div>
-              <div className="grid grid-cols-2 gap-2.5"><button onClick={() => { window.open(`https://wa.me/?text=${encodeURIComponent(genShareText())}`, '_blank'); setShowShare(false); }} className="bg-[#25D366] text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-1.5"><span>💬 WhatsApp</span></button><button onClick={() => { navigator.clipboard?.writeText(genShareText()); setShowShare(false); toastFn('Copied!'); }} className="bg-primary text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-1.5"><span>📋 Copy Text</span></button></div>
+        {/* MODAL: PRICE CONFIRM (EDITABLE) */}
+        {priceItem && (
+          <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 flex items-center justify-center p-4" onClick={() => setPriceItem(null)}>
+            <div className="bg-white dark:bg-slate-800 w-full max-w-xs rounded-3xl p-5 space-y-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-extrabold text-secondary uppercase">Edit / Confirm Price</span>
+                  <h3 className="font-headline font-extrabold text-base">{priceItem.name}</h3>
+                </div>
+                <button onClick={() => setPriceItem(null)} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700">×</button>
+              </div>
+              <form onSubmit={onConfirmPrice} className="space-y-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-400 block mb-1">Price Paid (৳)</label>
+                  <input type="number" autoFocus value={tempPrice} onChange={e => setTempPrice(e.target.value)} placeholder="0" className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-primary rounded-xl px-3.5 py-2.5 text-xl font-headline font-extrabold outline-none" />
+                </div>
+                <button type="submit" className="w-full bg-primary text-white font-bold py-3 rounded-xl text-sm">✓ Update & Save</button>
+              </form>
             </div>
           </div>
         )}
 
-        {/* MODAL: EDIT MEMBER NAME */}
-        {showEditName && (
-          <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowEditName(false)}>
+        {/* MODAL: BUDGET */}
+        {showBudget && (
+          <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 flex items-center justify-center p-4" onClick={() => setShowBudget(false)}>
             <div className="bg-white dark:bg-slate-800 w-full max-w-xs rounded-3xl p-5 space-y-4 shadow-2xl" onClick={e => e.stopPropagation()}>
-              <h3 className="font-bold text-base">✏️ Edit Member Name</h3>
-              <form onSubmit={e => { e.preventDefault(); const u = (data.members || []).map(m => m.id === editNameId ? { ...m, name: tempName.trim() } : m); save({ ...data, members: u }); setShowEditName(false); toastFn('Updated ✔'); }} className="space-y-3"><input type="text" autoFocus value={tempName} onChange={e => setTempName(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border rounded-xl px-3 py-2 text-sm font-bold outline-none" /><button type="submit" className="w-full bg-primary text-white font-bold py-2 rounded-xl text-xs">Save</button></form>
+              <h3 className="font-headline font-extrabold text-base">Set Monthly Budget</h3>
+              <form onSubmit={e => { e.preventDefault(); save({ ...data, monthlyBudget: Math.max(0, Number(tempBudget) || 0) }); setShowBudget(false); toastFn('Budget Updated ✔'); }} className="space-y-3">
+                <input type="number" autoFocus value={tempBudget} onChange={e => setTempBudget(e.target.value)} placeholder="0" className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-primary rounded-xl px-3.5 py-2.5 text-xl font-headline font-extrabold outline-none" />
+                <button type="submit" className="w-full bg-primary text-white font-bold py-3 rounded-xl text-sm">Save</button>
+              </form>
             </div>
           </div>
         )}
