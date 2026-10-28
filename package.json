@@ -1,0 +1,19 @@
+{
+  "name": "bou-bolche",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Bou Bolche offline web build",
+  "scripts": {
+    "build:web": "node scripts/build-web.mjs"
+  },
+  "devDependencies": {
+    "@fontsource-variable/inter": "5.2.5",
+    "@fontsource-variable/manrope": "5.2.5",
+    "esbuild": "0.25.0",
+    "firebase": "9.23.0",
+    "material-symbols": "0.31.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "tailwindcss": "3.4.17"
+  }
+}
