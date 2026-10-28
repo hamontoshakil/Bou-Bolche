@@ -115,12 +115,17 @@ jobs:
 
       - name: Collect APK and show its signature
         run: |
+          set +e
           mkdir -p dist
-          APK=$(find app/platforms/android/app/build/outputs/apk -name "*.apk" | head -n 1)
+          echo "--- outputs ---"
+          find app/platforms/android/app/build/outputs -type f
+          APK=$(find app/platforms/android/app/build/outputs -name "*.apk" -print -quit)
           echo "APK: $APK"
+          if [ -z "$APK" ]; then echo "::error::কোনো APK পাওয়া যায়নি"; exit 1; fi
           cp "$APK" "dist/BouBolche-${{ github.run_number }}.apk"
-          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort | tail -n 1)
-          "$APKSIGNER" verify --print-certs "dist/BouBolche-${{ github.run_number }}.apk" | grep -E "SHA-1|SHA-256" || true
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner -print | sort | tail -n 1)
+          "$APKSIGNER" verify --print-certs "dist/BouBolche-${{ github.run_number }}.apk" 2>&1 | grep -E "SHA-1|SHA-256|DOES NOT VERIFY|ERROR"
+          exit 0
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
