@@ -1,8 +1,18 @@
 name: Build APK
-on: [push, workflow_dispatch]
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # সাইনিং চাবি GitHub Secrets থেকে আসে (Settings → Secrets and variables → Actions)
+      KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -13,28 +23,59 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Setup Node.js
+      - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
+          cache: 'npm'
 
+      # ---------- ১. ওয়েব অংশ: সব কিছু অ্যাপের ভেতরে (অফলাইন) ----------
+      - name: Build offline web app (www)
+        run: |
+          npm ci
+          npm run build:web
+
+      # ---------- ২. Cordova প্রজেক্ট ----------
       - name: Install Cordova and ImageMagick
         run: |
-          npm install -g cordova
+          npm install -g cordova@13.0.0
           sudo apt-get update
           sudo apt-get install -y imagemagick
 
-      - name: Create Cordova Project & Add Voice Plugin
+      - name: Make sure Android SDK 36 is installed
+        continue-on-error: true
         run: |
-          # অ্যাপের নাম ইংরেজিতে "Bou Bolche" দেওয়া হলো
+          SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Create Cordova project and put the offline app inside
+        run: |
           cordova create app com.boubolche.app "Bou Bolche"
-          cp ${{ github.workspace }}/icon-512.png app/icon.png
+          rm -rf app/www
+          cp -r www app/www
+          sed "s/__VERSION_CODE__/${{ github.run_number }}/" cordova/config.xml > app/config.xml
           cd app
-          sed -i 's|<content src="index.html" />|<content src="https://hamontoshakil.github.io/Bou-Bolche/" />|' config.xml
-          sed -i 's|</widget>|    <icon src="icon.png" />\n    <allow-navigation href="*" />\n    <allow-intent href="*" />\n    <access origin="*" />\n</widget>|' config.xml
-          cordova platform add android
-          # ভয়েস টাইপিং ও মাইক্রোফোন পারমিশনের জন্য নেটিভ প্লাগইন যুক্ত করা হলো
+          cordova platform add android@15.1.0
+
+      - name: Add plugins (voice, camera, notifications)
+        run: |
+          cd app
           cordova plugin add cordova-plugin-speechrecognition
+          cordova plugin add cordova-plugin-camera
+          cordova plugin add cordova-plugin-local-notification
+
+      # google-services.json repo-তে থাকলেই Google Sign-In প্লাগইন যুক্ত হবে।
+      # শুধু auth অংশ নেওয়া হয়েছে (Analytics/Crashlytics বাদ)। পুশ লাগলে পরে messaging যোগ হবে।
+      - name: Add Google Sign-In plugin (only if google-services.json exists)
+        run: |
+          cd app
+          if [ -f "$GITHUB_WORKSPACE/google-services.json" ]; then
+            cp "$GITHUB_WORKSPACE/google-services.json" google-services.json
+            cordova plugin add cordova-plugin-firebasex-auth
+          else
+            echo "google-services.json নেই, তাই Google Sign-In প্লাগইন এবার যুক্ত হয়নি"
+          fi
 
       - name: Fix Icons for Both Old MIUI (Redmi) and New Android
         run: |
@@ -52,13 +93,34 @@ jobs:
             convert ${{ github.workspace }}/icon-512.png -resize ${zoom}x${zoom} -gravity center -background "#FACC15" -extent ${size}x${size} -flatten $folder/ic_launcher_foreground.png
           done
 
+      # ---------- ৩. বিল্ড ও সাইনিং ----------
       - name: Build APK
         run: |
           cd app
-          cordova build android
+          if [ -n "$KEYSTORE_BASE64" ] && [ -n "$KEYSTORE_PASSWORD" ] && [ -n "$KEY_ALIAS" ]; then
+            echo "স্থায়ী চাবি দিয়ে সাইন করা রিলিজ APK বানানো হচ্ছে"
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+            node -e "require('fs').writeFileSync(process.env.RUNNER_TEMP + '/build.json', JSON.stringify({ android: { release: { keystore: process.env.RUNNER_TEMP + '/release.keystore', storePassword: process.env.KEYSTORE_PASSWORD, alias: process.env.KEY_ALIAS, password: process.env.KEYSTORE_PASSWORD, keystoreType: '', packageType: 'apk' } } }))"
+            cordova build android --release --buildConfig="$RUNNER_TEMP/build.json"
+            rm -f "$RUNNER_TEMP/build.json" "$RUNNER_TEMP/release.keystore"
+          else
+            echo "::warning::সাইনিং চাবি (secrets) পাওয়া যায়নি। ডিবাগ APK বানানো হচ্ছে, যেটা আগের APK-র ওপর আপডেট হবে না।"
+            cordova build android
+          fi
+
+      - name: Collect APK and show its signature
+        run: |
+          mkdir -p dist
+          APK=$(find app/platforms/android/app/build/outputs/apk -name "*.apk" | head -n 1)
+          echo "APK: $APK"
+          cp "$APK" "dist/BouBolche-${{ github.run_number }}.apk"
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort | tail -n 1)
+          "$APKSIGNER" verify --print-certs "dist/BouBolche-${{ github.run_number }}.apk" | grep -E "SHA-1|SHA-256" || true
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: BouBolche-APK
-          path: app/platforms/android/app/build/outputs/apk/debug/*.apk
+          path: dist/*.apk
+          if-no-files-found: error
+          retention-days: 30
