@@ -102,26 +102,32 @@ jobs:
       - name: Build APK
         run: |
           cd app
+          set -o pipefail
           if [ -n "$KEYSTORE_BASE64" ] && [ -n "$KEYSTORE_PASSWORD" ] && [ -n "$KEY_ALIAS" ]; then
             echo "স্থায়ী চাবি দিয়ে সাইন করা রিলিজ APK বানানো হচ্ছে"
             echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
             node -e "require('fs').writeFileSync(process.env.RUNNER_TEMP + '/build.json', JSON.stringify({ android: { release: { keystore: process.env.RUNNER_TEMP + '/release.keystore', storePassword: process.env.KEYSTORE_PASSWORD, alias: process.env.KEY_ALIAS, password: process.env.KEYSTORE_PASSWORD, keystoreType: '', packageType: 'apk' } } }))"
-            cordova build android --release --buildConfig="$RUNNER_TEMP/build.json"
+            cordova build android --release --verbose --buildConfig="$RUNNER_TEMP/build.json" 2>&1 | tee "$RUNNER_TEMP/build.log"
+            RESULT=$?
             rm -f "$RUNNER_TEMP/build.json" "$RUNNER_TEMP/release.keystore"
           else
-            echo "::warning::সাইনিং চাবি (secrets) পাওয়া যায়নি। ডিবাগ APK বানানো হচ্ছে, যেটা আগের APK-র ওপর আপডেট হবে না।"
-            cordova build android
+            echo "::warning::সাইনিং চাবি (secrets) পাওয়া যায়নি। ডিবাগ APK বানানো হচ্ছে।"
+            cordova build android --verbose 2>&1 | tee "$RUNNER_TEMP/build.log"
+            RESULT=$?
           fi
+          echo "=== cordova exit code: $RESULT ==="
+          echo "=== last 60 lines of build log ==="
+          tail -n 60 "$RUNNER_TEMP/build.log"
+          echo "=== apk/aab files on this machine (workspace + home + tmp) ==="
+          find "$GITHUB_WORKSPACE" "$HOME" "$RUNNER_TEMP" -type f \( -name "*.apk" -o -name "*.aab" \) -not -path "*/node_modules/*" 2>/dev/null
+          exit $RESULT
 
       - name: Collect APK and show its signature
         run: |
           set +e
           mkdir -p dist
-          echo "--- build folder ---"
-          ls -la app/platforms/android/app/build 2>&1
-          echo "--- all apk/aab files anywhere in app ---"
-          find app -type f \( -name "*.apk" -o -name "*.aab" \) -not -path "*/node_modules/*" 2>&1
-          APK=$(find app -type f -name "*.apk" -not -path "*/node_modules/*" -not -path "*/intermediates/*" -print -quit)
+          APK=$(find "$GITHUB_WORKSPACE/app" "$HOME" -type f -name "*.apk" -not -path "*/node_modules/*" -not -path "*/intermediates/*" -print 2>/dev/null | grep -i release | head -n 1)
+          [ -z "$APK" ] && APK=$(find "$GITHUB_WORKSPACE/app" "$HOME" -type f -name "*.apk" -not -path "*/node_modules/*" -not -path "*/intermediates/*" -print 2>/dev/null | head -n 1)
           echo "APK: $APK"
           if [ -z "$APK" ]; then echo "::error::কোনো APK পাওয়া যায়নি"; exit 1; fi
           cp "$APK" "dist/BouBolche-${{ github.run_number }}.apk"
