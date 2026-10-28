@@ -78,19 +78,24 @@ jobs:
           fi
 
       - name: Fix Icons for Both Old MIUI (Redmi) and New Android
+        continue-on-error: true
         run: |
-          cd app/platforms/android/app/src/main/res
-          rm -rf mipmap-anydpi-v26
-          rm -rf mipmap-*-v26
-          # Redmi ফোনের সাদা বর্ডার দূর করতে আইকনের চারপাশ হলুদ রঙে ভরাট ও ফুল-ব্লিড করা হচ্ছে
-          for dir in mipmap-mdpi:48 mipmap-hdpi:72 mipmap-xhdpi:96 mipmap-xxhdpi:144 mipmap-xxxhdpi:192; do
-            folder=$(echo $dir | cut -d: -f1)
-            size=$(echo $dir | cut -d: -f2)
+          ICON="$GITHUB_WORKSPACE/icon-512.png"
+          ls -la "$ICON"
+          RES="app/platforms/android/app/src/main/res"
+          ls "$RES"
+          if command -v magick >/dev/null 2>&1; then IM="magick"; else IM="convert"; fi
+          echo "using: $IM"
+          rm -rf "$RES"/mipmap-anydpi-v26 "$RES"/mipmap-*-v26
+          # Redmi ফোনের সাদা বর্ডার দূর করতে আইকনের চারপাশ হলুদ রঙে ভরাট করা হচ্ছে
+          for item in mipmap-mdpi:48 mipmap-hdpi:72 mipmap-xhdpi:96 mipmap-xxhdpi:144 mipmap-xxxhdpi:192; do
+            folder="${item%%:*}"
+            size="${item##*:}"
             zoom=$(( size * 108 / 100 ))
-            mkdir -p $folder
-            convert ${{ github.workspace }}/icon-512.png -resize ${zoom}x${zoom} -gravity center -background "#FACC15" -extent ${size}x${size} -flatten $folder/ic_launcher.png
-            convert ${{ github.workspace }}/icon-512.png -resize ${zoom}x${zoom} -gravity center -background "#FACC15" -extent ${size}x${size} -flatten $folder/ic_launcher_round.png
-            convert ${{ github.workspace }}/icon-512.png -resize ${zoom}x${zoom} -gravity center -background "#FACC15" -extent ${size}x${size} -flatten $folder/ic_launcher_foreground.png
+            mkdir -p "$RES/$folder"
+            for name in ic_launcher ic_launcher_round ic_launcher_foreground; do
+              $IM "$ICON" -resize "${zoom}x${zoom}" -gravity center -background "#FACC15" -extent "${size}x${size}" -flatten "$RES/$folder/$name.png"
+            done
           done
 
       # ---------- ৩. বিল্ড ও সাইনিং ----------
