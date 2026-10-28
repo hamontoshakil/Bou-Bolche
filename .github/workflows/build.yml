@@ -117,9 +117,11 @@ jobs:
         run: |
           set +e
           mkdir -p dist
-          echo "--- outputs ---"
-          find app/platforms/android/app/build/outputs -type f
-          APK=$(find app/platforms/android/app/build/outputs -name "*.apk" -print -quit)
+          echo "--- build folder ---"
+          ls -la app/platforms/android/app/build 2>&1
+          echo "--- all apk/aab files anywhere in app ---"
+          find app -type f \( -name "*.apk" -o -name "*.aab" \) -not -path "*/node_modules/*" 2>&1
+          APK=$(find app -type f -name "*.apk" -not -path "*/node_modules/*" -not -path "*/intermediates/*" -print -quit)
           echo "APK: $APK"
           if [ -z "$APK" ]; then echo "::error::কোনো APK পাওয়া যায়নি"; exit 1; fi
           cp "$APK" "dist/BouBolche-${{ github.run_number }}.apk"
